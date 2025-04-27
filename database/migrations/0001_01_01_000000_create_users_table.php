@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->string('name')->unique();
             $table->string('password');
+            $table->tinyInteger('status')->default(0);
             $table->rememberToken();
             $table->timestamps();
         });

@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Services\UserService;
 use App\Http\Requests\UserRequest\StoreUserData;
+use App\Http\Requests\UserRequest\UpdateStatus;
 use App\Http\Requests\UserRequest\UpdateUserData;
 
 class UserController extends Controller
@@ -75,6 +76,17 @@ class UserController extends Controller
 
         // Create the user using UserService
         $result = $this->userService->deleteUser($user);
+
+        // Return response based on the result
+        return $result['status'] === 200
+            ? self::success(null, $result['message'], $result['status'])
+            : self::error(null, $result['message'], $result['status']);
+    }
+    public function updateUserStatus(UpdateStatus $request, User $user)
+    {
+        $validatedData = $request->validated();
+
+        $result = $this->userService->updateUserStatus($validatedData, $user);
 
         // Return response based on the result
         return $result['status'] === 200

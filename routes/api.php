@@ -16,4 +16,6 @@ Route::post('/login', [AuthController::class, 'login']);
 // Group routes that require JWT middleware
 Route::middleware('jwt')->group(function () {
     Route::apiResource('/user', UserController::class);
+    Route::post('/user/{user}/updatestatus', [UserController::class, 'updateUserStatus']);
+
 });

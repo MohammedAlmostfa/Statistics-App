@@ -17,12 +17,12 @@ class UserService
     {
         try {
             // Fetch all users with specified columns
-            $users = User::select('id', 'name', 'created_at')->get();
+            $users = User::select('id', 'name', 'status', 'created_at')->get();
 
             return [
                 'status' => 200,
                 'message' => 'تم جلب جميع المستخدمين بنجاح',
-                'data' => $users, // Return fetched users
+                'data' => $users,
             ];
         } catch (Exception $e) {
             Log::error('Error in getAllUsers: ' . $e->getMessage());
@@ -45,13 +45,13 @@ class UserService
             // Create the user with encrypted password
             $user = User::create([
                 'name' => $data['name'],
-                'password' => bcrypt($data['password']), // Encrypt the password
+                'password' => bcrypt($data['password']),
             ]);
 
             return [
-                'status' => 201, // HTTP status code for resource creation
+                'status' => 201,
                 'message' => 'تم إنشاء المستخدم بنجاح',
-                'data' => $user, // Return created user
+                'data' => $user,
             ];
         } catch (Exception $e) {
             Log::error('Error in createUser: ' . $e->getMessage());
@@ -72,10 +72,9 @@ class UserService
     public function updateUser($data, User $user)
     {
         try {
-            // Update user data with encrypted password
             $user->update([
                 'name' => $data['name'],
-                'password' => bcrypt($data['password']), // Encrypt the password
+                'password' => bcrypt($data['password']),
             ]);
 
             return [
@@ -100,7 +99,6 @@ class UserService
     public function deleteUser(User $user)
     {
         try {
-            // Delete the user
             $user->delete();
 
             return [
@@ -112,6 +110,33 @@ class UserService
             return [
                 'status' => 500,
                 'message' => 'حدث خطأ أثناء حذف المستخدم. يرجى إعادة المحاولة.',
+            ];
+        }
+    }
+
+    /**
+     * Update user status.
+     *
+     * @param array $data Contains the status value.
+     * @param User $user User model instance.
+     * @return array Response with status and message.
+     */
+    public function updateUserStatus($data, User $user)
+    {
+        try {
+            $user->update([
+                'status' => $data['status'],
+            ]);
+
+            return [
+                'status' => 200,
+                'message' => 'تم تحديث حالة المستخدم بنجاح',
+            ];
+        } catch (Exception $e) {
+            Log::error('Error in updateUserStatus: ' . $e->getMessage());
+            return [
+                'status' => 500,
+                'message' => 'حدث خطأ أثناء تحديث حالة المستخدم. يرجى إعادة المحاولة.',
             ];
         }
     }
