@@ -3,83 +3,67 @@
 namespace App\Services\Auth;
 
 use Exception;
-
-use App\Models\User;
-
-use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthService
 {
-
-
-
     /**
      * Login a user.
      *
-     * This method authenticates a user using their email and password.
-     * If successful, it returns a JWT token for further authenticated requests.
-     *
      * @param array $credentials User credentials: email, password.
-     * @return array Contains message, status, data, and authorization details.
+     * @return array Contains message, status, and authorization details.
      */
     public function login($credentials)
     {
         try {
-            // Attempt to authenticate the user
             $token = JWTAuth::attempt($credentials);
 
             if (!$token) {
                 return [
                     'status' => 401,
-                    'message' => 'الحساب غير موجود',
+                    'message' => 'بيانات الاعتماد غير صحيحة.',
                 ];
             }
-
             return [
-                'status' => 201,
-                'message' => 'تم تسجيل الدخول بنجاح',
+                'status' => 200,
+                'message' => 'تم تسجيل الدخول بنجاح.',
                 'data' => [
                     'token' => $token,
                     'type' => 'bearer',
                 ],
             ];
         } catch (Exception $e) {
-            Log::error('Error in login: ' . $e->getMessage());
+            Log::error('Error during login: ' . $e->getMessage());
+
             return [
                 'status' => 500,
-                'message' => 'حدث خطأ، يرجى إعادة المحاولة مرة أخرى',
+                'message' => 'حدث خطأ أثناء عملية تسجيل الدخول. يرجى إعادة المحاولة لاحقًا.',
             ];
         }
     }
 
-
     /**
      * Logout the authenticated user.
-     *
-     * This method logs out the currently authenticated user.
      *
      * @return array Contains message and status.
      */
     public function logout()
     {
         try {
-            // Logout the user
             Auth::logout();
+
             return [
-                'message' => __('auth.logout_success'),
-                'status' => 200, // HTTP status code for success
+                'status' => 200,
+                'message' => 'تم تسجيل الخروج بنجاح.',
             ];
         } catch (Exception $e) {
-            // Log the error if logout fails
-            Log::error('Error in logout: ' . $e->getMessage());
+            Log::error('Error during logout: ' . $e->getMessage());
+
             return [
                 'status' => 500,
-                'message' => [
-            'errorDetails' => 'حدذ خطا يرجا اعادة المحاولة مرة اخرى',
-                ],
+                'message' => 'حدث خطأ أثناء عملية تسجيل الخروج. يرجى إعادة المحاولة لاحقًا.',
             ];
         }
     }
@@ -87,33 +71,29 @@ class AuthService
     /**
      * Refresh the JWT token for the authenticated user.
      *
-     * This method refreshes the JWT token for the authenticated user.
-     *
-     * @return array Contains message, status, user, and authorization details.
+     * @return array Contains message, status, user, and new token details.
      */
     public function refresh()
     {
         try {
-            // Refresh the token for the authenticated user
+            $newToken = Auth::refresh();
+
             return [
-                'message' => __('auth.token_refresh_success'),
-                'status' => 200, // HTTP status code for success
+                'status' => 200,
+                'message' => 'تم تحديث التوكن بنجاح.',
                 'data' => [
-                    'user' => Auth::user(), // Return the authenticated user
-                    'token' => Auth::refresh(), // Return the new token
+                    'user' => Auth::user(),
+                    'token' => $newToken,
+                    'type' => 'bearer',
                 ],
             ];
         } catch (Exception $e) {
-            // Log the error if token refresh fails
-            Log::error('Error in token refresh: ' . $e->getMessage());
+            Log::error('Error during token refresh: ' . $e->getMessage());
+
             return [
                 'status' => 500,
-                'message' => [
-                         'errorDetails' => 'حدذ خطا يرجا اعادة المحاولة مرة اخرى',
-                ],
+                'message' => 'حدث خطأ أثناء تحديث التوكن. يرجى إعادة المحاولة لاحقًا.',
             ];
         }
     }
-
-
 }

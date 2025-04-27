@@ -53,7 +53,7 @@ class AuthController extends Controller
         // Authenticate user via AuthService
         $result = $this->authService->login($credentials);
 
-        return $result['status'] === 201
+        return $result['status'] === 200
             ? self::success($result['data'], $result['message'], $result['status'])
             : self::error(null, $result['message'], $result['status']);
     }
