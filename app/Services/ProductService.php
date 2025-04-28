@@ -1,0 +1,126 @@
+<?php
+
+namespace App\Services;
+
+use Exception;
+use App\Models\Product;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+
+class ProductService
+{
+    /**
+     * Get all products with pagination.
+     *
+     * @return array Response containing status, message, and data.
+     */
+    public function getAllProducts()
+    {
+        try {
+            $products = Product::paginate(10);
+
+            return [
+                'status' => 200,
+                'message' => 'تم جلب جميع المنتجات بنجاح.',
+                'data' => $products,
+            ];
+        } catch (Exception $e) {
+            Log::error('Error in getAllProducts: ' . $e->getMessage());
+
+            return [
+                'status' => 500,
+                'message' => 'حدث خطأ أثناء جلب المنتجات، يرجى المحاولة مرة أخرى.',
+            ];
+        }
+    }
+
+    /**
+     * Create a new product.
+     *
+     * @param array $data Product data.
+     * @return array Response containing status, message, and created product data.
+     */
+    public function createProduct(array $data)
+    {
+        try {
+            $userId = Auth::id();
+
+            $product = Product::create([
+                'name' => $data['name'],
+                'buying_price' => $data['buying_price'],
+                'installment_price' => $data['installment_price'],
+                'quantity' => $data['quantity'],
+                'user_id' => $userId,
+            ]);
+
+            return [
+                'status' => 201,
+                'message' => 'تم إنشاء المنتج بنجاح.',
+                'data' => $product,
+            ];
+        } catch (Exception $e) {
+            Log::error('Error in createProduct: ' . $e->getMessage());
+
+            return [
+                'status' => 500,
+                'message' => 'حدث خطأ أثناء إنشاء المنتج، يرجى المحاولة مرة أخرى.',
+            ];
+        }
+    }
+
+    /**
+     * Update an existing product.
+     *
+     * @param array $data Updated product data.
+     * @param Product $product Product model instance.
+     * @return array Response containing status and message.
+     */
+    public function updateProduct(array $data, Product $product)
+    {
+        try {
+            $product->update([
+                'name' => $data['name'],
+                'buying_price' => $data['buying_price'],
+                'installment_price' => $data['installment_price'],
+                'quantity' => $data['quantity'],
+            ]);
+
+            return [
+                'status' => 200,
+                'message' => 'تم تحديث المنتج بنجاح.',
+            ];
+        } catch (Exception $e) {
+            Log::error('Error in updateProduct: ' . $e->getMessage());
+
+            return [
+                'status' => 500,
+                'message' => 'حدث خطأ أثناء تحديث المنتج، يرجى المحاولة مرة أخرى.',
+            ];
+        }
+    }
+
+    /**
+     * Delete a product.
+     *
+     * @param Product $product Product model instance.
+     * @return array Response containing status and message.
+     */
+    public function deleteProduct(Product $product)
+    {
+        try {
+            $product->delete();
+
+            return [
+                'status' => 200,
+                'message' => 'تم حذف المنتج بنجاح.',
+            ];
+        } catch (Exception $e) {
+            Log::error('Error in deleteProduct: ' . $e->getMessage());
+
+            return [
+                'status' => 500,
+                'message' => 'حدث خطأ أثناء حذف المنتج، يرجى المحاولة مرة أخرى.',
+            ];
+        }
+    }
+}
