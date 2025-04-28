@@ -25,10 +25,11 @@ class UpdateProductData extends FormRequest
     public function rules(): array
     {
         return [
-             'name' => 'nullable|string',
+             'name' => 'required|string',
              'buying_price' => 'nullable|numeric',
              'installment_price' => 'nullable|integer',
              'quantity' => 'nullable|integer',
+            'selling_price' => 'nullable|numeric',
          ];
 
     }

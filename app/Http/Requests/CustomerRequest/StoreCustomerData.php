@@ -24,7 +24,7 @@ class StoreCustomerData extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:customers,name|',
             'phone' => 'required|unique:customers,phone|max:20',
             'notes' => 'nullable|string|max:1000',
             'record_id'=>'nullable|integer',

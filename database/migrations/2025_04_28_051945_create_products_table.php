@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->decimal('buying_price', 10, 2);
+            $table->decimal('selling_price', 10, 2);
             $table->integer('installment_price');
             $table->integer('quantity');
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();

@@ -31,7 +31,7 @@ class ProductController extends Controller
     public function index()
     {
         // Create the user using UserService
-        $result = $this->productService->getAllUsers();
+        $result = $this->productService->getAllProducts();
 
         // Return response based on the result
         return $result['status'] === 200

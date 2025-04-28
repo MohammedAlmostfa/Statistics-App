@@ -1,12 +1,13 @@
 <?php
 
+use App\Http\Middleware\JwtMiddleware;
 use Illuminate\Foundation\Application;
+use App\Http\Middleware\SecurityMiddleware;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use App\Http\Middleware\JwtMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -25,9 +26,9 @@ return Application::configure(basePath: dirname(__DIR__))
          ]);
          $middleware->append([
 
-             //'security' => SecurityMiddleware::class,
+          'security' => SecurityMiddleware::class,
 
-         ]);
+        ]);
      })
     ->withExceptions(function (Exceptions $exceptions) {
         // Exception handling configuration

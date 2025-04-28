@@ -17,12 +17,13 @@ class ProductService
     public function getAllProducts()
     {
         try {
-            $products = Product::paginate(10);
+            $products = Product::select('id', 'name', 'buying_price', 'quantity', 'installment_price', 'created_at')->paginate(10);
 
             return [
                 'status' => 200,
                 'message' => 'تم جلب جميع المنتجات بنجاح.',
-                'data' => $products,
+                'data' =>     $products,
+
             ];
         } catch (Exception $e) {
             Log::error('Error in getAllProducts: ' . $e->getMessage());
@@ -48,6 +49,7 @@ class ProductService
             $product = Product::create([
                 'name' => $data['name'],
                 'buying_price' => $data['buying_price'],
+                'selling_price' => $data['selling_price'],
                 'installment_price' => $data['installment_price'],
                 'quantity' => $data['quantity'],
                 'user_id' => $userId,
@@ -79,15 +81,17 @@ class ProductService
     {
         try {
             $product->update([
-                'name' => $data['name'],
-                'buying_price' => $data['buying_price'],
-                'installment_price' => $data['installment_price'],
-                'quantity' => $data['quantity'],
+                'name' => $data['name'] ?? $product->name,
+                'buying_price' => $data['buying_price'] ?? $product->buying_price,
+                'selling_price' => $data['selling_price'] ?? $product->selling_price,
+                'installment_price' => $data['installment_price'] ?? $product->installment_price,
+                'quantity' => $data['quantity'] ?? $product->quantity,
             ]);
 
             return [
                 'status' => 200,
                 'message' => 'تم تحديث المنتج بنجاح.',
+                'data' => $product,
             ];
         } catch (Exception $e) {
             Log::error('Error in updateProduct: ' . $e->getMessage());

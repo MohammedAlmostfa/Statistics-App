@@ -5,16 +5,19 @@ namespace App\Models;
 use App\Models\Debt;
 use App\Models\Receipt;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Customer extends Model
 {
-    protected $fillable = ['name', 'phone', 'notes', 'record_id'];
+    use HasFactory;
+
+    protected $fillable = ['name', 'phone', 'notes',];
 
     protected $casts = [
         'name' => 'string',
         'phone' => 'integer',
         'notes' => 'string',
-        'record_id' => 'integer',
+
     ];
 
 
@@ -33,9 +36,7 @@ class Customer extends Model
         if (isset($filteringData['phone'])) {
             $query->where('phone', '=', $filteringData['phone']);
         }
-        if (isset($filteringData['record_id'])) {
-            $query->where('record_id', '=', $filteringData['record_id']);
-        }
+
         return $query;
     }
 

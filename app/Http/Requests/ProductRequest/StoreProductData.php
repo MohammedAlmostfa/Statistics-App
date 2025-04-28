@@ -28,6 +28,7 @@ class StoreProductData extends FormRequest
             'name' => 'required|string',
             'buying_price' => 'required|numeric',
             'installment_price' => 'required|integer',
+            'selling_price' => 'required|numeric',
             'quantity' => 'required|integer',
         ];
     }

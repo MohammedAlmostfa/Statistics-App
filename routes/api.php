@@ -24,7 +24,7 @@ Route::post('refresh', [AuthController::class, 'refresh']); // Refreshes the JWT
 Route::middleware('jwt')->group(function () {
     Route::apiResource('/user', UserController::class);
     Route::apiResource('/product', ProductController::class);
-    Route::apiResource('/product', CustomerController::class);
+    Route::apiResource('/customer', CustomerController::class);
 
     Route::post('/user/{user}/updatestatus', [UserController::class, 'updateUserStatus']);
 

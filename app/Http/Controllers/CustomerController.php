@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
-use GuzzleHttp\Psr7\Request;
 use App\Services\CustomerService;
 use Illuminate\Http\JsonResponse;
-use App\Http\Resources\customerResource;
 use App\Http\Requests\CustomerRequest\fitrtingData;
 use App\Http\Requests\DebetRequest\fitrtinDebetgData;
 use App\Http\Requests\CustomerRequest\StoreCustomerData;
@@ -65,8 +63,8 @@ class CustomerController extends Controller
         $result = $this->customerService->createCustomer($request->validated());
 
         return $result['status'] === 200
-            ? $this->success($result['data'], $result['message'], $result['status'])
-            : $this->error($result['data'], $result['message'], $result['status']);
+            ? $this->success(null, $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
     }
 
     /**
@@ -87,8 +85,8 @@ class CustomerController extends Controller
         );
 
         return $result['status'] === 200
-            ? $this->success($result['data'], $result['message'], $result['status'])
-            : $this->error($result['data'], $result['message'], $result['status']);
+            ? $this->success(null, $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
     }
 
     /**
@@ -102,7 +100,7 @@ class CustomerController extends Controller
         $result = $this->customerService->deleteCustomer($customer);
 
         return $result['status'] === 200
-            ? $this->success($result['data'], $result['message'], $result['status'])
-            : $this->error($result['data'], $result['message'], $result['status']);
+             ? $this->success(null, $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
     }
 }
