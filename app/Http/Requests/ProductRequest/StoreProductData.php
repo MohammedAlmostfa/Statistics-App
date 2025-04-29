@@ -29,6 +29,7 @@ class StoreProductData extends FormRequest
             'buying_price' => 'required|numeric',
             'installment_price' => 'required|integer',
             'selling_price' => 'required|numeric',
+                  'dolar_selling_price' => 'required|numeric',
             'quantity' => 'required|integer',
             'origin_id' => 'required|integer|exists:product_origins,id',
             'category_id' => 'required|integer|exists:product_categories,id',

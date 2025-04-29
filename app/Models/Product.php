@@ -16,6 +16,7 @@ class Product extends Model
         'name',
         'buying_price',
         'selling_price',
+        "dolar_selling_price",
         'installment_price',
         'quantity',
         'user_id',
@@ -29,14 +30,14 @@ class Product extends Model
      */
     protected $casts = [
         'name' => 'string',
-      'buying_price' => 'float',
-    'selling_price' => 'float',
+        'buying_price' => 'float',
+        'selling_price' => 'float',
+        'dolar_selling_price' => 'float',
         'installment_price' => 'integer',
-
         'quantity' => 'integer',
         'user_id' => 'integer',
-        'origin_id'=>'integer',
-        'category_id'=>'integer',
+        'origin_id' => 'integer',
+        'category_id' => 'integer',
     ];
 
     /**
@@ -65,7 +66,4 @@ class Product extends Model
 
         return $query;
     }
-
-
-
 }

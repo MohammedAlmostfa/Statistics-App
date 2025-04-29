@@ -17,11 +17,12 @@ class ProductService
     public function getAllProducts($filteringData)
     {
         try {
-            $products = Product::select('id', 'name', 'buying_price', 'quantity', 'installment_price', 'created_at', 'origin_id', 'category_id')
+            $products = Product::select('id', 'name', 'buying_price', 'dolar_selling_price', 'quantity', 'installment_price', 'created_at', 'origin_id', 'user_id', 'category_id')
                 ->with([
                     'origin:id,name',
-                    'category:id,name'
-                ])   ->when(!empty($filteringData), function ($query) use ($filteringData) {
+                    'category:id,name',
+                    'user:id,name',
+                ])->when(!empty($filteringData), function ($query) use ($filteringData) {
                     $query->filterBy($filteringData);
                 })
                 ->paginate(10);
@@ -62,6 +63,7 @@ class ProductService
                 'origin_id' => $data['origin_id'],
                 'category_id' => $data['category_id'],
                 'quantity' => $data['quantity'],
+                'dolar_selling_price' => $data['dolar_selling_price'],
                 'user_id' => $userId,
             ]);
             return [
@@ -94,9 +96,10 @@ class ProductService
                 'buying_price' => $data['buying_price'] ?? $product->buying_price,
                 'selling_price' => $data['selling_price'] ?? $product->selling_price,
                 'installment_price' => $data['installment_price'] ?? $product->installment_price,
-                         'origin_id' => $data['origin_id']?? $product->origin_id,
-                'category_id' => $data['category_id']?? $product->category_id,
+                'origin_id' => $data['origin_id'] ?? $product->origin_id,
+                'category_id' => $data['category_id'] ?? $product->category_id,
                 'quantity' => $data['quantity'] ?? $product->quantity,
+                'dolar_selling_price' => $data['dolar_selling_price'] ?? $product->dolar_selling_price,
             ]);
 
             return [

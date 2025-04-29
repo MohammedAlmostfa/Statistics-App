@@ -30,6 +30,7 @@ class UpdateProductData extends FormRequest
             'installment_price' => 'nullable|integer',
             'quantity' => 'nullable|integer',
             'selling_price' => 'nullable|numeric',
+                  'dolar_selling_price' => 'nullable|numeric',
             'origin_id' => 'nullable|integer|exists:product_origins,id',
             'category_id' => 'nullable|integer|exists:product_categories,id',
         ];
