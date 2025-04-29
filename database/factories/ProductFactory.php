@@ -27,7 +27,7 @@ class ProductFactory extends Factory
             'selling_price' => $this->faker->randomFloat(2, 20, 200),
             'installment_price' => $this->faker->numberBetween(30, 300),
             'quantity' => $this->faker->numberBetween(1, 100),
-            'user_id' => \App\Models\User::factory(),
+            'user_id' => 1
         ];
     }
 }
