@@ -26,8 +26,6 @@ class Customer extends Model
 
     ];
 
-
-
     public function receipts()
     {
         return $this->hasMany(Receipt::class);
@@ -42,6 +40,14 @@ class Customer extends Model
         if (isset($filteringData['phone'])) {
             $query->where('phone', '=', $filteringData['phone']);
         }
+        if (isset($filteringData['Record_id'])) {
+            $query->where('Record_id', '=', $filteringData['Record_id']);
+        }
+
+        if (isset($filteringData['Page_id'])) {
+            $query->where('Page_id', '=', $filteringData['Page_id']);
+        }
+
 
         return $query;
     }

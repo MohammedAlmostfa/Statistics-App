@@ -9,6 +9,7 @@ use App\Http\Requests\CustomerRequest\fitrtingData;
 use App\Http\Requests\DebetRequest\fitrtinDebetgData;
 use App\Http\Requests\CustomerRequest\StoreCustomerData;
 use App\Http\Requests\CustomerRequest\UpdateCustomerData;
+use App\Http\Requests\CustomerRequest\FilteringCustomerData;
 
 /**
  * CustomerController manages customer-related operations, such as:
@@ -39,7 +40,7 @@ class CustomerController extends Controller
      *
      * @return JsonResponse Returns paginated list of customers or error response
      */
-    public function index(fitrtingData $request): JsonResponse
+    public function index(FilteringCustomerData $request): JsonResponse
     {
         $result = $this->customerService->getAllCustomers($request->validated());
         return $result['status'] === 200
