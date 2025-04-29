@@ -63,7 +63,7 @@ class CustomerController extends Controller
         $result = $this->customerService->createCustomer($request->validated());
 
         return $result['status'] === 200
-            ? $this->success(null, $result['message'], $result['status'])
+   ? $this->success($result['data'], $result['message'], $result['status'])
             : $this->error(null, $result['message'], $result['status']);
     }
 
@@ -85,7 +85,7 @@ class CustomerController extends Controller
         );
 
         return $result['status'] === 200
-            ? $this->success(null, $result['message'], $result['status'])
+            ? $this->success($result['data'], $result['message'], $result['status'])
             : $this->error(null, $result['message'], $result['status']);
     }
 

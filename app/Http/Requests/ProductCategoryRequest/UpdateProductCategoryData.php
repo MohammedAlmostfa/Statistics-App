@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Requests\CustomerRequest;
+namespace App\Http\Requests\ProductCategoryRequest;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Validation\Validator;
 
-class StoreCustomerData extends FormRequest
+class UpdateProductCategoryData extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,12 +25,8 @@ class StoreCustomerData extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255|unique:customers,name|',
-            'phone' => 'required|unique:customers,phone|max:20',
-            'notes' => 'nullable|string|max:1000',
-            'record_id'=>'nullable|integer',
+       'name' => 'nullable|string|max:255|unique:product_origins,name|',
         ];
-
     }
 
     /**

@@ -45,7 +45,7 @@ class CustomerService
         try {
             $customer = Customer::create($data);
 
-            return $this->successResponse('تم إنشاء العميل بنجاح', 201, $customer);
+            return $this->successResponse('تم إنشاء العميل بنجاح', 200, $customer);
         } catch (Exception $e) {
             Log::error('خطأ أثناء إنشاء العميل: ' . $e->getMessage());
             return $this->errorResponse('فشل في إنشاء العميل');

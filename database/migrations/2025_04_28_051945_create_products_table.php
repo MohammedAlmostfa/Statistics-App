@@ -18,6 +18,9 @@ return new class extends Migration {
             $table->integer('installment_price');
             $table->integer('quantity');
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            // $table->foreignId('origin_id')->constrained('product_origins')->onDelete('cascade');
+            // $table->foreignId('category_id')->constrained('product_categories')->onDelete('cascade');
+
             $table->timestamps();
         });
     }

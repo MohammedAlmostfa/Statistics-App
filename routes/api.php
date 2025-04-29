@@ -4,8 +4,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
+use Database\Seeders\ProductSeeder;
 
 // Route to get authenticated user details
 Route::get('/user', function (Request $request) {
@@ -25,6 +27,7 @@ Route::middleware('jwt')->group(function () {
     Route::apiResource('/user', UserController::class);
     Route::apiResource('/product', ProductController::class);
     Route::apiResource('/customer', CustomerController::class);
+    Route::apiResource('/ProductCategory', ProductCategoryController::class);
 
     Route::post('/user/{user}/updatestatus', [UserController::class, 'updateUserStatus']);
 
