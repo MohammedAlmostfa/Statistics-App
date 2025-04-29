@@ -14,14 +14,16 @@ class ProductService
      *
      * @return array Response containing status, message, and data.
      */
-    public function getAllProducts()
+    public function getAllProducts($filteringData)
     {
         try {
             $products = Product::select('id', 'name', 'buying_price', 'quantity', 'installment_price', 'created_at', 'origin_id', 'category_id')
                 ->with([
                     'origin:id,name',
                     'category:id,name'
-                ])
+                ])   ->when(!empty($filteringData), function ($query) use ($filteringData) {
+                    $query->filterBy($filteringData);
+                })
                 ->paginate(10);
 
 

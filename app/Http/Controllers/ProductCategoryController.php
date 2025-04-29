@@ -6,7 +6,6 @@ use App\Models\ProductCategory;
 use Illuminate\Http\JsonResponse;
 use App\Services\ProductCategoryService;
 
-use App\Http\Requests\ProductCategoryRequest\fitrtingData;
 use App\Http\Requests\ProductCategoryRequest\StoreProductCategory;
 use App\Http\Requests\ProductCategoryRequest\StoreProductCategoryData;
 use App\Http\Requests\ProductCategoryRequest\UpdateProductCategoryData;

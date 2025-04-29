@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProductRequest\StoreProductData;
-use App\Http\Requests\ProductRequest\UpdateProductData;
-use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Services\ProductService;
+use App\Http\Resources\ProductResource;
+use App\Http\Requests\ProductRequest\filtterdata;
+use App\Http\Requests\ProductRequest\StoreProductData;
+use App\Http\Requests\ProductRequest\UpdateProductData;
 
 class ProductController extends Controller
 {
@@ -29,10 +30,10 @@ class ProductController extends Controller
         $this->productService = $productService;
     }
 
-    public function index()
+    public function index(filtterdata $request)
     {
         // Create the user using UserService
-        $result = $this->productService->getAllProducts();
+        $result = $this->productService->getAllProducts($request->validated());
 
         // Return response based on the result
         return $result['status'] === 200

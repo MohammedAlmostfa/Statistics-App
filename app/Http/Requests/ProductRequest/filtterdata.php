@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Http\Requests\ProductCategoryRequest;
+namespace App\Http\Requests\ProductRequest;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class fitrtingData extends FormRequest
+class filtterdata extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,7 @@ class fitrtingData extends FormRequest
     public function rules(): array
     {
         return [
-            //
+      'category_id' => 'nullable|integer|exists:product_categories,id',
         ];
     }
 }

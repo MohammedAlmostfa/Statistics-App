@@ -55,5 +55,17 @@ class Product extends Model
     {
         return $this->belongsTo(ProductCategory::class, 'category_id');
     }
+    public function scopeFilterBy($query, array $filteringData)
+    {
+
+        // Filter by debt_date if provided
+        if (isset($filteringData['category_id'])) {
+            $query->where('category_id', '=', $filteringData['category_id']);
+        }
+
+        return $query;
+    }
+
+
 
 }
