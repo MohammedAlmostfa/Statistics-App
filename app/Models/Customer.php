@@ -11,12 +11,18 @@ class Customer extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'phone', 'notes',];
+    protected $fillable = ['name', 'phone', 'notes',"sponsor_name",'sponsor_phone','Record_id','Page_id'];
+
+
 
     protected $casts = [
         'name' => 'string',
         'phone' => 'integer',
         'notes' => 'string',
+        "sponsor_name" => 'string',
+        'sponsor_phone'=> 'integer',
+        'Record_id'=> 'integer',
+        'Page_id'=> 'integer',
 
     ];
 

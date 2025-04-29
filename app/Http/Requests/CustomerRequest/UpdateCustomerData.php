@@ -24,12 +24,16 @@ class UpdateCustomerData extends FormRequest
     public function rules(): array
     {
         return [
-          'name' => 'nullable|string|max:255|unique:customers,name',
-                'phone' => 'nullable|unique:customers,phone|max:20',
+            'name' => 'nullable|string|max:255|unique:customers,name',
+            'phone' => 'nullable|unique:customers,phone|max:20',
             'notes' => 'nullable|string|max:1000',
+            "sponsor_name" => 'nullable|string',
+            'sponsor_phone' => 'nullable',
+            'Record_id' => 'nullable|integer',
+            'Page_id' => 'nullable|integer',
+
 
         ];
-
     }
     protected function failedValidation(Validator $validator): void
     {

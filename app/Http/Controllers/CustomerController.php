@@ -43,7 +43,7 @@ class CustomerController extends Controller
     {
         $result = $this->customerService->getAllCustomers($request->validated());
         return $result['status'] === 200
-             ? $this->successshow($result['data'], $result['message'], $result['status'])
+             ? $this->success($result['data'], $result['message'], $result['status'])
              : $this->error($result['data'], $result['message'], $result['status']);
     }
 
