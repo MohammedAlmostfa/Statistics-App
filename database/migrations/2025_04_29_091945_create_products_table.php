@@ -13,14 +13,13 @@ return new class extends Migration {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->decimal('buying_price', 10, 2);
-            $table->decimal('selling_price', 10, 2);
+            $table->float('buying_price', 10, 2);
+            $table->float('selling_price', 10, 2);
             $table->integer('installment_price');
             $table->integer('quantity');
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            // $table->foreignId('origin_id')->constrained('product_origins')->onDelete('cascade');
-            // $table->foreignId('category_id')->constrained('product_categories')->onDelete('cascade');
-
+            $table->foreignId('origin_id')->constrained('product_origins')->cascadeOnDelete();
+            $table->foreignId('category_id')->constrained('product_categories')->cascadeOnDelete();
             $table->timestamps();
         });
     }

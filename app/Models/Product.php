@@ -19,18 +19,24 @@ class Product extends Model
         'installment_price',
         'quantity',
         'user_id',
+        'origin_id',
+        'category_id',
     ];
+
 
     /**
      * Casts for type conversion.
      */
     protected $casts = [
         'name' => 'string',
-        'buying_price' => 'decimal:2',
-        'selling_price' => 'decimal:2',
+      'buying_price' => 'float',
+    'selling_price' => 'float',
         'installment_price' => 'integer',
+
         'quantity' => 'integer',
         'user_id' => 'integer',
+        'origin_id'=>'integer',
+        'category_id'=>'integer',
     ];
 
     /**

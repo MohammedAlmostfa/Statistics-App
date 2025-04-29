@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest\StoreProductData;
 use App\Http\Requests\ProductRequest\UpdateProductData;
+use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Services\ProductService;
@@ -35,7 +36,7 @@ class ProductController extends Controller
 
         // Return response based on the result
         return $result['status'] === 200
-            ? self::success($result['data'], $result['message'], $result['status'])
+            ? self::paginated($result['data'], ProductResource::class, $result['message'], $result['status'])
             : self::error(null, $result['message'], $result['status']);
     }
     /**
@@ -54,7 +55,7 @@ class ProductController extends Controller
 
         // Return response based on the result
         return $result['status'] === 201
-     ? $this->success($result['data'], $result['message'], $result['status'])
+            ? $this->success($result['data'], $result['message'], $result['status'])
             : self::error(null, $result['message'], $result['status']);
     }
     public function update(UpdateProductData $request, Product $product)
@@ -67,7 +68,7 @@ class ProductController extends Controller
 
         // Return response based on the result
         return $result['status'] === 200
-     ? $this->success($result['data'], $result['message'], $result['status'])
+            ? $this->success($result['data'], $result['message'], $result['status'])
             : self::error(null, $result['message'], $result['status']);
     }
     public function destroy(Product $product)
@@ -82,5 +83,4 @@ class ProductController extends Controller
             ? self::success(null, $result['message'], $result['status'])
             : self::error(null, $result['message'], $result['status']);
     }
-
 }

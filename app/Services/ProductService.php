@@ -17,7 +17,13 @@ class ProductService
     public function getAllProducts()
     {
         try {
-            $products = Product::select('id', 'name', 'buying_price', 'quantity', 'installment_price', 'created_at')->paginate(10);
+            $products = Product::select('id', 'name', 'buying_price', 'quantity', 'installment_price', 'created_at', 'origin_id', 'category_id')
+                ->with([
+                    'origin:id,name',
+                    'category:id,name'
+                ])
+                ->paginate(10);
+
 
             return [
                 'status' => 200,
@@ -51,10 +57,11 @@ class ProductService
                 'buying_price' => $data['buying_price'],
                 'selling_price' => $data['selling_price'],
                 'installment_price' => $data['installment_price'],
+                'origin_id' => $data['origin_id'],
+                'category_id' => $data['category_id'],
                 'quantity' => $data['quantity'],
                 'user_id' => $userId,
             ]);
-
             return [
                 'status' => 201,
                 'message' => 'تم إنشاء المنتج بنجاح.',
@@ -85,6 +92,8 @@ class ProductService
                 'buying_price' => $data['buying_price'] ?? $product->buying_price,
                 'selling_price' => $data['selling_price'] ?? $product->selling_price,
                 'installment_price' => $data['installment_price'] ?? $product->installment_price,
+                         'origin_id' => $data['origin_id']?? $product->origin_id,
+                'category_id' => $data['category_id']?? $product->category_id,
                 'quantity' => $data['quantity'] ?? $product->quantity,
             ]);
 

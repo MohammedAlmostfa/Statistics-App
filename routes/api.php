@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductOriginController;
 use App\Http\Controllers\UserController;
 use Database\Seeders\ProductSeeder;
 
@@ -27,8 +28,11 @@ Route::middleware('jwt')->group(function () {
     Route::apiResource('/user', UserController::class);
     Route::apiResource('/product', ProductController::class);
     Route::apiResource('/customer', CustomerController::class);
-    Route::apiResource('/ProductCategory', ProductCategoryController::class);
-
+    Route::get('productOrigin', [ProductOriginController::class, 'index']);
+    Route::get('productCategory', [ProductCategoryController::class, 'index']);
+    Route::post('productCategory', [ProductCategoryController::class, 'store']);
+    Route::put('productCategory/{productCategory}', [ProductCategoryController::class, 'update']);
+    Route::delete('productCategory/{productCategory}', [ProductCategoryController::class, 'destroy']);
     Route::post('/user/{user}/updatestatus', [UserController::class, 'updateUserStatus']);
 
 });

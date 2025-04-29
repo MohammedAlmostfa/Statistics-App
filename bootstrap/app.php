@@ -43,7 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'حدث خطأ أثناء إنشاء المستخدم. يرجى إعادة المحاولة.',
+                'message' => 'حدث خطأ . يرجى إعادة المحاولة.',
                 'errors' => [
                     'errorDetails' => __("السجل غيرموجود "),
 
@@ -54,7 +54,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (NotFoundHttpException $e) {
             return response()->json([
                 'status' => 'eror',
-                'message' => 'حدث خطأ أثناء إنشاء المستخدم. يرجى إعادة المحاولة.',
+                'message' => 'حدث خطأ . يرجى إعادة المحاولة.',
                 'errors' => [
                     'errorDetails' => __("السجل غيرموجود "),
 

@@ -14,8 +14,8 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->string('phone')->unique();
-            $table->string('sponsor_name');
-            $table->string('sponsor_phone');
+            $table->string('sponsor_name')->nullable();
+            $table->string('sponsor_phone')->nullable();
             $table->integer('Record_id')->nullable();
             $table->integer('Page_id')->nullable();
             $table->text('notes')->nullable();

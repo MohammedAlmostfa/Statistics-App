@@ -27,10 +27,10 @@ class StoreCustomerData extends FormRequest
             'name' => 'required|string|max:255|unique:customers,name|',
             'phone' => 'required|unique:customers,phone|max:20',
             'notes' => 'nullable|string|max:1000',
-            "sponsor_name" => 'required|string',
-            'sponsor_phone' => 'required',
-            'Record_id' => 'required|integer',
-            'Page_id' => 'required|integer',
+            "sponsor_name" => 'nullable|string',
+            'sponsor_phone' => 'nullable',
+            'Record_id' => 'nullable|integer',
+            'Page_id' => 'nullable|integer',
 
 
         ];

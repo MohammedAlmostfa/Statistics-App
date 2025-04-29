@@ -28,11 +28,11 @@ class ProductCategoryController extends Controller
      *
      * @return JsonResponse Returns paginated list of product categories or error response
      */
-    public function index(fitrtingData $request): JsonResponse
+    public function index(): JsonResponse
     {
-        $result = $this->productcategoryService->getAllProductCategory($request->validated());
+        $result = $this->productcategoryService->getAllProductCategory();
         return $result['status'] === 200
-             ? $this->successshow($result['data'], $result['message'], $result['status'])
+             ? $this->success($result['data'], $result['message'], $result['status'])
              : $this->error($result['data'], $result['message'], $result['status']);
     }
 
@@ -62,12 +62,9 @@ class ProductCategoryController extends Controller
      * @param ProductCategory $productCategory The product category model instance to be updated
      * @return JsonResponse Returns JSON response with operation result
      */
-    public function update(UpdateProductCategoryData $request, ProductCategory $productCategory): JsonResponse
+    public function update(UpdateProductCategoryData $request, ProductCategory $productCategory):JsonResponse
     {
-        $result = $this->productcategoryService->updateProductCategory(
-            $request->validated(),
-            $productCategory
-        );
+        $result = $this->productcategoryService->updateProductCategory($request->validated(), $productCategory);
 
         return $result['status'] === 200
             ? $this->success($result['data'], $result['message'], $result['status'])

@@ -13,15 +13,10 @@ class ProductCategoryService
      * @param array|null $filteringData
      * @return array
      */
-    public function getAllProductCategory(array $filteringData = null): array
+    public function getAllProductCategory()
     {
         try {
-            $categories = ProductCategory::query()
-                ->when(!empty($filteringData), function ($query) use ($filteringData) {
-                    $query->filterBy($filteringData);
-                })
-                ->get();
-
+            $categories = ProductCategory::select('id', 'name')->get();
             return $this->successResponse('تم استرجاع الأصناف بنجاح', 200, $categories);
         } catch (Exception $e) {
             Log::error('خطأ أثناء استرجاع الأصناف: ' . $e->getMessage());
@@ -39,7 +34,7 @@ class ProductCategoryService
     {
         try {
             $category = ProductCategory::create($data);
-            return $this->successResponse('تم إنشاء الصنف بنجاح', 201, $category);
+            return $this->successResponse('تم إنشاء الصنف بنجاح', 200, $category);
         } catch (Exception $e) {
             Log::error('خطأ أثناء إنشاء الصنف: ' . $e->getMessage());
             return $this->errorResponse('فشل في إنشاء الصنف');
@@ -73,7 +68,10 @@ class ProductCategoryService
     public function deleteProductCategory(ProductCategory $productcategory): array
     {
         try {
+            Log::info('محاولة حذف الصنف ذو المعرف: ' . $productcategory->id);
+
             $productcategory->delete();
+
             return $this->successResponse('تم حذف الصنف بنجاح', 200);
         } catch (Exception $e) {
             Log::error('خطأ أثناء حذف الصنف: ' . $e->getMessage());
