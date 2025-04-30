@@ -19,6 +19,8 @@ use App\Http\Requests\AuthRequest\VerficationRequest;
  * Class AuthController
  *
  * Handles authentication-related operations, including registration, login, verification, and token management.
+ *
+ * @documented
  */
 class AuthController extends Controller
 {
@@ -26,6 +28,8 @@ class AuthController extends Controller
      * The authentication service instance.
      *
      * @var AuthService
+     *
+     * @documented
      */
     protected $authService;
 
@@ -33,11 +37,13 @@ class AuthController extends Controller
      * Create a new AuthController instance.
      *
      * @param AuthService $authService The authentication service used to handle logic.
+     * @documented
      */
     public function __construct(AuthService $authService)
     {
         $this->authService = $authService;
     }
+
     /**
      * Log in an existing user.
      *
@@ -45,12 +51,13 @@ class AuthController extends Controller
      *
      * @param LoginRequest $request The request containing user credentials.
      * @return \Illuminate\Http\JsonResponse
+     *
+     * @documented
      */
     public function login(LoginRequest $request)
     {
         $credentials = $request->validated();
 
-        // Authenticate user via AuthService
         $result = $this->authService->login($credentials);
 
         return $result['status'] === 200
@@ -64,6 +71,8 @@ class AuthController extends Controller
      * Destroys the user's session and invalidates the JWT token.
      *
      * @return \Illuminate\Http\JsonResponse
+     *
+     * @documented
      */
     public function logout()
     {
@@ -80,6 +89,8 @@ class AuthController extends Controller
      * Generates a new token if the current one is expired.
      *
      * @return \Illuminate\Http\JsonResponse
+     *
+     * @documented
      */
     public function refresh()
     {
@@ -89,6 +100,4 @@ class AuthController extends Controller
             ? self::success($result['data'], $result['message'], $result['status'])
             : self::error(null, $result['message'], $result['status']);
     }
-
-
 }

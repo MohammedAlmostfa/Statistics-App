@@ -3,63 +3,63 @@
 namespace App\Http\Controllers;
 
 use App\Models\Receipt;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use App\Services\ReceiptService;
+use App\Http\Requests\ReceiptRequest\StoreReceiptData;
+use App\Http\Requests\ReceiptRequest\UpdateReceiptData;
 
 class ReceiptController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected ReceiptService $receiptService;
+
+    public function __construct(ReceiptService $receiptService)
     {
-        //
+        $this->receiptService = $receiptService;
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Store a new receipt in the database.
+     *
+     * @param StoreReceiptData $request
+     * @return JsonResponse
      */
-    public function create()
+    public function store(StoreReceiptData $request): JsonResponse
     {
-        //
+        $result = $this->receiptService->createReceipt($request->validated());
+
+        return $result['status'] === 200
+            ? $this->success($result['data'], $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Update an existing receipt.
+     *
+     * @param UpdateReceiptData $request
+     * @param Receipt $receipt
+     * @return JsonResponse
      */
-    public function store(Request $request)
+    public function update(UpdateReceiptData $request, Receipt $receipt): JsonResponse
     {
-        //
+        $result = $this->receiptService->updateReceipt($request->validated(), $receipt);
+
+        return $result['status'] === 200
+            ? $this->success($result['data'], $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
     }
 
     /**
-     * Display the specified resource.
+     * Delete a receipt from the database.
+     *
+     * @param Receipt $receipt
+     * @return JsonResponse
      */
-    public function show(Receipt $receipt)
+    public function destroy(Receipt $receipt): JsonResponse
     {
-        //
-    }
+        $result = $this->receiptService->deleteReceipt($receipt);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Receipt $receipt)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Receipt $receipt)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Receipt $receipt)
-    {
-        //
+        return $result['status'] === 200
+            ? $this->success(null, $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
     }
 }

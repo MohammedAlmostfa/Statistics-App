@@ -30,15 +30,20 @@ class StoreReceiptData extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_name' => 'required|string|max:255',
-            'total_price' => 'required|numeric|min:0',
-            'receipt_number' => 'required|numeric|unique:receipts,receipt_number',
-            'type'=>'required|string',
+
+            'customer_id' => 'required|exists:customers,id',
+            'receipt_id' => 'required|integer',
+            'type' => 'required|in:installment,cash',
+            'total_amount' => 'required|integer',
+            'received_amount' => 'required|integer',
+            'remaining_amount' => 'required|integer',
             'receipt_date' => 'nullable|date|before_or_equal:now',
-            'items' => 'required|array',
-            'items.*.description' => 'required|string|max:255',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.unit_price' => 'required|numeric|min:0',
+
+
+            // 'items' => 'required|array',
+            // 'items.*.description' => 'required|string|max:255',
+            // 'items.*.quantity' => 'required|integer|min:1',
+            // 'items.*.unit_price' => 'required|numeric|min:0',
 
         ];
     }

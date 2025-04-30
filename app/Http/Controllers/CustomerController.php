@@ -16,11 +16,15 @@ use App\Http\Requests\CustomerRequest\FilteringCustomerData;
  * - Retrieving a list of customers
  * - Showing customer details (including debts)
  * - Creating, updating, and deleting customer records
+ *
+ * @documented
  */
 class CustomerController extends Controller
 {
     /**
      * @var CustomerService $customerService Handles customer business logic
+     *
+     * @documented
      */
     protected CustomerService $customerService;
 
@@ -29,6 +33,8 @@ class CustomerController extends Controller
      * Initializes the CustomerService dependency for handling customer-related logic.
      *
      * @param CustomerService $customerService Dependency injected service for customer operations
+     *
+     * @documented
      */
     public function __construct(CustomerService $customerService)
     {
@@ -38,7 +44,10 @@ class CustomerController extends Controller
     /**
      * Retrieve and paginate a list of customers.
      *
+     * @param FilteringCustomerData $request Validated filtering data
      * @return JsonResponse Returns paginated list of customers or error response
+     *
+     * @documented
      */
     public function index(FilteringCustomerData $request): JsonResponse
     {
@@ -48,8 +57,6 @@ class CustomerController extends Controller
              : $this->error($result['data'], $result['message'], $result['status']);
     }
 
-
-
     /**
      * Store a new customer record in the database.
      *
@@ -58,13 +65,15 @@ class CustomerController extends Controller
      *    - phone (string, required): Phone number of the customer
      *    - notes (string, optional): Additional notes about the customer
      * @return JsonResponse Returns JSON response with operation result
+     *
+     * @documented
      */
     public function store(StoreCustomerData $request): JsonResponse
     {
-        $result = $this->customerService->createCustomer($request->validated());
+        $result = $this->customerService->createCustomer($request->validatedWithoutNulls());
 
         return $result['status'] === 200
-   ? $this->success($result['data'], $result['message'], $result['status'])
+            ? $this->success($result['data'], $result['message'], $result['status'])
             : $this->error(null, $result['message'], $result['status']);
     }
 
@@ -77,6 +86,8 @@ class CustomerController extends Controller
      *    - notes (string, optional): Updated notes for the customer
      * @param Customer $customer The customer model instance to be updated
      * @return JsonResponse Returns JSON response with operation result
+     *
+     * @documented
      */
     public function update(UpdateCustomerData $request, Customer $customer): JsonResponse
     {
@@ -91,17 +102,20 @@ class CustomerController extends Controller
     }
 
     /**
+
      * Delete a customer record from the database.
      *
      * @param Customer $customer The customer model instance to be deleted
      * @return JsonResponse Returns JSON response with operation result
+     *
+     * @documented
      */
     public function destroy(Customer $customer): JsonResponse
     {
         $result = $this->customerService->deleteCustomer($customer);
 
         return $result['status'] === 200
-             ? $this->success(null, $result['message'], $result['status'])
+            ? $this->success(null, $result['message'], $result['status'])
             : $this->error(null, $result['message'], $result['status']);
     }
 }
