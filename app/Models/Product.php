@@ -23,7 +23,7 @@ class Product extends Model
      */
     protected $fillable = [
         'name',
-        'buying_price',
+        'Dollar_exchange',
         'selling_price',
         "dolar_buying_price",
         'installment_price',
@@ -41,7 +41,7 @@ class Product extends Model
      */
     protected $casts = [
         'name' => 'string',
-        'buying_price' => 'float',
+        'Dollar_exchange' => 'float',
         'selling_price' => 'float',
         'dolar_buying_price' => 'float',
         'installment_price' => 'integer',

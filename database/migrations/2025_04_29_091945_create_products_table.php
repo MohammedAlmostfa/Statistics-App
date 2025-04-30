@@ -13,10 +13,9 @@ return new class extends Migration {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->float('buying_price', 10, 2);
+            $table->float('Dollar_exchange', 10, 2);
             $table->float('selling_price', 10, 2);
             $table->float('dolar_buying_price', 10, 2);
-
             $table->integer('installment_price');
             $table->integer('quantity');
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
