@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->string('name');
             $table->float('buying_price', 10, 2);
             $table->float('selling_price', 10, 2);
-            $table->float('dolar_selling_price', 10, 2);
+            $table->float('dolar_buying_price', 10, 2);
 
             $table->integer('installment_price');
             $table->integer('quantity');

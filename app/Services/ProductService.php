@@ -17,7 +17,7 @@ class ProductService
     public function getAllProducts($filteringData)
     {
         try {
-            $products = Product::select('id', 'name', 'buying_price', 'dolar_selling_price', 'quantity', 'installment_price', 'created_at', 'origin_id', 'user_id', 'category_id')
+            $products = Product::select('id', 'name', 'buying_price', 'dolar_buying_price', 'quantity', 'installment_price', 'created_at', 'origin_id', 'user_id', 'category_id')
                 ->with([
                     'origin:id,name',
                     'category:id,name',
@@ -63,7 +63,7 @@ class ProductService
                 'origin_id' => $data['origin_id'],
                 'category_id' => $data['category_id'],
                 'quantity' => $data['quantity'],
-                'dolar_selling_price' => $data['dolar_selling_price'],
+                'dolar_buying_price' => $data['dolar_buying_price'],
                 'user_id' => $userId,
             ]);
             return [
@@ -99,7 +99,7 @@ class ProductService
                 'origin_id' => $data['origin_id'] ?? $product->origin_id,
                 'category_id' => $data['category_id'] ?? $product->category_id,
                 'quantity' => $data['quantity'] ?? $product->quantity,
-                'dolar_selling_price' => $data['dolar_selling_price'] ?? $product->dolar_selling_price,
+                'dolar_buying_price' => $data['dolar_buying_price'] ?? $product->dolar_buying_price,
             ]);
 
             return [

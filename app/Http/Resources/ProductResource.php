@@ -20,10 +20,10 @@ class ProductResource extends JsonResource
             'buying_price' => $this->buying_price,
             'quantity' => $this->quantity,
             'installment_price' => $this->installment_price,
-            'dolar_selling_price' => $this->dolar_selling_price,
+            'dolar_s_price' => $this->dolar_selling_price,
             'origin' => $this->origin->name ?? null,
             'category' => $this->category->name ?? null,
-               'user_name' => $this->user->name ?? null,
+            'user_name' => $this->user->name ?? null,
             'created_at' => $this->created_at,
         ];
     }
