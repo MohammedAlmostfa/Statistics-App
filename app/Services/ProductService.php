@@ -17,7 +17,7 @@ class ProductService
     public function getAllProducts($filteringData)
     {
         try {
-            $products = Product::select('id', 'name', 'Dollar_exchange', 'dolar_buying_price', 'quantity', 'installment_price', 'created_at', 'origin_id', 'user_id', 'category_id')
+            $products = Product::select('id', 'name', 'Dollar_exchange','selling_price', 'dolar_buying_price', 'quantity', 'installment_price', 'created_at', 'origin_id', 'user_id', 'category_id')
                 ->with([
                     'origin:id,name',
                     'category:id,name',
