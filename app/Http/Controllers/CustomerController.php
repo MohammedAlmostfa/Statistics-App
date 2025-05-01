@@ -70,7 +70,7 @@ class CustomerController extends Controller
      */
     public function store(StoreCustomerData $request): JsonResponse
     {
-        $result = $this->customerService->createCustomer($request->validatedWithoutNulls());
+        $result = $this->customerService->createCustomer($request->validated());
 
         return $result['status'] === 200
             ? $this->success($result['data'], $result['message'], $result['status'])

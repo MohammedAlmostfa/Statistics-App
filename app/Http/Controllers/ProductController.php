@@ -56,7 +56,7 @@ class ProductController extends Controller
 
         // Return response based on the result
         return $result['status'] === 201
-            ? $this->success($result['data'], $result['message'], $result['status'])
+            ? $this->success(new ProductResource($result['data']), $result['message'], $result['status'])
             : self::error(null, $result['message'], $result['status']);
     }
     public function update(UpdateProductData $request, Product $product)
@@ -69,7 +69,7 @@ class ProductController extends Controller
 
         // Return response based on the result
         return $result['status'] === 200
-            ? $this->success($result['data'], $result['message'], $result['status'])
+            ?  $this->success(new ProductResource($result['data']), $result['message'], $result['status'])
             : self::error(null, $result['message'], $result['status']);
     }
     public function destroy(Product $product)
