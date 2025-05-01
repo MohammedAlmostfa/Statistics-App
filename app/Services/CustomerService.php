@@ -45,7 +45,7 @@ class CustomerService
         try {
             $customer = Customer::create($data);
 
-            return $this->successResponse('تم إنشاء العميل بنجاح', 200, $customer);
+            return $this->successResponse('تم إنشاء العميل بنجاح', 200);
         } catch (Exception $e) {
             Log::error('خطأ أثناء إنشاء العميل: ' . $e->getMessage());
             return $this->errorResponse('فشل في إنشاء العميل');
@@ -64,7 +64,7 @@ class CustomerService
         try {
             $customer->update($data);
 
-            return $this->successResponse('تم تحديث العميل بنجاح', 200, $customer);
+            return $this->successResponse('تم تحديث العميل بنجاح', 200);
         } catch (Exception $e) {
             Log::error('خطأ أثناء تحديث العميل: ' . $e->getMessage());
             return $this->errorResponse('فشل في تحديث العميل');

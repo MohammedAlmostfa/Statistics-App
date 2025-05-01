@@ -12,74 +12,93 @@ use App\Http\Requests\ProductRequest\UpdateProductData;
 
 class ProductController extends Controller
 {
-
     /**
-     * The user service instance.
+     * The product service instance.
      *
-     * @var UserService
+     * @var ProductService
      */
     protected $productService;
 
     /**
-     * Create a new UserController instance.
+     * Create a new ProductController instance.
      *
-     * @param UserService $userService The user service used to handle logic.
+     * @param ProductService $productService The service responsible for handling business logic.
      */
     public function __construct(ProductService $productService)
     {
         $this->productService = $productService;
     }
 
+    /**
+     * Retrieve all products with optional filters.
+     *
+     * @param filtterdata $request Validated filter data for retrieving products.
+     * @return \Illuminate\Http\JsonResponse JSON response with paginated product data.
+     */
     public function index(filtterdata $request)
     {
-        // Create the user using UserService
+        // Fetch products using ProductService with applied filters.
         $result = $this->productService->getAllProducts($request->validated());
 
-        // Return response based on the result
+        // Return paginated response if successful, otherwise return error.
         return $result['status'] === 200
             ? self::paginated($result['data'], ProductResource::class, $result['message'], $result['status'])
             : self::error(null, $result['message'], $result['status']);
     }
+
     /**
-     * Store a new user.
+     * Store a new product in the database.
      *
-     * @param StoreUserData $request Validated user data.
-     * @return \Illuminate\Http\JsonResponse JSON response with status and message.
+     * @param StoreProductData $request Validated product data.
+     * @return \Illuminate\Http\JsonResponse JSON response confirming creation success or failure.
      */
     public function store(StoreProductData $request)
     {
-        // Validate and get the input data
-        $validatedData = $request->validated(); // Corrected: use `validated` method
+        // Validate and extract data from request.
+        $validatedData = $request->validated();
 
-        // Create the user using UserService
+        // Create the product using ProductService.
         $result = $this->productService->createProduct($validatedData);
 
-        // Return response based on the result
+        // Return success response if product was created, otherwise return error.
         return $result['status'] === 201
-            ? $this->success(new ProductResource($result['data']), $result['message'], $result['status'])
+            ? $this->success(null, $result['message'], $result['status'])
             : self::error(null, $result['message'], $result['status']);
     }
+
+    /**
+     * Update an existing product's data.
+     *
+     * @param UpdateProductData $request Validated update data.
+     * @param Product $product The product instance to be updated.
+     * @return \Illuminate\Http\JsonResponse JSON response confirming update success or failure.
+     */
     public function update(UpdateProductData $request, Product $product)
     {
-        // Validate and get the input data
-        $validatedData = $request->validated(); // Corrected: use `validated` method
+        // Validate and extract data from request.
+        $validatedData = $request->validated();
 
-        // Create the user using UserService
+        // Update the product using ProductService.
         $result = $this->productService->updateProduct($validatedData, $product);
 
-        // Return response based on the result
+        // Return success response if update was successful, otherwise return error.
         return $result['status'] === 200
-            ?  $this->success(new ProductResource($result['data']), $result['message'], $result['status'])
+            ? $this->success(null, $result['message'], $result['status'])
             : self::error(null, $result['message'], $result['status']);
     }
+
+    /**
+     * Delete a product from the database.
+     *
+     * @param Product $product The product instance to be deleted.
+     * @return \Illuminate\Http\JsonResponse JSON response confirming deletion success or failure.
+     */
     public function destroy(Product $product)
     {
-
-
-        // Create the user using UserService
+        // Delete the product using ProductService.
         $result = $this->productService->deleteProduct($product);
 
-        // Return response based on the result
+        // Return success response if deletion was successful, otherwise return error.
         return $result['status'] === 200
             ? self::success(null, $result['message'], $result['status'])
             : self::error(null, $result['message'], $result['status']);

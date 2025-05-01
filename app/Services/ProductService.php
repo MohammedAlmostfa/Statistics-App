@@ -17,9 +17,7 @@ class ProductService
     public function getAllProducts($filteringData)
     {
         try {
-
             $products = Product::select('id', 'name', "selling_price", 'Dollar_exchange', 'dolar_buying_price', 'quantity', 'installment_price', 'created_at', 'origin_id', 'user_id', 'category_id')
-
                 ->with([
                     'origin:id,name',
                     'category:id,name',
@@ -68,12 +66,12 @@ class ProductService
                 'dolar_buying_price' => $data['dolar_buying_price'],
                 'user_id' => $userId,
             ]);
-            $product->load(['category', 'user', 'origin']);
+
 
             return [
                 'status' => 201,
                 'message' => 'تم إنشاء المنتج بنجاح.',
-                'data' => $product,
+
             ];
         } catch (Exception $e) {
             Log::error('Error in createProduct: ' . $e->getMessage());
@@ -109,7 +107,7 @@ class ProductService
             return [
                 'status' => 200,
                 'message' => 'تم تحديث المنتج بنجاح.',
-                'data' => $product,
+
             ];
         } catch (Exception $e) {
             Log::error('Error in updateProduct: ' . $e->getMessage());

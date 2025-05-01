@@ -29,7 +29,7 @@ class ProductResource extends JsonResource
             'category_id' => $this->category->id ?? null,
             'user_name' => $this->user->name ?? null,
             'user_id' => $this->user->id ?? null,
-'created_at' => $this->created_at->format('Y-m-d '),
+            'created_at' => $this->created_at->format('Y-m-d '),
 
         ];
     }
