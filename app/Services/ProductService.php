@@ -25,7 +25,7 @@ class ProductService
                 ])->when(!empty($filteringData), function ($query) use ($filteringData) {
                     $query->filterBy($filteringData);
                 })
-                ->paginate(10);
+                ->get();
 
 
             return [
