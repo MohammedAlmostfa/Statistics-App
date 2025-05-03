@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\Customer;
 use Exception;
+use App\Models\Customer;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\SendWhatsAppNotification;
 
 /**
  * Handles customer CRUD (Create, Read, Update, Delete) operations.
@@ -40,17 +41,22 @@ class CustomerService
      * @param array $data Array containing customer details ['name', 'phone', 'notes'].
      * @return array Response containing status, message, and created customer data.
      */
+
+
     public function createCustomer(array $data): array
     {
         try {
             $customer = Customer::create($data);
 
-            return $this->successResponse('تم إنشاء العميل بنجاح', 200);
+            // $customer->notify(new SendWhatsAppNotification("مرحبا {$customer->name}! لقد تم تسجيلك لدينا بنجاح."));
+
+            return $this->successResponse('تم إنشاء العميل ', 200);
         } catch (Exception $e) {
             Log::error('خطأ أثناء إنشاء العميل: ' . $e->getMessage());
             return $this->errorResponse('فشل في إنشاء العميل');
         }
     }
+
 
     /**
      * Update an existing customer.

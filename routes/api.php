@@ -9,6 +9,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductOriginController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WhatsappController;
 use Database\Seeders\ProductSeeder;
 
 // Route to get authenticated user details
@@ -26,7 +27,9 @@ Route::post('refresh', [AuthController::class, 'refresh']); // Refreshes the JWT
 Route::get('productOrigin', [ProductOriginController::class, 'index']);
 Route::get('productCategory', [ProductCategoryController::class, 'index']);
 
+
 // Group routes that require JWT middleware
+
 Route::middleware('jwt')->group(function () {
     Route::apiResource('/user', UserController::class);
     Route::apiResource('/product', ProductController::class);
@@ -37,5 +40,6 @@ Route::middleware('jwt')->group(function () {
     Route::put('productCategory/{productCategory}', [ProductCategoryController::class, 'update']);
     Route::delete('productCategory/{productCategory}', [ProductCategoryController::class, 'destroy']);
     Route::post('/user/{user}/updatestatus', [UserController::class, 'updateUserStatus']);
+    Route::get('getmessage', [WhatsappController::class, 'index']);
 
 });

@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Notifications\Notifiable;
 
 /**
  * Customer model represents a customer entity with relationships to receipts and filtering capabilities.
@@ -12,7 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class Customer extends Model
 {
-    use HasFactory;
+    use HasFactory , Notifiable ;
 
     /**
      * Mass assignable attributes
