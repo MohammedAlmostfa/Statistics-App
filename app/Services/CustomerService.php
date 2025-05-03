@@ -5,103 +5,112 @@ namespace App\Services;
 use Exception;
 use App\Models\Customer;
 use Illuminate\Support\Facades\Log;
-use App\Notifications\SendWhatsAppNotification;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Database\QueryException;
 
 /**
- * Handles customer CRUD (Create, Read, Update, Delete) operations.
- * Provides methods for managing customer data and interacting with the database.
+ * Service class for managing customer data.
+ * Provides methods to handle CRUD operations with caching and error handling.
  */
 class CustomerService
 {
     /**
-     * Retrieve all customers.
+     * Retrieve all customers, with optional filtering and caching.
      *
-     * @param array|null $filteringData Data for filtering customers.
-     * @return array Response containing status, message, and list of customers.
+     * @param array|null $filteringData Optional filters (e.g., name, phone).
+     * @return array Structured response with customer data or error.
      */
     public function getAllCustomers(array $filteringData = null): array
     {
         try {
-            $customers = Customer::query()
-                ->when(!empty($filteringData), function ($query) use ($filteringData) {
-                    $query->filterBy($filteringData);
-                })
-                ->get();
+            $cacheKey = 'customers' . (empty($filteringData) ? '' : md5(json_encode($filteringData)));
 
-            return $this->successResponse('تم استرجاع العملاء بنجاح', 200, $customers);
+            $customers = Cache::remember($cacheKey, 1000, function () use ($filteringData) {
+                return Customer::query()
+                    ->when(!empty($filteringData), function ($query) use ($filteringData) {
+                        $query->filterBy($filteringData);
+                    })
+                    ->get();
+            });
+
+            return $this->successResponse('تم جلب العملاء بنجاح.', 200, $customers);
+        } catch (QueryException $e) {
+            Log::error('Database query error: ' . $e->getMessage());
+            return $this->errorResponse('فشل في جلب العملاء.');
         } catch (Exception $e) {
-            Log::error('خطأ أثناء استرجاع العملاء: ' . $e->getMessage());
-            return $this->errorResponse('فشل في استرجاع العملاء');
+            Log::error('General error retrieving customers: ' . $e->getMessage());
+            return $this->errorResponse('فشل في جلب العملاء.');
         }
     }
 
     /**
-     * Create a new customer.
+     * Create a new customer and clear cache.
      *
-     * @param array $data Array containing customer details ['name', 'phone', 'notes'].
-     * @return array Response containing status, message, and created customer data.
+     * @param array $data Customer details ['name', 'phone', 'notes'].
+     * @return array Structured response with success or error.
      */
-
-
     public function createCustomer(array $data): array
     {
         try {
-            $customer = Customer::create($data);
+            Customer::create($data);
 
-            // $customer->notify(new SendWhatsAppNotification("مرحبا {$customer->name}! لقد تم تسجيلك لدينا بنجاح."));
+            Cache::forget('customers');
 
-            return $this->successResponse('تم إنشاء العميل ', 200);
+            return $this->successResponse('تم إنشاء العميل بنجاح.', 200);
         } catch (Exception $e) {
-            Log::error('خطأ أثناء إنشاء العميل: ' . $e->getMessage());
-            return $this->errorResponse('فشل في إنشاء العميل');
+            Log::error('Error creating customer: ' . $e->getMessage());
+            return $this->errorResponse('فشل في إنشاء العميل.');
         }
     }
 
-
     /**
-     * Update an existing customer.
+     * Update an existing customer's details and clear cache.
      *
-     * @param array $data Array containing updated customer details ['name', 'phone', 'notes'].
-     * @param Customer $customer The customer to be updated.
-     * @return array Response containing status, message, and updated customer data.
+     * @param array $data Updated customer data.
+     * @param Customer $customer The customer model instance to update.
+     * @return array Structured response with success or error.
      */
     public function updateCustomer(array $data, Customer $customer): array
     {
         try {
             $customer->update($data);
 
-            return $this->successResponse('تم تحديث العميل بنجاح', 200);
+            Cache::forget('customers');
+
+            return $this->successResponse('تم تحديث بيانات العميل بنجاح.', 200);
         } catch (Exception $e) {
-            Log::error('خطأ أثناء تحديث العميل: ' . $e->getMessage());
-            return $this->errorResponse('فشل في تحديث العميل');
+            Log::error('Error updating customer: ' . $e->getMessage());
+            return $this->errorResponse('فشل في تحديث بيانات العميل.');
         }
     }
 
     /**
-     * Delete a customer.
+     * Delete a customer from the database and clear cache.
      *
-     * @param Customer $customer The customer to be deleted.
-     * @return array Response containing status and message.
+     * @param Customer $customer The customer model instance to delete.
+     * @return array Structured response with success or error.
      */
     public function deleteCustomer(Customer $customer): array
     {
         try {
             $customer->delete();
 
-            return $this->successResponse('تم حذف العميل بنجاح', 200);
+            Cache::forget('customers');
+
+            return $this->successResponse('تم حذف العميل بنجاح.', 200);
         } catch (Exception $e) {
-            Log::error('خطأ أثناء حذف العميل: ' . $e->getMessage());
-            return $this->errorResponse('فشل في حذف العميل');
+            Log::error('Error deleting customer: ' . $e->getMessage());
+            return $this->errorResponse('فشل في حذف العميل.');
         }
     }
 
     /**
-     * Helper method for success responses.
+     * Format a success response.
      *
-     * @param string $message Success message.
-     * @param int $status HTTP status code (default 200).
-     * @param mixed $data Additional data for the response.
-     * @return array Response structure for successful operations.
+     * @param string $message Descriptive success message.
+     * @param int $status HTTP status code (default: 200).
+     * @param mixed|null $data Optional data payload.
+     * @return array
      */
     private function successResponse(string $message, int $status = 200, $data = null): array
     {
@@ -113,11 +122,11 @@ class CustomerService
     }
 
     /**
-     * Helper method for error responses.
+     * Format an error response.
      *
-     * @param string $message Error message.
-     * @param int $status HTTP status code (default 500).
-     * @return array Response structure for failed operations.
+     * @param string $message Descriptive error message.
+     * @param int $status HTTP status code (default: 500).
+     * @return array
      */
     private function errorResponse(string $message, int $status = 500): array
     {

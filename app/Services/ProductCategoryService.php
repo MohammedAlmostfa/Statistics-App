@@ -1,39 +1,56 @@
 <?php
+
 namespace App\Services;
 
 use Exception;
 use App\Models\ProductCategory;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
+/**
+ * ProductCategoryService handles all CRUD operations for product categories.
+ * It also uses caching to optimize performance and reduce database load.
+ */
 class ProductCategoryService
 {
     /**
-     * Retrieve all product categories with optional filtering.
+     * Retrieve all product categories from cache or database.
      *
-     * @param array|null $filteringData
-     * @return array
+     * @return array Response containing status, message, and categories data.
      */
-    public function getAllProductCategory()
+    public function getAllProductCategory(): array
     {
         try {
-            $categories = ProductCategory::select('id', 'name')->get();
+            $cacheKey = 'categories';
+
+            // Retrieve categories from cache, or fetch from DB and store in cache
+            $categories = Cache::remember($cacheKey, 1000, function () {
+                return ProductCategory::select('id', 'name')->get();
+            });
+
             return $this->successResponse('تم استرجاع الأصناف بنجاح', 200, $categories);
         } catch (Exception $e) {
+            // Log any unexpected error and return a failure response
             Log::error('خطأ أثناء استرجاع الأصناف: ' . $e->getMessage());
             return $this->errorResponse('فشل في استرجاع الأصناف');
         }
     }
 
     /**
-     * Create a new product category.
+     * Create a new product category and clear cached list.
      *
-     * @param array $data
-     * @return array
+     * @param array $data The data used to create the new category (e.g., ['name' => 'Electronics']).
+     * @return array Response with status and newly created category.
      */
     public function createProductCategory(array $data): array
     {
         try {
+            // Create the category using Eloquent
             $category = ProductCategory::create($data);
+
+            // Clear cache to ensure fresh data on next retrieval
+            Cache::forget('categories');
+
             return $this->successResponse('تم إنشاء الصنف بنجاح', 200, $category);
         } catch (Exception $e) {
             Log::error('خطأ أثناء إنشاء الصنف: ' . $e->getMessage());
@@ -42,16 +59,21 @@ class ProductCategoryService
     }
 
     /**
-     * Update an existing product category.
+     * Update an existing product category and clear cached list.
      *
-     * @param array $data
-     * @param ProductCategory $productcategory
-     * @return array
+     * @param array $data Updated category data (e.g., ['name' => 'Updated Name']).
+     * @param ProductCategory $productcategory The category instance to update.
+     * @return array Response with updated category info.
      */
     public function updateProductCategory(array $data, ProductCategory $productcategory): array
     {
         try {
+            // Update the category using Eloquent
             $productcategory->update($data);
+
+            // Invalidate cache to reflect updated data
+            Cache::forget('categories');
+
             return $this->successResponse('تم تحديث الصنف بنجاح', 200, $productcategory);
         } catch (Exception $e) {
             Log::error('خطأ أثناء تحديث الصنف: ' . $e->getMessage());
@@ -60,17 +82,21 @@ class ProductCategoryService
     }
 
     /**
-     * Delete a product category.
+     * Delete a product category and clear cached list.
      *
-     * @param ProductCategory $productcategory
-     * @return array
+     * @param ProductCategory $productcategory The category instance to delete.
+     * @return array Response indicating success or failure.
      */
     public function deleteProductCategory(ProductCategory $productcategory): array
     {
         try {
-            Log::info('محاولة حذف الصنف ذو المعرف: ' . $productcategory->id);
 
+
+            // Delete the category using Eloquent
             $productcategory->delete();
+
+            // Invalidate cache to remove deleted entry
+            Cache::forget('categories');
 
             return $this->successResponse('تم حذف الصنف بنجاح', 200);
         } catch (Exception $e) {
@@ -79,6 +105,14 @@ class ProductCategoryService
         }
     }
 
+    /**
+     * Build a standard success response.
+     *
+     * @param string $message A success message.
+     * @param int $status HTTP status code.
+     * @param mixed $data Optional data to include in the response.
+     * @return array
+     */
     private function successResponse(string $message, int $status = 200, $data = null): array
     {
         return [
@@ -88,6 +122,13 @@ class ProductCategoryService
         ];
     }
 
+    /**
+     * Build a standard error response.
+     *
+     * @param string $message An error message.
+     * @param int $status HTTP status code.
+     * @return array
+     */
     private function errorResponse(string $message, int $status = 500): array
     {
         return [
