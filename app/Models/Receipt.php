@@ -5,50 +5,43 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
-/**
- * Receipt model represents a transaction or payment made by a customer.
- *
- * @documented
- */
 class Receipt extends Model
 {
     /**
-     * Fillable attributes for mass assignment.
+     * The attributes that are mass assignable.
      *
      * @var array
-     * @documented
      */
     protected $fillable = [
         'customer_id',
-        'receipt_id',
+        'receipt_number',
         'type',
-        'total_amount',
-        'received_amount',
-        'remaining_amount',
+        'total_price',
         'receipt_date',
-        'user_id'
+        'user_id',
+        'notes',
     ];
 
     /**
-     * Attribute casting.
+     * The attributes that should be cast to native types.
      *
      * @var array
-     * @documented
      */
     protected $casts = [
-        'customer_id' => 'integer',
-        'receipt_id' => 'integer',
-        'total_amount' => 'integer',
-        'received_amount' => 'integer',
-        'remaining_amount' => 'integer',
-        'receipt_date' => 'datetime:Y-m-d',
+        'customer_id'      => 'integer',
+        'receipt_number'   => 'integer',
+        'total_price'      => 'integer',
+        'notes'            => 'string',
+        'receipt_date'     => 'datetime:Y-m-d',
     ];
 
     /**
-     * A receipt belongs to a customer.
+     * Relationship: A Receipt belongs to a Customer.
+     *
+     * This function defines the relationship between the `Receipt` model and the `Customer` model.
+     * A receipt is linked to a specific customer.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     * @documented
      */
     public function customer()
     {
@@ -56,26 +49,40 @@ class Receipt extends Model
     }
 
     /**
-     * Constant map for type attribute (installment/cash).
+     * Relationship: A Receipt has many ReceiptProducts.
      *
-     * @documented
+     * This function defines the one-to-many relationship between the `Receipt` model and the `ReceiptProduct` model.
+     * A receipt can contain multiple receipt products.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function receiptProducts()
+    {
+        return $this->hasMany(ReceiptProduct::class);
+    }
+
+    /**
+     * A map for receipt types: either installment ('اقساط') or cash ('نقدي').
      */
     const TYPE_MAP = [
-        0 => 'installment',
-        1 => 'cash',
+        0 => 'اقساط',  // Installment payment type
+        1 => 'نقدي',   // Cash payment type
     ];
 
     /**
-     * Accessor & mutator for the type attribute.
+     * Mutator for the 'type' attribute.
      *
-     * @return Attribute
-     * @documented
+     * This method casts the 'type' attribute to its respective string value
+     * (either 'اقساط' or 'نقدي') when retrieved from the database, and
+     * it converts the string back to its integer value when saved to the database.
+     *
+     * @return \Illuminate\Database\Eloquent\Casts\Attribute
      */
     public function type(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => self::TYPE_MAP[$value] ?? 'Unknown',
-            set: fn ($value) => array_search($value, self::TYPE_MAP)
+            get: fn ($value) => self::TYPE_MAP[$value] ?? 'Unknown',  // Get the string representation of the type
+            set: fn ($value) => array_search($value, self::TYPE_MAP)  // Convert the string back to its corresponding integer value
         );
     }
 }

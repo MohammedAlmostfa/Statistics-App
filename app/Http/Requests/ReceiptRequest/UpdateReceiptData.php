@@ -26,11 +26,10 @@ class UpdateReceiptData extends FormRequest
         return [
 
             'customer_id' => 'nullable|exists:customers,id',
-            'receipt_id' => 'nullable|integer',
-            'type' => 'nullable|in:installment,cash',
-            'total_amount' => 'nullable|integer',
-            'received_amount' => 'nullable|integer',
-            'remaining_amount' => 'nullable|integer',
+            'receipt_number' => 'nullable|integer',
+            'type' => 'nullable|in:اقساط,نقدي',
+            'total_price' => 'nullable|integer',
+            'notes' => 'nullable|string',
             'receipt_date' => 'nullable|date|before_or_equal:now',
             // 'items.*.id' => 'required|integer',
             // 'items.*.description' => 'nullable|string|max:255',

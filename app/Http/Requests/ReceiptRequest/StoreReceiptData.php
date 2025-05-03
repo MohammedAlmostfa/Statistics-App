@@ -8,45 +8,36 @@ use Illuminate\Contracts\Validation\Validator;
 
 class StoreReceiptData extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     * Always allow the request to proceed.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * Validation rules for creating a receipt:
-     * - customer_name (required, string)
-     * - total_amount (required, numeric)
-     * - receipt_number (required, string, unique)
-     * - receipt_date (required, date)
-     * - items (array containing receipt item details)
-     */
     public function rules(): array
     {
         return [
-
             'customer_id' => 'required|exists:customers,id',
-            'receipt_id' => 'required|integer',
-            'type' => 'required|in:installment,cash',
-            'total_amount' => 'required|integer',
-            'received_amount' => 'required|integer',
-            'remaining_amount' => 'required|integer',
+            'receipt_number' => 'required|integer|unique:receipts,receipt_number',
+
+            'type' => 'required|in:اقساط,نقدي',
+            'total_price' => 'required|integer',
+            'notes' => 'nullable|string',
             'receipt_date' => 'nullable|date|before_or_equal:now',
 
+            'products' => 'required|array',
+            'products.*.product_id' => 'required|exists:products,id',
+            'products.*.description' => 'nullable|string|max:255',
+            'products.*.quantity' => 'nullable|integer|min:1',
 
-            // 'items' => 'required|array',
-            // 'items.*.description' => 'required|string|max:255',
-            // 'items.*.quantity' => 'required|integer|min:1',
-            // 'items.*.unit_price' => 'required|numeric|min:0',
+
+            'products.*.pay_cont' => 'required_if:type,اقساط|nullable|integer|min:1',
+            'products.*.installment' => 'required_if:type,اقساط|nullable|integer|min:1',
+            'products.*.installment_type' => 'required_if:type,اقساط|nullable|in:,يومي,شهري,اسبوعي',
+            'products.*.amount' => 'required_if:type,اقساط|nullable|integer|min:1',
 
         ];
     }
+
     protected function failedValidation(Validator $validator): void
     {
         throw new HttpResponseException(response()->json([

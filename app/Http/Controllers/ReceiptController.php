@@ -28,7 +28,7 @@ class ReceiptController extends Controller
         $result = $this->receiptService->createReceipt($request->validated());
 
         return $result['status'] === 200
-            ? $this->success($result['data'], $result['message'], $result['status'])
+            ? $this->success(null, $result['message'], $result['status'])
             : $this->error(null, $result['message'], $result['status']);
     }
 
@@ -44,7 +44,7 @@ class ReceiptController extends Controller
         $result = $this->receiptService->updateReceipt($request->validated(), $receipt);
 
         return $result['status'] === 200
-            ? $this->success($result['data'], $result['message'], $result['status'])
+            ? $this->success(null, $result['message'], $result['status'])['status']
             : $this->error(null, $result['message'], $result['status']);
     }
 

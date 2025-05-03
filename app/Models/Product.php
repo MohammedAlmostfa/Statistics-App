@@ -5,27 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-/**
- * Product model represents a product with related properties such as pricing, quantity, and category.
- * This model also includes relationships with users, categories, and product origins.
- *
- * @documented
- */
 class Product extends Model
 {
     use HasFactory;
 
     /**
-     * Mass assignable attributes for the product.
+     * The attributes that are mass assignable.
      *
      * @var array
-     * @documented
      */
     protected $fillable = [
         'name',
         'Dollar_exchange',
         'selling_price',
-        "dolar_buying_price",
+        'dolar_buying_price',
         'installment_price',
         'quantity',
         'user_id',
@@ -34,28 +27,41 @@ class Product extends Model
     ];
 
     /**
-     * Casts for type conversion.
+     * The attributes that should be cast to native types.
      *
      * @var array
-     * @documented
      */
     protected $casts = [
-        'name' => 'string',
-        'Dollar_exchange' => 'float',
-        'selling_price' => 'float',
+        'Dollar_exchange'   => 'float',
+        'selling_price'     => 'float',
         'dolar_buying_price' => 'float',
         'installment_price' => 'integer',
-        'quantity' => 'integer',
-        'user_id' => 'integer',
-        'origin_id' => 'integer',
-        'category_id' => 'integer',
+        'quantity'          => 'integer',
+        'user_id'           => 'integer',
+        'origin_id'         => 'integer',
+        'category_id'       => 'integer',
     ];
 
     /**
-     * Relationship to the User that owns the product.
+     * Relationship: A Product can have many ReceiptProducts.
+     *
+     * This function defines the one-to-many relationship between the `Product` model
+     * and the `ReceiptProduct` model. A product can appear in many receipt products.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function receiptProducts()
+    {
+        return $this->hasMany(ReceiptProduct::class);
+    }
+
+    /**
+     * Relationship: A Product belongs to a User.
+     *
+     * This function defines the inverse one-to-many relationship between the `Product` model
+     * and the `User` model. Each product is created/owned by a specific user.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     * @documented
      */
     public function user()
     {
@@ -63,10 +69,12 @@ class Product extends Model
     }
 
     /**
-     * Relationship to the ProductOrigin of the product.
+     * Relationship: A Product belongs to a ProductOrigin.
+     *
+     * This function defines the inverse one-to-many relationship between the `Product` model
+     * and the `ProductOrigin` model. Each product is linked to a specific origin (e.g., country or manufacturer).
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     * @documented
      */
     public function origin()
     {
@@ -74,10 +82,12 @@ class Product extends Model
     }
 
     /**
-     * Relationship to the ProductCategory of the product.
+     * Relationship: A Product belongs to a ProductCategory.
+     *
+     * This function defines the inverse one-to-many relationship between the `Product` model
+     * and the `ProductCategory` model. Each product is associated with a category (e.g., electronics, food).
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     * @documented
      */
     public function category()
     {
@@ -85,18 +95,20 @@ class Product extends Model
     }
 
     /**
-     * Scope to filter products by category or other filtering criteria.
+     * Scope query to filter products by category ID.
+     *
+     * This function allows filtering the products based on the category they belong to.
+     * The filtering is done using an array of filtering criteria, allowing users to specify
+     * the category they want to filter by.
      *
      * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param array $filteringData
+     * @param array $filteringData An associative array containing the filtering criteria
      * @return \Illuminate\Database\Eloquent\Builder
-     * @documented
      */
     public function scopeFilterBy($query, array $filteringData)
     {
-        // Filter by category_id if provided
         if (isset($filteringData['category_id'])) {
-            $query->where('category_id', '=', $filteringData['category_id']);
+            $query->where('category_id', $filteringData['category_id']);
         }
 
         return $query;

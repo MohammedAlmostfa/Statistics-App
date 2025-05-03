@@ -12,10 +12,9 @@ return new class extends Migration {
     {
         Schema::create('receipts', function (Blueprint $table) {
             $table->id();
-            $table->integer('receipt_id');
-            $table->integer('total_amount');
-            $table->integer('received_amount');
-            $table->integer('remaining_amount');
+            $table->integer('receipt_number');
+            $table->integer('total_price');
+            $table->string('notes')->nullable();
             $table->integer('type');
             $table->date('receipt_date');
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
