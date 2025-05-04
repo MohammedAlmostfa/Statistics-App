@@ -1,17 +1,18 @@
 <?php
 
 use Illuminate\Http\Request;
+use Database\Seeders\ProductSeeder;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\ProductCategoryController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\ProductOriginController;
-use App\Http\Controllers\ReceiptController;
-use App\Http\Controllers\ReceiptProductController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\WhatsappController;
-use Database\Seeders\ProductSeeder;
+use App\Http\Controllers\ProductOriginController;
+use App\Http\Controllers\ReceiptProductController;
+use App\Http\Controllers\ProductCategoryController;
+use App\Http\Controllers\InstallmentPaymentController;
 
 // Route to get authenticated user details
 Route::get('/user', function (Request $request) {
@@ -43,5 +44,6 @@ Route::middleware('jwt')->group(function () {
     Route::post('/user/{user}/updatestatus', [UserController::class, 'updateUserStatus']);
     Route::get('getmessage', [WhatsappController::class, 'index']);
     Route::get('receiptProductController/customer/{id}', [ReceiptProductController::class, 'index']);
+    Route::post("installmentPayment/installment/{id}", [InstallmentPaymentController::class ,'store']);
 
 });

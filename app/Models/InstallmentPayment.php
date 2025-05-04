@@ -19,7 +19,12 @@ class InstallmentPayment extends Model
         'amount',
         'status',
     ];
+    protected $casts = [
+         'installment_id' => 'integer',
+         'payment_date' => 'date',
+         'amount' => 'integer',
 
+     ];
     /**
      * Relationship: An installment payment belongs to an installment.
      *

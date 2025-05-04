@@ -18,7 +18,12 @@ class Installment extends Model
         'installment',
         'installment_type',
     ];
+    protected $casts = [
+        'receipt_product_id' => 'integer',
+        'pay_cont' => 'integer',
+        'installment' => 'integer',
 
+    ];
     /**
      * Relationship: An installment belongs to a receipt product.
      *
@@ -77,5 +82,4 @@ class Installment extends Model
             set: fn ($value) => array_search($value, self::TYPE_MAP)
         );
     }
-
 }
