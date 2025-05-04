@@ -38,6 +38,11 @@ class Installment extends Model
     {
         return $this->hasMany(InstallmentPayment::class);
     }
+    public function firstInstallmentPayment()
+    {
+        return $this->hasOne(InstallmentPayment::class)->orderBy('id');
+    }
+
 
     /**
      * Mapping of installment types to human-readable values.
@@ -50,7 +55,7 @@ class Installment extends Model
      * 3 => 'شهري' (Monthly)
      */
     const TYPE_MAP = [
-        0 => 'اسبوع',   // Weekly installment
+        0 => 'اسبوعي',   // Weekly installment
         1 => 'يومي',    // Daily installment
         3 => 'شهري',    // Monthly installment
     ];
@@ -65,14 +70,12 @@ class Installment extends Model
      * @param mixed $value The stored value in the database.
      * @return string The human-readable installment type.
      */
-    public function installment_type(): Attribute
+    public function installmentType(): Attribute
     {
         return Attribute::make(
-            // Accessor: Get the human-readable value of the installment type.
-            get: fn ($value) => self::TYPE_MAP[$value] ?? 'Unknown',
-
-            // Mutator: Convert the human-readable string value back to its numeric representation.
+            get: fn ($value, $attributes) => self::TYPE_MAP[$attributes['installment_type']] ?? 'Unknown',
             set: fn ($value) => array_search($value, self::TYPE_MAP)
         );
     }
+
 }

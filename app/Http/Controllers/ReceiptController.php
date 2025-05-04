@@ -41,12 +41,14 @@ class ReceiptController extends Controller
      */
     public function update(UpdateReceiptData $request, Receipt $receipt): JsonResponse
     {
-        $result = $this->receiptService->updateReceipt($request->validated(), $receipt);
+        $result = $this->receiptService->updateReceiptWithProducts($receipt, $request->validated());
 
         return $result['status'] === 200
-            ? $this->success(null, $result['message'], $result['status'])['status']
+            ? $this->success(null, $result['message'], $result['status'])
             : $this->error(null, $result['message'], $result['status']);
     }
+
+
 
     /**
      * Delete a receipt from the database.

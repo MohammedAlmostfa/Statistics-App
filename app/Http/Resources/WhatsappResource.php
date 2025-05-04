@@ -13,7 +13,7 @@ class WhatsappResource extends JsonResource
      */
     public function toArray($request)
     {
-        // Check if the resource is an array of messages
+
         return [
             'messages' => collect($this->resource['messages'])->map(function ($message) {
                 return [
