@@ -17,6 +17,12 @@ class ReceiptProduct extends Model
         'quantity',
         'description',
     ];
+    protected $casts = [
+        'receipt_id'=>'integer',
+         'product_id'=>'integer',
+         'quantity'=>'integer',
+         'description' => 'string',
+     ];
 
     /**
      * Relationship: A ReceiptProduct belongs to a Receipt.
