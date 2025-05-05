@@ -1,10 +1,12 @@
 <?php
+
+
 namespace App\Rules;
 
 use App\Models\Installment;
 use Illuminate\Contracts\Validation\Rule;
 
-class ValidInstallmentPaymentAmount implements Rule
+class StoreValidInstallmentAmount implements Rule
 {
     protected $installment;
 
@@ -29,10 +31,15 @@ class ValidInstallmentPaymentAmount implements Rule
     public function passes($attribute, $value)
     {
         $totalPaid = $this->installment->installmentPayments()->sum('amount');
-        $remainingAmount = $this->installment->receiptProduct->product->installment_price * $this->installment->receiptProduct->quantity - $totalPaid;
+
+        $totalInstallmentAmount = $this->installment->receiptProduct->product->installment_price *
+                                   $this->installment->receiptProduct->quantity;
+
+        $remainingAmount = $totalInstallmentAmount - $totalPaid;
 
         return $value <= $remainingAmount;
     }
+
 
     /**
      * Get the validation error message.

@@ -4,9 +4,8 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Http\Resources\ReceiptProductResource;
 
-class ReceiptResource extends JsonResource
+class CustomerReceiptResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -22,10 +21,8 @@ class ReceiptResource extends JsonResource
             'type' => $this->type,
             'receipt_date' => $this->receipt_date->format('Y-m-d '),
             'user_id' => $this->user_id,
-            'user_name' => $this->user->name,
-            'customer_id' => $this->customer_id,
             'customer_name' => $this->customer->name,
-
         ];
+
     }
 }

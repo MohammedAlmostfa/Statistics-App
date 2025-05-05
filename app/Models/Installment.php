@@ -79,7 +79,7 @@ class Installment extends Model
     {
         return Attribute::make(
             get: fn ($value, $attributes) => self::TYPE_MAP[$attributes['installment_type']] ?? 'Unknown',
-            set: fn ($value) => array_search($value, self::TYPE_MAP)
+            set: fn ($value) => array_search($value, self::TYPE_MAP) !== false ? array_search($value, self::TYPE_MAP) : null
         );
     }
 }

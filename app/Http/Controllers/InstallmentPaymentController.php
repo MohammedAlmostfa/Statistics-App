@@ -9,6 +9,7 @@ use App\Models\InstallmentPayment;
 use App\Services\InstallmentPaymentService;
 use App\Http\Requests\StoreInstallmentPaymentRequest;
 use App\Http\Requests\InstallmentPaymentRequest\StoreInstallmentPaymentData;
+use App\Http\Requests\InstallmentPaymentRequest\UpdateInstallmentPaymentData;
 
 class InstallmentPaymentController extends Controller
 {
@@ -30,10 +31,7 @@ class InstallmentPaymentController extends Controller
     {
         $validatedData = $request->validated();
 
-        $result = $this->installmentPaymentService->createInstallmentPayment(
-            $validatedData,
-            $id
-        );
+        $result = $this->installmentPaymentService->createInstallmentPayment($validatedData, $id);
 
         return $result['status'] === 200
             ? $this->success(null, $result['message'], $result['status'])
@@ -61,9 +59,15 @@ class InstallmentPaymentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, InstallmentPayment $installmentPayment)
+    public function update(UpdateInstallmentPaymentData $request, $id)
     {
-        //
+        $validatedData = $request->validated();
+
+        $result = $this->installmentPaymentService->updateInstallmentPayment($validatedData, $id);
+
+        return $result['status'] === 200
+            ? $this->success(null, $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
     }
 
     /**

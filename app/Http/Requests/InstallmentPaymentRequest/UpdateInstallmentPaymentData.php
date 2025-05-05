@@ -3,15 +3,17 @@
 namespace App\Http\Requests\InstallmentPaymentRequest;
 
 use App\Models\Installment;
+use App\Models\InstallmentPayment;
 use Illuminate\Support\Facades\Log;
-use App\Rules\StoreValidInstallmentAmount;
+use App\Rules\UpdateValidInstallmentAmount;
 use Illuminate\Foundation\Http\FormRequest;
-
+use App\Rules\ValidInstallmentPaymentAmount;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class StoreInstallmentPaymentData extends FormRequest
+class UpdateInstallmentPaymentData extends FormRequest
 {
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -28,8 +30,8 @@ class StoreInstallmentPaymentData extends FormRequest
     public function rules(): array
     {
         return [
-            'payment_date'=>'required|date',
-        'amount' => ['required', 'numeric', new StoreValidInstallmentAmount(Installment::findOrFail($this->route('id')))],
+
+        'amount' => ['required', 'numeric', new UpdateValidInstallmentAmount(InstallmentPayment::findOrFail($this->route('id')))],
 
         ];
     }

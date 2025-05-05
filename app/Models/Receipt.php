@@ -47,7 +47,10 @@ class Receipt extends Model
     {
         return $this->belongsTo(Customer::class);
     }
-
+    public function user()
+    {
+        return $this->belongsTo(user::class);
+    }
     /**
      * Relationship: A Receipt has many ReceiptProducts.
      *
