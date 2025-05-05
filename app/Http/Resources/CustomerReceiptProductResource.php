@@ -26,9 +26,10 @@ class CustomerReceiptProductResource extends JsonResource
         return [
             'id' => $this->id, // معرف الإيصال
             'receipt_number' => $this->receipt_number,
-         'receipt_date' => $this->receipt_date->format('Y-m-d '),
+            'receipt_date' => $this->receipt_date->format('Y-m-d '),
             'product_id' => $firstProduct ? $firstProduct->product_id : null,
             'product_name' => $firstProduct ? $firstProduct->product->name : null,
+               'product_price' => $firstProduct ? $firstProduct->product->installment_price : null,
             'quantity' => $firstProduct ? $firstProduct->quantity : null,
             'installment_price' => $firstProduct ? $firstProduct->product->installment_price : null,
             'pay_cont' => $firstInstallment ? $firstInstallment->pay_cont : null,
