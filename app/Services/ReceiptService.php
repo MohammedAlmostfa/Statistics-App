@@ -128,15 +128,12 @@ class ReceiptService
 
         $installment = $receiptProduct->installment()->create([
             'pay_cont'         => $productData['pay_cont'],
+                  'first_pay'         => $productData['amount'],
             'installment'      => $productData['installment'],
             'installment_type' => $productData['installment_type']
         ]);
 
-        $installment->installmentPayments()->create([
-            'payment_date' => $receiptDate,
-            'amount'       => $productData['amount'],
-            'status'       => 0,
-        ]);
+
     }
     //_________________________________________________________________________________________________________________________________________________________________________________________________________________
     //_________________________________________________________________________________________________________________________________________________________________________________________________________________

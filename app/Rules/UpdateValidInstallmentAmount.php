@@ -21,6 +21,12 @@ class UpdateValidInstallmentAmount implements Rule
     {
         $totalPaid = $this->installment->installmentPayments()->sum('amount');
 
+        // Add the first payment amount to the total paid amount
+        if ($this->installment->first_pay) {
+            $totalPaid += $this->installment->first_pay;
+        }
+
+
         $totalInstallmentAmount = $this->installment->receiptProduct->product->installment_price *
                                    $this->installment->receiptProduct->quantity;
 

@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->foreignId('receipt_product_id')->constrained('receipt_products')->cascadeOnDelete();
             $table->integer('pay_cont')->nullable();
             $table->integer('installment')->nullable();
+            $table->integer('first_pay')->nullable();
             $table->integer('installment_type')->nullable();
             $table->timestamps();
 

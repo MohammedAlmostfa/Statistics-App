@@ -16,11 +16,13 @@ class Installment extends Model
         'receipt_product_id',
         'pay_cont',
         'installment',
+        'first_pay',
         'installment_type',
     ];
     protected $casts = [
         'receipt_product_id' => 'integer',
         'pay_cont' => 'integer',
+        'first_pay'=>'integer',
         'installment' => 'integer',
 
     ];
@@ -42,10 +44,6 @@ class Installment extends Model
     public function InstallmentPayments()
     {
         return $this->hasMany(InstallmentPayment::class);
-    }
-    public function firstInstallmentPayment()
-    {
-        return $this->hasOne(InstallmentPayment::class)->orderBy('id');
     }
 
 
