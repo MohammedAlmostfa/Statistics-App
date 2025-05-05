@@ -24,7 +24,7 @@ class ReceiptProductController extends Controller
         $result = $this->ReceiptProductService->getCustomerReceiptProducts($id);
 
         return $result['status'] === 200
-            ? $this->success(CustomerReceiptProductResource::collection($result['data']), $result['message'], $result['status'])
+            ? $this->success($result['data'], $result['message'], $result['status'])
             : $this->error(null, $result['message'], $result['status']);
     }
 

@@ -15,6 +15,7 @@ class ReceiptProductService
      * @param int $id The ID of the customer.
      * @return array An array containing the status, message, and data (list of receipt products with payment information).
      */
+
     public function getCustomerReceiptProducts($id)
     {
         try {
@@ -37,17 +38,47 @@ class ReceiptProductService
                 },
 
             ])
-            ->where('customer_id', $id)
-            ->where('type', 'اقساط')
-            ->get();
+                ->where('customer_id', $id)
+                ->where('type', 'اقساط')
+                ->get();
 
-            // Return a successful response with the fetched data.
+            $formattedProducts = [];
+
+            foreach ($receipts as $receipt) {
+                foreach ($receipt->receiptProducts as $receiptProduct) {
+                    $installment = $receiptProduct->installment;
+                    $formattedProducts[] = [
+                        'receipt_id' => $receipt->id,
+                        'receipt_number' => $receipt->receipt_number,
+                        'receipt_date' => $receipt->receipt_date->format('Y-m-d'),
+                        'product_id' => $receiptProduct->product_id,
+                        'product_name' => $receiptProduct->product->name,
+                        'quantity' => $receiptProduct->quantity,
+                        'product_price' => $receiptProduct->product->installment_price,
+                        'pay_cont' => $installment ? $installment->pay_cont : null,
+                        'installment_id' => $installment ? $installment->id : null,
+                        'installment_type' => $installment ? $installment->installment_type : null,
+                        'installment_amount' => $installment ? $installment->installment : null,
+                        'first_payment' => ($installment && $installment->firstInstallmentPayment) ? $installment->firstInstallmentPayment->amount : null,
+                        'payments' => ($installment && $installment->installmentPayments) ? $installment->installmentPayments->map(function ($payment) {
+                            return [
+                                'id' => $payment->id,
+                                'payment_date' => $payment->payment_date,
+                                'amount' => $payment->amount,
+                            ];
+                        })->toArray() : [],
+                    ];
+                }
+            }
+
+            // Return a successful response with the fetched and formatted data.
             return [
                 'status' => 200,
                 'message' => 'تم جلب جميع المنتجات بنجاح.',
-                'data' => $receipts,
+                'data' => $formattedProducts,
             ];
-        } catch (\Exception $e) { // Corrected the namespace for Exception
+
+        } catch (\Exception $e) {
             // Log any errors that occur during the process.
             Log::error('Error in getCustomerReceiptProducts: ' . $e->getMessage());
             // Return an error response.
