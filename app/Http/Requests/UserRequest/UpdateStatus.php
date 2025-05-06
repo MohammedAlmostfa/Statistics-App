@@ -3,6 +3,9 @@
 namespace App\Http\Requests\UserRequest;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Validation\Validator;
 
 class UpdateStatus extends FormRequest
 {
@@ -24,5 +27,23 @@ class UpdateStatus extends FormRequest
         return [
             'status' => 'required|in:0,1',
         ];
+    }
+
+    /**
+    * Handle a failed validation attempt.
+    * This method is called when validation fails.
+    * Logs failed attempts and throws validation exception.
+    * @param \Illuminate\Validation\Validator $validator
+    * @return void
+    *
+    */
+
+    protected function failedValidation(Validator $validator): void
+    {
+        throw new HttpResponseException(response()->json([
+            'status' => 'error',
+            'message' => 'فشل التحقق من صحة البيانات',
+            'errors' => $validator->errors(),
+        ], 422));
     }
 }

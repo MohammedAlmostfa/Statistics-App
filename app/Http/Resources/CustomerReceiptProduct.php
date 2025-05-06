@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class CustomerReceiptProductWithFirstPaymentRemoved extends JsonResource
+class CustomerReceiptProduct extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -29,7 +29,7 @@ class CustomerReceiptProductWithFirstPaymentRemoved extends JsonResource
             'product_price' => $this->product->installment_price,
             'pay_cont' => $installment ? $installment->pay_cont : null,
             'installment_id' => $installment ? $installment->id : null,
-                     'first_pay' => $installment ? $installment->first_pay: null,
+            'first_pay' => $installment ? $installment->first_pay: null,
             'installment_type' => $installment ? $installment->installment_type : null,
             'installment_amount' => $installment ? $installment->installment : null,
             'payments' => $payments,

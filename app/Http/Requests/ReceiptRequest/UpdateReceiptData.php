@@ -42,12 +42,15 @@ class UpdateReceiptData extends FormRequest
         ];
     }
 
-
     /**
-     * Handle failed validation and return a JSON response.
-     *
-     * @param Validator $validator
-     */
+        * Handle a failed validation attempt.
+        * This method is called when validation fails.
+        * Logs failed attempts and throws validation exception.
+        * @param \Illuminate\Validation\Validator $validator
+        * @return void
+        *
+        */
+
     protected function failedValidation(Validator $validator): void
     {
         throw new HttpResponseException(response()->json([

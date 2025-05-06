@@ -17,12 +17,18 @@ class ReceiptProduct extends Model
         'quantity',
         'description',
     ];
+    /**
+     * Casts for attributes.
+     *
+     * @var array
+     * @documented
+     */
     protected $casts = [
-        'receipt_id'=>'integer',
-         'product_id'=>'integer',
-         'quantity'=>'integer',
-         'description' => 'string',
-     ];
+        'receipt_id' => 'integer',
+        'product_id' => 'integer',
+        'quantity' => 'integer',
+        'description' => 'string',
+    ];
 
     /**
      * Relationship: A ReceiptProduct belongs to a Receipt.

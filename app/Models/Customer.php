@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
-
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * Customer model represents a customer entity with relationships to receipts and filtering capabilities.
@@ -14,7 +15,7 @@ use Illuminate\Notifications\Notifiable;
  */
 class Customer extends Model
 {
-    use HasFactory , Notifiable ;
+    use HasFactory, Notifiable;
 
     /**
      * Mass assignable attributes
@@ -33,11 +34,12 @@ class Customer extends Model
     ];
 
     /**
-     * Type casting for model attributes
+     * Casts for attributes.
      *
      * @var array
      * @documented
      */
+
     protected $casts = [
         'name' => 'string',
         'phone' => 'integer',
@@ -87,5 +89,30 @@ class Customer extends Model
         }
 
         return $query;
+    }
+    /**
+     * The "booting" method of the model.
+     *
+     * @return void
+     */
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($customer) {
+            Cache::forget('customers');
+            Log::info("تم إنشاء زبون جديد ({$customer->id}) وتم حذف كاش الزبائن.");
+        });
+
+        static::updated(function ($customer) {
+            Cache::forget('customers');
+            Log::info("تم تحديث الزبون ({$customer->id}) وتم حذف كاش الزبائن.");
+        });
+
+        static::deleted(function ($customer) {
+            Cache::forget('customers');
+            Log::info("تم حذف الزبون ({$customer->id}) وتم حذف كاش الزبائن.");
+        });
     }
 }

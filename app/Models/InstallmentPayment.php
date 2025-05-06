@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\Installment;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InstallmentPayment extends Model
 {
@@ -19,12 +20,18 @@ class InstallmentPayment extends Model
         'amount',
         'status',
     ];
+    /**
+ * Casts for attributes.
+ *
+ * @var array
+ * @documented
+ */
     protected $casts = [
          'installment_id' => 'integer',
          'payment_date' => 'date',
          'amount' => 'integer',
 
-     ];
+    ];
     /**
      * Relationship: An installment payment belongs to an installment.
      *
@@ -49,7 +56,7 @@ class InstallmentPayment extends Model
      */
     const TYPE_MAP = [
         0 => 'مدفوعة',   // Paid
-        1 => 'متأخر',    // Late
+        1 => 'متأخر',     // Late
     ];
 
     /**

@@ -73,13 +73,13 @@ class ProductController extends Controller
      * @param Product $product The product instance to be updated.
      * @return \Illuminate\Http\JsonResponse JSON response confirming update success or failure.
      */
-    public function update(UpdateProductData $request, Product $product)
+    public function update(UpdateProductData $request, $id)
     {
         // Validate and extract data from request.
         $validatedData = $request->validated();
 
         // Update the product using ProductService.
-        $result = $this->productService->updateProduct($validatedData, $product);
+        $result = $this->productService->updateProduct($validatedData, $id);
 
         // Return success response if update was successful, otherwise return error.
         return $result['status'] === 200

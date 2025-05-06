@@ -29,6 +29,15 @@ class fitrtingData extends FormRequest
             'record_id'=>'nullable|integer'
         ];
     }
+    /**
+     * Handle a failed validation attempt.
+     * This method is called when validation fails.
+     * Logs failed attempts and throws validation exception.
+     * @param \Illuminate\Validation\Validator $validator
+     * @return void
+     *
+     */
+
     protected function failedValidation(Validator $validator): void
     {
         throw new HttpResponseException(response()->json([

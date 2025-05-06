@@ -6,16 +6,11 @@ use Exception;
 use App\Models\Receipt;
 use App\Models\Customer;
 use Illuminate\Support\Facades\Log;
-use App\Http\Resources\CustomerReceiptProductWithFirstPaymentRemoved;
+use App\Http\Resources\CustomerReceiptProduct;
 
 class ReceiptProductService
 {
-    /**
-     * Get all receipt products for a specific customer, including related data for installment payments (excluding the first payment).
-     *
-     * @param int $id The ID of the customer.
-     * @return array An array containing the status, message, and data (list of receipt products with payment information).
-     */
+
     public function getCustomerReceiptProducts($id)
     {
         try {
@@ -32,10 +27,6 @@ class ReceiptProductService
                 'receiptProducts.installment.installmentPayments' => function ($q) {
                     $q->select('id', 'installment_id', 'payment_date', 'amount');
                 },
-
-                'receiptProducts.receipt' => function ($q) {
-                    $q->select('id', 'receipt_number', 'receipt_date');
-                },
             ])
                 ->where('customer_id', $id)
                 ->where('type', 'اقساط')
@@ -43,7 +34,7 @@ class ReceiptProductService
 
             $formattedProducts = $receipts->flatMap(function ($receipt) {
                 return $receipt->receiptProducts->map(function ($receiptProduct) {
-                    return new CustomerReceiptProductWithFirstPaymentRemoved($receiptProduct);
+                    return new CustomerReceiptProduct($receiptProduct);
                 });
             });
 
@@ -58,6 +49,29 @@ class ReceiptProductService
             return [
                 'status' => 500,
                 'message' => 'حدث خطأ أثناء جلب المنتجات، يرجى المحاولة مرة أخرى.',
+            ];
+        }
+    }
+
+
+
+
+    public function getreciptProduct($id)
+    {
+        try {
+            $receipt = Receipt::with('receiptProducts.product')->findOrFail($id);
+
+            return [
+                'status' => 200,
+                'message' => 'تم جلب جميع المنتجات للفاتورة بنجاح.',
+                'data' => $receipt,
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Error in getreciptProduct: ' . $e->getMessage());
+            return [
+                'status' => 500,
+                'message' => 'حدث خطأ أثناء جلب منتجات الفاتورة، يرجى المحاولة مرة أخرى.',
             ];
         }
     }

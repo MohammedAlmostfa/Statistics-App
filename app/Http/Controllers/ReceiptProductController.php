@@ -31,9 +31,13 @@ class ReceiptProductController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function getreciptProduct($id)
     {
-        //
+        $result = $this->ReceiptProductService->getreciptProduct($id);
+
+        return $result['status'] === 200
+            ? $this->success($result['data'], $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
     }
 
     /**

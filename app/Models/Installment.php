@@ -19,10 +19,16 @@ class Installment extends Model
         'first_pay',
         'installment_type',
     ];
+    /**
+     * Casts for attributes.
+     *
+     * @var array
+     * @documented
+     */
     protected $casts = [
         'receipt_product_id' => 'integer',
         'pay_cont' => 'integer',
-        'first_pay'=>'integer',
+        'first_pay' => 'integer',
         'installment' => 'integer',
 
     ];
@@ -59,8 +65,8 @@ class Installment extends Model
      */
     const TYPE_MAP = [
         0 => 'اسبوعي',   // Weekly installment
-        1 => 'يومي',    // Daily installment
-        3 => 'شهري',    // Monthly installment
+        1 => 'يومي',     // Daily installment
+        3 => 'شهري',     // Monthly installment
     ];
 
     /**

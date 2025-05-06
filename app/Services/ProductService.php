@@ -7,6 +7,7 @@ use App\Models\Product;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Class ProductService
@@ -93,8 +94,6 @@ class ProductService
                 'user_id' => $userId,
             ]);
 
-            // Invalidate cache
-            Cache::forget('products');
 
             return [
                 'status' => 201,
@@ -118,23 +117,28 @@ class ProductService
      * @param Product $product The product to update.
      * @return array An array containing status and message.
      */
-    public function updateProduct(array $data, Product $product): array
+
+
+    public function updateProduct(array $data, $id): array
     {
         try {
-            // Update fields, fallback to current value if not provided
-            $product->update([
-                'name' => $data['name'] ?? $product->name,
-                'Dollar_exchange' => $data['Dollar_exchange'] ?? $product->Dollar_exchange,
-                'selling_price' => $data['selling_price'] ?? $product->selling_price,
-                'installment_price' => $data['installment_price'] ?? $product->installment_price,
-                'origin_id' => $data['origin_id'] ?? $product->origin_id,
-                'category_id' => $data['category_id'] ?? $product->category_id,
-                'quantity' => $data['quantity'] ?? $product->quantity,
-                'dolar_buying_price' => $data['dolar_buying_price'] ?? $product->dolar_buying_price,
-            ]);
+            DB::transaction(function () use ($data, $id) {
 
-            // Clear cache
-            Cache::forget('products');
+                $lockedProduct = Product::lockForUpdate()->findOrFail($id);
+
+                $lockedProduct->update([
+                    'name' => $data['name'] ?? $lockedProduct->name,
+                    'Dollar_exchange' => $data['Dollar_exchange'] ?? $lockedProduct->Dollar_exchange,
+                    'selling_price' => $data['selling_price'] ?? $lockedProduct->selling_price,
+                    'installment_price' => $data['installment_price'] ?? $lockedProduct->installment_price,
+                    'origin_id' => $data['origin_id'] ?? $lockedProduct->origin_id,
+                    'category_id' => $data['category_id'] ?? $lockedProduct->category_id,
+                    'quantity' => $data['quantity'] ?? $lockedProduct->quantity,
+                    'dolar_buying_price' => $data['dolar_buying_price'] ?? $lockedProduct->dolar_buying_price,
+                ]);
+
+
+            });
 
             return [
                 'status' => 200,
@@ -149,7 +153,6 @@ class ProductService
             ];
         }
     }
-
     /**
      * Delete a product from the database.
      *
@@ -162,8 +165,7 @@ class ProductService
             // Delete product
             $product->delete();
 
-            // Clear cache
-            Cache::forget('products');
+
 
             return [
                 'status' => 200,

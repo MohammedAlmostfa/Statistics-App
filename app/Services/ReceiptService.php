@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\Customer;
 use Exception;
 use App\Models\Receipt;
+use App\Models\Customer;
+use App\Events\ReceiptCreated;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -42,8 +43,8 @@ class ReceiptService
     {
         try {
             $receipts = Receipt::with(['user:id,name'])
-    ->where('customer_id', $id)
-    ->paginate(10);
+                ->where('customer_id', $id)
+                ->paginate(10);
 
 
             return [
@@ -115,6 +116,7 @@ class ReceiptService
                 'description' => $productData['description'] ?? null,
                 'quantity'    => $productData['quantity'] ?? 1,
             ]);
+            ReceiptCreated::dispatch($productData['product_id'], $productData['quantity']);
 
             if ($type === 'اقساط') {
                 $this->createInstallment($receiptProduct, $productData, $receiptDate);
@@ -124,16 +126,12 @@ class ReceiptService
 
     protected function createInstallment($receiptProduct, $productData, $receiptDate)
     {
-
-
         $installment = $receiptProduct->installment()->create([
             'pay_cont'         => $productData['pay_cont'],
-                  'first_pay'         => $productData['amount'],
+            'first_pay'         => $productData['amount'],
             'installment'      => $productData['installment'],
             'installment_type' => $productData['installment_type']
         ]);
-
-
     }
     //_________________________________________________________________________________________________________________________________________________________________________________________________________________
     //_________________________________________________________________________________________________________________________________________________________________________________________________________________

@@ -3,6 +3,8 @@
 namespace App\Http\Requests\ProductRequest;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Contracts\Validation\Validator;
 
 class filtterdata extends FormRequest
 {
@@ -24,5 +26,22 @@ class filtterdata extends FormRequest
         return [
       'category_id' => 'nullable|integer|exists:product_categories,id',
         ];
+    }
+    /**
+    * Handle a failed validation attempt.
+    * This method is called when validation fails.
+    * Logs failed attempts and throws validation exception.
+    * @param \Illuminate\Validation\Validator $validator
+    * @return void
+    *
+    */
+
+    protected function failedValidation(Validator $validator): void
+    {
+        throw new HttpResponseException(response()->json([
+            'status' => 'error',
+            'message' => 'فشل التحقق من صحة البيانات',
+            'errors' => $validator->errors(),
+        ], 422));
     }
 }

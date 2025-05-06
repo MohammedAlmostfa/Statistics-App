@@ -48,8 +48,6 @@ class ProductCategoryService
             // Create the category using Eloquent
             $category = ProductCategory::create($data);
 
-            // Clear cache to ensure fresh data on next retrieval
-            Cache::forget('categories');
 
             return $this->successResponse('تم إنشاء الصنف بنجاح', 200, $category);
         } catch (Exception $e) {
@@ -71,8 +69,7 @@ class ProductCategoryService
             // Update the category using Eloquent
             $productcategory->update($data);
 
-            // Invalidate cache to reflect updated data
-            Cache::forget('categories');
+
 
             return $this->successResponse('تم تحديث الصنف بنجاح', 200, $productcategory);
         } catch (Exception $e) {
@@ -95,8 +92,6 @@ class ProductCategoryService
             // Delete the category using Eloquent
             $productcategory->delete();
 
-            // Invalidate cache to remove deleted entry
-            Cache::forget('categories');
 
             return $this->successResponse('تم حذف الصنف بنجاح', 200);
         } catch (Exception $e) {

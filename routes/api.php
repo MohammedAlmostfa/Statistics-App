@@ -73,7 +73,8 @@ Route::middleware('jwt')->group(function () {
 
     // Receipt Product Controller route
     // This route fetches receipt products based on a customer ID
-    Route::get('receiptProductController/customer/{id}', [ReceiptProductController::class, 'index']); // Displays receipt products for a specific customer
+    Route::get('receiptProducts/customer/{id}', [ReceiptProductController::class, 'index']); // Displays receipt products for a specific customer
+    Route::get('receiptProducts/{id}', [ReceiptProductController::class, 'getreciptProduct']);
 
     // Installment Payment routes
     // These routes handle installment payments

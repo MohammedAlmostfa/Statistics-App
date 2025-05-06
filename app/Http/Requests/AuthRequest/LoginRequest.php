@@ -45,19 +45,20 @@ class LoginRequest extends FormRequest
 
 
     /**
-     * Handle a failed validation attempt.
-     * This method is called when validation fails.
-     * Logs failed attempts and throws validation exception.
-     * @param \Illuminate\Validation\Validator $validator
-     * @return void
-     *
-     */
+       * Handle a failed validation attempt.
+       * This method is called when validation fails.
+       * Logs failed attempts and throws validation exception.
+       * @param \Illuminate\Validation\Validator $validator
+       * @return void
+       *
+       */
+
     protected function failedValidation(Validator $validator): void
     {
         throw new HttpResponseException(response()->json([
-            'status'  => 'error',
-            'message' => 'Validation failed.',
-            'errors'  => $validator->errors(),
+            'status' => 'error',
+            'message' => 'فشل التحقق من صحة البيانات',
+            'errors' => $validator->errors(),
         ], 422));
     }
 }

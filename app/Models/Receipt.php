@@ -21,12 +21,13 @@ class Receipt extends Model
         'user_id',
         'notes',
     ];
-
     /**
-     * The attributes that should be cast to native types.
+     * Casts for attributes.
      *
      * @var array
+     * @documented
      */
+
     protected $casts = [
         'customer_id'      => 'integer',
         'receipt_number'   => 'integer',

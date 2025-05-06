@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -27,10 +29,12 @@ class Product extends Model
     ];
 
     /**
-     * The attributes that should be cast to native types.
+     * Casts for attributes.
      *
      * @var array
+     * @documented
      */
+
     protected $casts = [
         'Dollar_exchange'   => 'float',
         'selling_price'     => 'float',
@@ -112,5 +116,30 @@ class Product extends Model
         }
 
         return $query;
+    }
+
+    /**
+     * The "booting" method of the model.
+     *
+     * @return void
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($product) {
+            Cache::forget('products');
+            Log::info("تم إنشاء منتج جديد ({$product->id}) وتم حذف كاش المنتجات.");
+        });
+
+        static::updated(function ($product) {
+            Cache::forget('products');
+            Log::info("تم تحديث المنتج ({$product->id}) وتم حذف كاش المنتجات.");
+        });
+
+        static::deleted(function ($product) {
+            Cache::forget('products');
+            Log::info("تم حذف المنتج ({$product->id}) وتم حذف كاش المنتجات.");
+        });
     }
 }

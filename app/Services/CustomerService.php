@@ -54,8 +54,6 @@ class CustomerService
         try {
             Customer::create($data);
 
-            Cache::forget('customers');
-
             return $this->successResponse('تم إنشاء العميل بنجاح.', 200);
         } catch (Exception $e) {
             Log::error('Error creating customer: ' . $e->getMessage());
@@ -75,7 +73,6 @@ class CustomerService
         try {
             $customer->update($data);
 
-            Cache::forget('customers');
 
             return $this->successResponse('تم تحديث بيانات العميل بنجاح.', 200);
         } catch (Exception $e) {
@@ -94,9 +91,6 @@ class CustomerService
     {
         try {
             $customer->delete();
-
-            Cache::forget('customers');
-
             return $this->successResponse('تم حذف العميل بنجاح.', 200);
         } catch (Exception $e) {
             Log::error('Error deleting customer: ' . $e->getMessage());
