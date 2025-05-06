@@ -13,10 +13,10 @@ return new class extends Migration {
         Schema::create('installments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('receipt_product_id')->constrained('receipt_products')->cascadeOnDelete();
-            $table->integer('pay_cont')->nullable();
-            $table->integer('installment')->nullable();
-            $table->integer('first_pay')->nullable();
-            $table->integer('installment_type')->nullable();
+            $table->integer('pay_cont');
+            $table->integer('installment');
+            $table->integer('first_pay');
+            $table->integer('installment_type');
             $table->timestamps();
 
 

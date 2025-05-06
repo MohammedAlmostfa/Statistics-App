@@ -35,7 +35,6 @@ class ProductService
                     'id',
                     'name',
                     'selling_price',
-                    'Dollar_exchange',
                     'dolar_buying_price',
                     'quantity',
                     'installment_price',

@@ -22,9 +22,9 @@ class ReceiptProductService
                 'receiptProducts.product' => function ($q) {
                     $q->select('id', 'name', 'installment_price');
                 },
-                  'receiptProducts.installment' => function ($q) {
-                      $q->select('id', 'receipt_product_id', 'pay_cont', 'first_pay', 'installment_type', 'installment', 'id');
-                  },
+                'receiptProducts.installment' => function ($q) {
+                    $q->select('id', 'receipt_product_id', 'pay_cont', 'first_pay', 'installment_type', 'installment', 'id');
+                },
                 'receiptProducts.installment.installmentPayments' => function ($q) {
                     $q->select('id', 'installment_id', 'payment_date', 'amount');
                 },
@@ -44,7 +44,6 @@ class ReceiptProductService
                 'message' => 'تم جلب جميع المنتجات بنجاح.',
                 'data' => $formattedProducts,
             ];
-
         } catch (\Exception $e) {
             Log::error('Error in getCustomerReceiptProducts: ' . $e->getMessage());
             return [
@@ -63,8 +62,8 @@ class ReceiptProductService
             $receiptProducts = ReceiptProduct::with(['product' => function ($q) {
                 $q->select('id', 'name', 'selling_price', 'installment_price');
             }])
-    ->where('receipt_id', $id)
-    ->get();
+                ->where('receipt_id', $id)
+                ->get();
 
 
             return [
@@ -72,7 +71,6 @@ class ReceiptProductService
                 'message' => 'تم جلب جميع المنتجات للفاتورة بنجاح.',
                 'data' => $receiptProducts,
             ];
-
         } catch (\Exception $e) {
             Log::error('Error in getreciptProduct: ' . $e->getMessage());
             return [

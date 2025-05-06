@@ -15,6 +15,8 @@ class ReceiptProduct extends Model
         'receipt_id',
         'product_id',
         'quantity',
+        'selling_price',
+        'buying_price',
         'description',
     ];
     /**
@@ -27,6 +29,8 @@ class ReceiptProduct extends Model
         'receipt_id' => 'integer',
         'product_id' => 'integer',
         'quantity' => 'integer',
+        'selling_price' => 'integer',
+        'buying_price' => 'integer',
         'description' => 'string',
     ];
 

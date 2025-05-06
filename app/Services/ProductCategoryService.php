@@ -25,7 +25,7 @@ class ProductCategoryService
 
             // Retrieve categories from cache, or fetch from DB and store in cache
             $categories = Cache::remember($cacheKey, 1000, function () {
-                return ProductCategory::select('id', 'name')->get();
+                return ProductCategory::select('id', 'name', 'dollar_exchange')->get();
             });
 
             return $this->successResponse('تم استرجاع الأصناف بنجاح', 200, $categories);
@@ -47,8 +47,6 @@ class ProductCategoryService
         try {
             // Create the category using Eloquent
             $category = ProductCategory::create($data);
-
-
             return $this->successResponse('تم إنشاء الصنف بنجاح', 200);
         } catch (Exception $e) {
             Log::error('خطأ أثناء إنشاء الصنف: ' . $e->getMessage());

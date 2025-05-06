@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Exception;
+use App\Models\Product;
 use App\Models\Receipt;
 use App\Models\Customer;
 use App\Events\ReceiptCreated;
@@ -73,13 +74,9 @@ class ReceiptService
         DB::beginTransaction();
 
         try {
-
-
             $receipt = $this->storeReceipt($data);
             $this->storeReceiptProducts($receipt, $data['products'], $data['type'], $data['receipt_date'] ?? now());
-
             DB::commit();
-
             return [
                 'status' => 200,
                 'message' => 'تم إنشاء الفاتورة بنجاح.',
@@ -110,16 +107,34 @@ class ReceiptService
 
     protected function storeReceiptProducts($receipt, array $products, $type, $receiptDate)
     {
-        foreach ($products as $productData) {
-            $receiptProduct = $receipt->receiptProducts()->create([
-                'product_id'  => $productData['product_id'],
-                'description' => $productData['description'] ?? null,
-                'quantity'    => $productData['quantity'] ?? 1,
-            ]);
-            ReceiptCreated::dispatch($productData['product_id'], $productData['quantity']);
 
-            if ($type === 'اقساط') {
+
+        if ($type === 'اقساط') {
+            foreach ($products as $productData) {
+                $product = Product::findOrFail($productData['product_id']);
+                $receiptProduct = $receipt->receiptProducts()->create([
+                    'product_id'  => $productData['product_id'],
+                    'description' => $productData['description'] ?? null,
+                    'quantity'    => $productData['quantity'] ,
+                    'buying_price' => $product->dolar_buying_price*$product->category->dollar_exchange ,
+                    'selling_price' =>$product->installment_price,
+                ]);
+                ReceiptCreated::dispatch($productData['product_id'], $productData['quantity']);
+
                 $this->createInstallment($receiptProduct, $productData, $receiptDate);
+            }
+        } else {
+            foreach ($products as $productData) {
+
+                $product = Product::findOrFail($productData['product_id']);
+                $receiptProduct = $receipt->receiptProducts()->create([
+                    'product_id'  => $productData['product_id'],
+                    'description' => $productData['description'] ?? null,
+                    'quantity'    => $productData['quantity'] ,
+                    'buying_price' => $product->dolar_buying_price*$product->category->dollar_exchange ,
+                    'selling_price' =>$product->selling_price,
+                ]);
+                ReceiptCreated::dispatch($productData['product_id'], $productData['quantity']);
             }
         }
     }
