@@ -15,6 +15,7 @@ return new class extends Migration {
         Schema::create('product_categories', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->float('dollar_exchange', 10, 2);
             $table->timestamps();
         });
     }

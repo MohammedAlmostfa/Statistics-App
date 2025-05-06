@@ -25,18 +25,19 @@ class UpdateProductCategoryData extends FormRequest
     public function rules(): array
     {
         return [
-       'name' => 'nullable|string|max:255|unique:product_origins,name|',
+            'name' => 'nullable|string|max:255|unique:product_categories,name|',
+            'dollar_exchange' => 'nullable|numeric',
         ];
     }
 
     /**
-        * Handle a failed validation attempt.
-        * This method is called when validation fails.
-        * Logs failed attempts and throws validation exception.
-        * @param \Illuminate\Validation\Validator $validator
-        * @return void
-        *
-        */
+     * Handle a failed validation attempt.
+     * This method is called when validation fails.
+     * Logs failed attempts and throws validation exception.
+     * @param \Illuminate\Validation\Validator $validator
+     * @return void
+     *
+     */
 
     protected function failedValidation(Validator $validator): void
     {

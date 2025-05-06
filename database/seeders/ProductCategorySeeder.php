@@ -44,6 +44,8 @@ class ProductCategorySeeder extends Seeder
         foreach ($categories as $category) {
             ProductCategory::create([
                 'name' => $category,
+                'dollar_exchange' => rand(5, 100),
+
             ]);
         }
     }

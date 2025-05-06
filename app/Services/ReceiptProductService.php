@@ -5,6 +5,7 @@ namespace App\Services;
 use Exception;
 use App\Models\Receipt;
 use App\Models\Customer;
+use App\Models\ReceiptProduct;
 use Illuminate\Support\Facades\Log;
 use App\Http\Resources\CustomerReceiptProduct;
 
@@ -59,12 +60,17 @@ class ReceiptProductService
     public function getreciptProduct($id)
     {
         try {
-            $receipt = Receipt::with('receiptProducts.product')->findOrFail($id);
+            $receiptProducts = ReceiptProduct::with(['product' => function ($q) {
+                $q->select('id', 'name', 'selling_price', 'installment_price');
+            }])
+    ->where('receipt_id', $id)
+    ->get();
+
 
             return [
                 'status' => 200,
                 'message' => 'تم جلب جميع المنتجات للفاتورة بنجاح.',
-                'data' => $receipt,
+                'data' => $receiptProducts,
             ];
 
         } catch (\Exception $e) {

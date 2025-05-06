@@ -49,7 +49,7 @@ class ProductCategoryService
             $category = ProductCategory::create($data);
 
 
-            return $this->successResponse('تم إنشاء الصنف بنجاح', 200, $category);
+            return $this->successResponse('تم إنشاء الصنف بنجاح', 200);
         } catch (Exception $e) {
             Log::error('خطأ أثناء إنشاء الصنف: ' . $e->getMessage());
             return $this->errorResponse('فشل في إنشاء الصنف');
@@ -71,7 +71,7 @@ class ProductCategoryService
 
 
 
-            return $this->successResponse('تم تحديث الصنف بنجاح', 200, $productcategory);
+            return $this->successResponse('تم تحديث الصنف بنجاح', 200);
         } catch (Exception $e) {
             Log::error('خطأ أثناء تحديث الصنف: ' . $e->getMessage());
             return $this->errorResponse('فشل في تحديث الصنف');

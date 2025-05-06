@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\ReceiptProduct;
 use App\Services\ReceiptProductService;
 use App\Http\Resources\CustomerReceiptProductResource;
+use App\Http\Resources\ReceiptProductResource;
 
 class ReceiptProductController extends Controller
 {
@@ -36,8 +37,9 @@ class ReceiptProductController extends Controller
         $result = $this->ReceiptProductService->getreciptProduct($id);
 
         return $result['status'] === 200
-            ? $this->success($result['data'], $result['message'], $result['status'])
-            : $this->error(null, $result['message'], $result['status']);
+              ? $this->success(ReceiptProductResource::collection($result['data']), $result['message'], $result['status'])
+              : $this->error(null, $result['message'], $result['status']);
+
     }
 
     /**
