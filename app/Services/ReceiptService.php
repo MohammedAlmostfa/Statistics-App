@@ -198,38 +198,38 @@ class ReceiptService
         $receipt->receiptProducts()->whereNotIn('product_id', $updatedProductIds)->delete();
 
         foreach ($products as $productData) {
-            $product = Product::findOrFail($productData['product_id']);
-            $oldQuantity = $existingReceiptProducts[$productData['product_id']]->quantity ?? 0;
-            $newQuantity = $productData['quantity'] ?? 1;
-            $quantityDifference = $newQuantity - $oldQuantity;
 
-            // تحديث أو إنشاء بند الفاتورة
-            $receiptProduct = $receipt->receiptProducts()->updateOrCreate(
-                ['product_id' => $productData['product_id']],
-                [
-                    'description' => $productData['description'] ?? null,
-                    'quantity' => $newQuantity,
-                    'buying_price' => $product->dolar_buying_price * $product->category->dollar_exchange,
-                    'selling_price' => $receipt->type === 'اقساط' ? $product->installment_price : $product->selling_price,
-                ]
-            );
+            if (array_key_exists('quantity', $productData)) {
+                $product = Product::findOrFail($productData['product_id']);
+                $oldQuantity = $existingReceiptProducts[$productData['product_id']]->quantity ?? 0;
+                $newQuantity = $productData['quantity'];
+                $quantityDifference = $newQuantity - $oldQuantity;
 
+                if ($quantityDifference !== 0) {
+                    ReceiptCreated::dispatch($productData['product_id'], $quantityDifference);
+                }
 
-            if(!$quantityDifference=0) {
-                ReceiptCreated::dispatch($productData['product_id'], $quantityDifference);
-            }
+                $receiptProduct = $receipt->receiptProducts()->updateOrCreate(
+                    ['product_id' => $productData['product_id']],
+                    [
+                        'description' => $productData['description'] ?? null,
+                        'quantity' => $newQuantity,
+                        'buying_price' => $product->dolar_buying_price * $product->category->dollar_exchange,
+                        'selling_price' => $receipt->type === 'اقساط' ? $product->installment_price : $product->selling_price,
+                    ]
+                );
 
-            if ($receipt->type === 'اقساط') {
-                $this->updateOrCreateInstallment($receiptProduct, $productData, $receiptDate);
+                if ($receipt->type === 'اقساط') {
+                    $this->updateInstallment($receiptProduct, $productData, $receiptDate);
+                }
             }
         }
     }
 
 
-    protected function updateOrCreateInstallment($receiptProduct, $productData, $receiptDate)
+    protected function updateInstallment($receiptProduct, $productData, $receiptDate)
     {
-        $receiptProduct->installment()->updateOrCreate(
-            [],
+        $receiptProduct->installment()->update(
             [
                 'pay_cont' => $productData['pay_cont'] ?? null,
                 'first_pay' => $productData['first_pay'] ?? null,
@@ -238,6 +238,10 @@ class ReceiptService
             ]
         );
     }
+    //_________________________________________________________________________________________________________________________________________________________________________________________________________________
+    //_________________________________________________________________________________________________________________________________________________________________________________________________________________
+    //_________________________________________________________________________________________________________________________________________________________________________________________________________________
+    //_________________________________________________________________________________________________________________________________________________________________________________________________________________
 
     /**
      * Delete a receipt and its related data.
