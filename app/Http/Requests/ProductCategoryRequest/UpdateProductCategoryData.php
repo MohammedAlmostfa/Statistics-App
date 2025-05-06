@@ -26,7 +26,7 @@ class UpdateProductCategoryData extends FormRequest
     {
         return [
             'name' => 'nullable|string|max:255|unique:product_categories,name|',
-            'dollar_exchange' => 'nullable|numeric',
+
         ];
     }
 

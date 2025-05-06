@@ -19,7 +19,7 @@ class ProductCategory extends Model
      * @var array
      * @documented
      */
-    protected $fillable = ['name','dollar_exchange',];
+    protected $fillable = ['name',];
 
     /**
      * Casts for attributes.
@@ -29,7 +29,7 @@ class ProductCategory extends Model
      */
     protected $casts = [
         'name' => 'string',
-        'dollar_exchange' => 'integer'
+
     ];
 
     /**

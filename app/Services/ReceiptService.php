@@ -116,7 +116,7 @@ class ReceiptService
                     'product_id'  => $productData['product_id'],
                     'description' => $productData['description'] ?? null,
                     'quantity'    => $productData['quantity'] ,
-                    'buying_price' => $product->dolar_buying_price*$product->category->dollar_exchange ,
+                    'buying_price' => $product->dolar_buying_price*$product->dollar_exchange ,
                     'selling_price' =>$product->installment_price,
                 ]);
                 ReceiptCreated::dispatch($productData['product_id'], $productData['quantity']);
@@ -131,7 +131,7 @@ class ReceiptService
                     'product_id'  => $productData['product_id'],
                     'description' => $productData['description'] ?? null,
                     'quantity'    => $productData['quantity'] ,
-                    'buying_price' => $product->dolar_buying_price*$product->category->dollar_exchange ,
+                    'buying_price' => $product->dolar_buying_price*$product->dollar_exchange ,
                     'selling_price' =>$product->selling_price,
                 ]);
                 ReceiptCreated::dispatch($productData['product_id'], $productData['quantity']);

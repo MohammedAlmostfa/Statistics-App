@@ -21,6 +21,7 @@ class Product extends Model
         'selling_price',
         'dolar_buying_price',
         'installment_price',
+        'dollar_exchange',
         'quantity',
         'user_id',
         'origin_id',
@@ -38,6 +39,7 @@ class Product extends Model
 
         'selling_price'     => 'float',
         'dolar_buying_price' => 'float',
+        'dollar_exchange' => 'integer',
         'installment_price' => 'integer',
         'quantity'          => 'integer',
         'user_id'           => 'integer',

@@ -36,6 +36,7 @@ class ProductService
                     'name',
                     'selling_price',
                     'dolar_buying_price',
+                    'dollar_exchange',
                     'quantity',
                     'installment_price',
                     'created_at',
@@ -83,6 +84,7 @@ class ProductService
             // Create the new product
             $product = Product::create([
                 'name' => $data['name'],
+                'dollar_exchange' => $data['dollar_exchange'],
                 'selling_price' => $data['selling_price'],
                 'installment_price' => $data['installment_price'],
                 'origin_id' => $data['origin_id'],
@@ -126,6 +128,7 @@ class ProductService
 
                 $lockedProduct->update([
                     'name' => $data['name'] ?? $lockedProduct->name,
+                    'dollar_exchange' => $data['dollar_exchange'] ?? $lockedProduct->dollar_exchange,
                     'selling_price' => $data['selling_price'] ?? $lockedProduct->selling_price,
                     'installment_price' => $data['installment_price'] ?? $lockedProduct->installment_price,
                     'origin_id' => $data['origin_id'] ?? $lockedProduct->origin_id,
@@ -133,8 +136,6 @@ class ProductService
                     'quantity' => $data['quantity'] ?? $lockedProduct->quantity,
                     'dolar_buying_price' => $data['dolar_buying_price'] ?? $lockedProduct->dolar_buying_price,
                 ]);
-
-
             });
 
             return [

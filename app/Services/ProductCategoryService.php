@@ -25,7 +25,7 @@ class ProductCategoryService
 
             // Retrieve categories from cache, or fetch from DB and store in cache
             $categories = Cache::remember($cacheKey, 1000, function () {
-                return ProductCategory::select('id', 'name', 'dollar_exchange')->get();
+                return ProductCategory::select('id', 'name')->get();
             });
 
             return $this->successResponse('تم استرجاع الأصناف بنجاح', 200, $categories);

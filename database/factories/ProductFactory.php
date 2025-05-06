@@ -18,6 +18,7 @@ class ProductFactory extends Factory
             'name' => $this->faker->word(),
             'selling_price' => $this->faker->randomFloat(2, 20, 200),
             'dolar_buying_price' => $this->faker->randomFloat(2, 20, 200),
+            "dollar_exchange"=> $this->faker->randomFloat(2, 20, 200),
             'installment_price' => $this->faker->numberBetween(30, 300),
             'quantity' => $this->faker->numberBetween(1, 100),
             'user_id' => User::inRandomOrder()->first()?->id ?? 1,

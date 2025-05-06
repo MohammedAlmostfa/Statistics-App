@@ -26,7 +26,7 @@ class StoreProductCategoryData extends FormRequest
     {
         return [
             'name' => 'required|string|max:255|unique:product_categories,name|',
-            'dollar_exchange' => 'required|numeric',
+
         ];
     }
 
