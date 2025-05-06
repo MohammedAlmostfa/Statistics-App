@@ -40,21 +40,6 @@ class InstallmentPaymentController extends Controller
 
 
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(InstallmentPayment $installmentPayment)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(InstallmentPayment $installmentPayment)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
@@ -75,6 +60,10 @@ class InstallmentPaymentController extends Controller
      */
     public function destroy(InstallmentPayment $installmentPayment)
     {
-        //
+        $result = $this->installmentPaymentService->deleteInstallmentPayment($installmentPayment);
+
+        return $result['status'] === 200
+            ? $this->success(null, $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
     }
 }

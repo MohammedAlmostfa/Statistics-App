@@ -59,14 +59,14 @@ class ReceiptController extends Controller
      * @param Receipt $receipt
      * @return JsonResponse
      */
-    // public function update(UpdateReceiptData $request, Receipt $receipt): JsonResponse
-    // {
-    //     $result = $this->receiptService->updateReceiptWithProducts($receipt, $request->validated());
+    public function update(UpdateReceiptData $request, Receipt $receipt): JsonResponse
+    {
+        $result = $this->receiptService->updateReceiptWithProducts($receipt, $request->validated());
 
-    //     return $result['status'] === 200
-    //         ? $this->success(null, $result['message'], $result['status'])
-    //         : $this->error(null, $result['message'], $result['status']);
-    // }
+        return $result['status'] === 200
+            ? $this->success(null, $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
+    }
 
 
 

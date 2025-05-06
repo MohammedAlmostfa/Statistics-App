@@ -79,5 +79,8 @@ Route::middleware('jwt')->group(function () {
     // Installment Payment routes
     // These routes handle installment payments
     Route::post('installments/{id}/payments', [InstallmentPaymentController::class, 'store']); // Creates a new installment payment associated with the installment
-    Route::put('installmentPayments/{id}', [InstallmentPaymentController::class, 'update']); // Updates an existing installment payment by ID
+
+    Route::apiResource('/installmentPayments', InstallmentPaymentController::class); // Displays, creates, updates, and deletes receipts
+
+
 });

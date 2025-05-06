@@ -156,110 +156,88 @@ class ReceiptService
     /**
      * Update an existing receipt with its products and installments.
      */
-    // public function updateReceiptWithProducts(Receipt $receipt, $data)
-    // {
-    //     DB::beginTransaction();
+    public function updateReceiptWithProducts(Receipt $receipt, $data)
+    {
+        DB::beginTransaction();
+
+        try {
+            $this->updateReceipt($receipt, $data);
+            if (!empty($data['products'])) {
+                $this->updateReceiptProducts($receipt, $data['products'], $data['receipt_date'] ?? null);
+            }
+            DB::commit();
+            return [
+                'status' => 200,
+                'message' => 'تم تحديث الفاتورة بنجاح.',
+            ];
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Error in updateReceiptWithProducts: ' . $e->getMessage());
+            return [
+                'status' => 500,
+                'message' => 'حدث خطأ أثناء تحديث الفاتورة.',
+            ];
+        }
+    }
+
+    protected function updateReceipt(Receipt $receipt, array $data)
+    {
+        $receipt->update([
+            'customer_id' => $data['customer_id'] ?? $receipt->customer_id,
+            'total_price' => $data['total_price'] ?? $receipt->total_price,
+            'notes' => $data['notes'] ?? $receipt->notes,
+            'receipt_date' => $data['receipt_date'] ?? $receipt->receipt_date,
+        ]);
+    }
+
+    protected function updateReceiptProducts($receipt, array $products, $receiptDate)
+    {
+        $existingReceiptProducts = $receipt->receiptProducts()->get()->keyBy('product_id');
+        $updatedProductIds = collect($products)->pluck('product_id')->toArray();
+
+        $receipt->receiptProducts()->whereNotIn('product_id', $updatedProductIds)->delete();
+
+        foreach ($products as $productData) {
+            $product = Product::findOrFail($productData['product_id']);
+            $oldQuantity = $existingReceiptProducts[$productData['product_id']]->quantity ?? 0;
+            $newQuantity = $productData['quantity'] ?? 1;
+            $quantityDifference = $newQuantity - $oldQuantity;
+
+            // تحديث أو إنشاء بند الفاتورة
+            $receiptProduct = $receipt->receiptProducts()->updateOrCreate(
+                ['product_id' => $productData['product_id']],
+                [
+                    'description' => $productData['description'] ?? null,
+                    'quantity' => $newQuantity,
+                    'buying_price' => $product->dolar_buying_price * $product->category->dollar_exchange,
+                    'selling_price' => $receipt->type === 'اقساط' ? $product->installment_price : $product->selling_price,
+                ]
+            );
 
 
-    //     try {
-    //         $this->updateReceipt($receipt, $data);
-    //         if (!empty($data['products'])) {
-    //             Log::error('13s: ');
+            if(!$quantityDifference=0) {
+                ReceiptCreated::dispatch($productData['product_id'], $quantityDifference);
+            }
 
-    //             $this->updateReceiptProducts($receipt, $data['products'], $data['type'] ?? null, $data['receipt_date'] ?? null);
-    //         }
-
-    //         DB::commit();
-
-    //         return [
-    //             'status' => 200,
-    //             'message' => 'تم تحديث الفاتورة بنجاح.',
-
-    //         ];
-    //     } catch (Exception $e) {
-    //         DB::rollBack();
-    //         Log::error('Error in updateReceiptWithProducts: ' . $e->getMessage());
-
-    //         return [
-    //             'status' => 500,
-    //             'message' => 'حدث خطأ أثناء تحديث الفاتورة.',
-    //         ];
-    //     }
-    // }
-
-    // protected function updateReceipt(Receipt $receipt, array $data)
-    // {
-
-    //     $receipt->update([
-    //         'customer_id'    => $data['customer_id'] ?? $receipt->customer_id,
-    //         'type'           => $data['type'] ?? $receipt->type,
-    //         'total_price'    => $data['total_price'] ?? $receipt->total_price,
-    //         'notes'          => $data['notes'] ?? $receipt->notes,
-    //         'receipt_date'   => $data['receipt_date'] ?? $receipt->receipt_date,
-    //     ]);
+            if ($receipt->type === 'اقساط') {
+                $this->updateOrCreateInstallment($receiptProduct, $productData, $receiptDate);
+            }
+        }
+    }
 
 
-    // }
-
-    // protected function updateReceiptProducts($receipt, array $products, $type, $receiptDate)
-    // {
-    //     $existingProductIds = collect($products)->pluck('product_id')->toArray();
-    //     $receipt->receiptProducts()->whereNotIn('product_id', $existingProductIds)->delete();
-
-
-    //     foreach ($products as $productData) {
-    //         $receiptProduct = $receipt->receiptProducts()->updateOrCreate(
-    //             ['product_id' => $productData['product_id']],
-    //             [
-    //                 'description' => $productData['description'] ?? null,
-    //                 'quantity'    => $productData['quantity'] ?? 1,
-    //             ]
-    //         );
-
-    //         if ($type === 'اقساط') {
-    //             $this->updateInstallment($receiptProduct, $productData, $receiptDate);
-    //         }
-    //         if ($type === 'نقدي') {
-    //             if ($receiptProduct->installment) {
-    //                 $receiptProduct->installment->delete();
-    //             }
-    //         }
-
-
-    //     }
-    // }
-
-    // protected function updateInstallment($receiptProduct, $productData, $receiptDate)
-    // {
-    //     $typeValue = array_search($productData['installment_type'], \App\Models\Installment::TYPE_MAP);
-    //     if ($typeValue === false) {
-    //         throw new Exception("نوع القسط غير صالح: " . $productData['installment_type']);
-    //     }
-
-    //     $installment = $receiptProduct->installment;
-
-    //     if ($installment) {
-    //         $installment->update([
-    //             'pay_cont'         => $productData['pay_cont'],
-    //             'installment'      => $productData['installment'],
-    //             'installment_type' => $typeValue,
-    //         ]);
-    //     } else {
-    //         $installment = $receiptProduct->installment()->create([
-    //             'pay_cont'         => $productData['pay_cont'],
-    //             'installment'      => $productData['installment'],
-    //             'installment_type' => $typeValue,
-    //         ]);
-    //     }
-
-    //     $installment->installmentPayments()->updateOrCreate(
-    //         ['payment_date' => $receiptDate],
-    //         [
-    //             'amount' => $productData['amount'],
-    //             'status' => 0,
-    //         ]
-    //     );
-    // }
+    protected function updateOrCreateInstallment($receiptProduct, $productData, $receiptDate)
+    {
+        $receiptProduct->installment()->updateOrCreate(
+            [],
+            [
+                'pay_cont' => $productData['pay_cont'] ?? null,
+                'first_pay' => $productData['first_pay'] ?? null,
+                'installment' => $productData['installment'] ?? null,
+                'installment_type' => $productData['installment_type'] ?? null,
+            ]
+        );
+    }
 
     /**
      * Delete a receipt and its related data.
