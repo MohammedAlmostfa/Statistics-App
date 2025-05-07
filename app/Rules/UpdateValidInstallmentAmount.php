@@ -63,8 +63,9 @@ class UpdateValidInstallmentAmount implements Rule
             $totalPaid += $this->installment->first_pay;
         }
 
-        $totalInstallmentAmount = $this->installment->receiptProduct->product->installment_price *
-                                    $this->installment->receiptProduct->quantity;
+        $totalInstallmentAmount = $this->installment->receiptProduct->selling_price *
+                                       $this->installment->receiptProduct->quantity;
+
 
         // To check if the *new* value is valid, we subtract the *current* value
         // of this payment and add the *new* value.

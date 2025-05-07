@@ -2,11 +2,14 @@
 
 namespace App\Http\Requests\ReceiptRequest;
 
-use App\Rules\AvailableQuantity;
-use App\Rules\AvailableQuantityStore;
+use App\Rules\FirstInstallmentAmountValid;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
+use PhpParser\NodeVisitor\FirstFindingVisitor;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use App\Rules\AvailableQuantityStore; // تأكد من أن هذا المستورد صحيح
+use App\Models\Product; // استورد نموذج المنتج لاستخدامه داخل الـ closure
+use App\Rules\AvailableQuantity; // تأكد من أن هذا المستورد صحيح إذا كان AvailableQuantity ما يزال مستخدماً
 
 class StoreReceiptData extends FormRequest
 {
@@ -34,31 +37,40 @@ class StoreReceiptData extends FormRequest
                     $index = explode('.', $attribute)[1];
                     $productId = $this->input("products.{$index}.product_id");
 
-                    if (!is_numeric($productId)) {
-                        return;
-                    }
                     $rule = new AvailableQuantityStore((int)$productId);
                     if (!$rule->passes($attribute, $value)) {
                         $fail($rule->message());
                     }
                 }
             ],
+
             'products.*.pay_cont' => 'required_if:type,اقساط|nullable|integer|min:1',
             'products.*.installment' => 'required_if:type,اقساط|nullable|integer|min:1',
             'products.*.installment_type' => 'required_if:type,اقساط|nullable|in:,يومي,شهري,اسبوعي',
-            'products.*.amount' => 'required_if:type,اقساط|nullable|integer|min:1',
+
+            'products.*.amount' => [
+                'required_if:type,اقساط',
+                'nullable',
+                'integer',
+                'min:1',
+                function ($attribute, $value, $fail) {
+                    $index = explode('.', $attribute)[1];
+                    $productId = $this->input("products.{$index}.product_id");
+                    $quantity = $this->input("products.{$index}.quantity");
+
+                    $rule = new FirstInstallmentAmountValid((int) $productId, (int) $quantity);
+                    if (!$rule->passes($attribute, $value)) {
+                        $fail($rule->message());
+                    }
+                }
+            ],
         ];
     }
 
     /**
      * Handle a failed validation attempt.
-     * This method is called when validation fails.
-     * Logs failed attempts and throws validation exception.
-     * @param \Illuminate\Validation\Validator $validator
-     * @return void
-     *
-     */
 
+     */
     protected function failedValidation(Validator $validator): void
     {
         throw new HttpResponseException(response()->json([

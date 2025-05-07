@@ -59,17 +59,8 @@ class AvailableQuantityUpdate implements Rule
                                   ->first();
 
         $oldQuantityInReceipt = $receiptProduct ? $receiptProduct->quantity : 0;
-
-
         $additionalQuantityNeeded = $value - $oldQuantityInReceipt;
-
-
-
-
         return $product->quantity >= $additionalQuantityNeeded;
-
-
-
 
     }
 

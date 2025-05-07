@@ -3,7 +3,9 @@
 namespace App\Http\Requests\ReceiptRequest;
 
 use App\Rules\AvailableQuantity;
+use Illuminate\Support\Facades\Log;
 use App\Rules\AvailableQuantityUpdate;
+use App\Rules\FirstInstallmentAmountValid;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -33,21 +35,15 @@ class UpdateReceiptData extends FormRequest
             'products'                        => 'required_if:type,اقساط|nullable|array',
             'products.*.product_id'           => 'required_if:type,اقساط|required|exists:products,id',
             'products.*.description'          => 'nullable|string|max:255',
-    'products.*.quantity' => [
+            'products.*.quantity' => [
                 'required',
                 'integer',
                 'min:1',
                 function ($attribute, $value, $fail) {
                     $index = explode('.', $attribute)[1];
                     $productId = $this->input("products.{$index}.product_id");
-
-                    if (!is_numeric($productId)) {
-                        return;
-                    }
-                    $receiptId = $this->route('receipt');
-
+                    $receiptId = $this->route('receipt')->id;
                     $rule = new AvailableQuantityUpdate((int)$productId, (int)$receiptId);
-
                     if (!$rule->passes($attribute, $value)) {
                         $fail($rule->message());
                     }
@@ -57,18 +53,34 @@ class UpdateReceiptData extends FormRequest
             'products.*.pay_cont'             => 'required_if:type,اقساط|nullable|integer|min:1',
             'products.*.installment'          => 'required_if:type,اقساط|nullable|integer|min:1',
             'products.*.installment_type'     => 'required_if:type,اقساط|nullable|in:يومي,شهري,اسبوعي',
-            'products.*.amount'               => 'required_if:type,اقساط|nullable|integer|min:1',
+        'products.*.amount' => [
+                'required_if:type,اقساط',
+                'nullable',
+                'integer',
+                'min:1',
+                function ($attribute, $value, $fail) {
+                    $index = explode('.', $attribute)[1];
+                    $productId = $this->input("products.{$index}.product_id");
+                    $quantity = $this->input("products.{$index}.quantity");
+
+                    $rule = new FirstInstallmentAmountValid((int) $productId, (int) $quantity);
+                    if (!$rule->passes($attribute, $value)) {
+                        $fail($rule->message());
+                    }
+                }
+            ],
         ];
     }
 
+
     /**
-        * Handle a failed validation attempt.
-        * This method is called when validation fails.
-        * Logs failed attempts and throws validation exception.
-        * @param \Illuminate\Validation\Validator $validator
-        * @return void
-        *
-        */
+     * Handle a failed validation attempt.
+     * This method is called when validation fails.
+     * Logs failed attempts and throws validation exception.
+     * @param \Illuminate\Validation\Validator $validator
+     * @return void
+     *
+     */
 
     protected function failedValidation(Validator $validator): void
     {

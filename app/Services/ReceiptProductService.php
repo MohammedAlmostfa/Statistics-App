@@ -17,10 +17,10 @@ class ReceiptProductService
         try {
             $receipts = Receipt::with([
                 'receiptProducts' => function ($q) {
-                    $q->select('id', 'receipt_id', 'product_id', 'quantity');
+                    $q->select('id', 'receipt_id', 'product_id', 'quantity', 'selling_price');
                 },
                 'receiptProducts.product' => function ($q) {
-                    $q->select('id', 'name', 'installment_price');
+                    $q->select('id', 'name', );
                 },
                 'receiptProducts.installment' => function ($q) {
                     $q->select('id', 'receipt_product_id', 'pay_cont', 'first_pay', 'installment_type', 'installment', 'id');
