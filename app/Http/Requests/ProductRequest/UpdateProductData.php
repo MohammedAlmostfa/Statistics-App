@@ -26,7 +26,6 @@ class UpdateProductData extends FormRequest
     {
         return [
             'name' => 'nullable|string',
-
             'installment_price' => 'nullable|integer',
             'quantity' => 'nullable|integer',
             'selling_price' => 'nullable|numeric',
