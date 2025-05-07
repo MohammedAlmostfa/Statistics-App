@@ -48,7 +48,7 @@ class StoreReceiptData extends FormRequest
             'products.*.installment' => 'required_if:type,اقساط|nullable|integer|min:1',
             'products.*.installment_type' => 'required_if:type,اقساط|nullable|in:,يومي,شهري,اسبوعي',
 
-            'products.*.amount' => [
+            'products.*.first_pay' => [
                 'required_if:type,اقساط',
                 'nullable',
                 'integer',

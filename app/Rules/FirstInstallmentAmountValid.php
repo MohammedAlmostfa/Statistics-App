@@ -36,11 +36,11 @@ class FirstInstallmentAmountValid implements Rule
      */
     public function passes($attribute, $value)
     {
-        $amount = (int) $value;
+        $first_pay = (int) $value;
         $product = Product::find($this->productId);
         $unitSellingPrice = $product->installment_price;
         $itemTotal = $this->quantity * $unitSellingPrice;
-        return $amount <= $itemTotal;
+        return $first_pay <= $itemTotal;
     }
 
     /**

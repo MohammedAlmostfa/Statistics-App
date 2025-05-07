@@ -16,16 +16,15 @@ class ReceiptProductResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'description'=>$this->description,
+            'description' => $this->description,
             'product_id' => $this->product_id,
             'product_name' => $this->product->name,
             'unit_price' => $this->selling_price,
             'quantity' => $this->quantity,
-                    'pay_cont' => optional($this->installment)->pay_cont,
-'installment' => optional($this->installment)->installment,
-'first_pay' => optional($this->installment)->first_pay,
-
-'installment_type' => optional($this->installment)->installment_type,
+            'pay_cont' => optional($this->installment)->pay_cont,
+            'installment' => optional($this->installment)->installment,
+            'first_pay' => optional($this->installment)->first_pay,
+            'installment_type' => optional($this->installment)->installment_type,
 
 
 
