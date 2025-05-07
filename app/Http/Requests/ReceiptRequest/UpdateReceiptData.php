@@ -34,7 +34,7 @@ class UpdateReceiptData extends FormRequest
 
             'products' => 'nullable|array',
             'products.*.product_id' => 'required|exists:products,id',
-            'products.*.description' => 'required|string|max:255',
+            'products.*.description' => 'nullable|string|max:255',
             'products.*.quantity' => [
                 'required',
                 'integer',

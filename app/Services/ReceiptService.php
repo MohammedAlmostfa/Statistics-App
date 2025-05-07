@@ -5,7 +5,6 @@ namespace App\Services;
 use Exception;
 use App\Models\Product;
 use App\Models\Receipt;
-
 use App\Events\ReceiptCreated;
 use App\Models\ReceiptProduct;
 use Illuminate\Support\Facades\DB;
@@ -14,8 +13,9 @@ use Illuminate\Support\Facades\Auth;
 
 class ReceiptService
 {
-
-
+    /**
+     * Get all receipts with related user and customer info.
+     */
     public function getAllReceipt()
     {
         try {
@@ -43,10 +43,12 @@ class ReceiptService
         }
     }
 
+    /**
+     * Get receipts for a specific customer.
+     */
     public function getCustomerReceipt($id)
     {
         try {
-
             $receipts = Receipt::with(['user:id,name'])
                 ->where('customer_id', $id)
                 ->paginate(10);
@@ -67,7 +69,7 @@ class ReceiptService
     }
 
     /**
-     * Create a new receipt with its products and installments.
+     * Create a new receipt and its related products (and installments if needed).
      */
     public function createReceipt(array $data)
     {
@@ -78,6 +80,7 @@ class ReceiptService
 
             $this->storeReceiptProducts($receipt, $data['products'], $data['type']);
             DB::commit();
+
             return [
                 'status' => 200,
                 'message' => 'تم إنشاء الفاتورة بنجاح.',
@@ -88,11 +91,14 @@ class ReceiptService
 
             return [
                 'status' => 500,
-                'message' => 'حدث خطأ أثناء إنشاء الفاتورة ' ,
+                'message' => 'حدث خطأ أثناء إنشاء الفاتورة ',
             ];
         }
     }
 
+    /**
+     * Store receipt main record.
+     */
     protected function storeReceipt(array $data)
     {
         return Receipt::create([
@@ -106,13 +112,17 @@ class ReceiptService
         ]);
     }
 
+    /**
+     * Store all products related to a receipt.
+     */
     protected function storeReceiptProducts(Receipt $receipt, array $products, string $type)
     {
-
         foreach ($products as $productData) {
             $product = Product::findOrFail($productData['product_id']);
+
             $buyingPrice = $product->getCalculatedBuyingPrice();
             $sellingPrice = $product->getSellingPriceForReceiptType($type);
+
             $receiptProduct = $receipt->receiptProducts()->create([
                 'product_id'     => $productData['product_id'],
                 'description'    => $productData['description'] ?? null,
@@ -121,24 +131,27 @@ class ReceiptService
                 'selling_price'  => $sellingPrice,
             ]);
 
+            // Update inventory via event
             ReceiptCreated::dispatch($productData['product_id'], $productData['quantity']);
 
+            // Handle installments if type is "اقساط"
             if ($type === 'اقساط') {
                 if (!isset($productData['pay_cont'], $productData['first_pay'], $productData['installment'], $productData['installment_type'])) {
                     throw new Exception("بيانات القسط غير مكتملة للمنتج ID: " . $productData['product_id']);
                 }
+
                 $this->createInstallment($receiptProduct, $productData);
             }
         }
-
     }
 
-
+    /**
+     * Create a new installment record.
+     */
     protected function createInstallment(ReceiptProduct $receiptProduct, array $productData)
     {
         $receiptProduct->installment()->create([
             'pay_cont'         => $productData['pay_cont'],
-
             'first_pay'        => $productData['first_pay'],
             'installment'      => $productData['installment'],
             'installment_type' => $productData['installment_type']
@@ -146,11 +159,7 @@ class ReceiptService
     }
 
     /**
-     * Updates an existing Receipt and its associated products.
-     *
-     * @param Receipt $receipt The receipt instance to update.
-     * @param array $data The data for updating the receipt and its products.
-     * @return array
+     * Update receipt and sync its products.
      */
     public function updateReceiptWithProducts(Receipt $receipt, array $data)
     {
@@ -160,25 +169,66 @@ class ReceiptService
             $existingReceiptProducts = $receipt->receiptProducts()->get()->keyBy('product_id');
 
             $this->updateReceipt($receipt, $data);
-            if (!empty($data['products'])) {
 
-                $this->syncReceiptProducts($receipt, $data['products'], $existingReceiptProducts);
-            } else {
+            $currentProductIds = array_column($data['products'], 'product_id');
+            $deletedProductIds = $existingReceiptProducts->keys()->diff($currentProductIds);
+            $addedProductIds = collect($currentProductIds)->diff($existingReceiptProducts->keys());
+            $updatedProductIds = $existingReceiptProducts->keys()->intersect($currentProductIds);
 
-                foreach ($existingReceiptProducts as $existingReceiptProduct) {
-                    if ($receipt->type === 'اقساط') {
-
-                        if ($existingReceiptProduct->installment) {
-                            $existingReceiptProduct->installment()->delete();
-                        }
-                    }
-
-                    ReceiptCreated::dispatch($existingReceiptProduct->product_id, -$existingReceiptProduct->quantity);
-                }
-
-                $receipt->receiptProducts()->delete();
+            // Remove deleted products
+            foreach ($deletedProductIds as $productIdToRemove) {
+                $productToRemove = $existingReceiptProducts->get($productIdToRemove);
+                ReceiptCreated::dispatch($productToRemove->product_id, -$productToRemove->quantity);
+                $productToRemove->delete();
             }
 
+            foreach ($data['products'] as $productData) {
+                $productId = $productData['product_id'];
+
+                if ($addedProductIds->contains($productId)) {
+                    // Add new product
+                    $product = Product::findOrFail($productId);
+                    $receiptType = $receipt->type;
+                    $buyingPrice = $product->getCalculatedBuyingPrice();
+                    $sellingPrice = $product->getSellingPriceForReceiptType($receiptType);
+
+                    $receiptProduct = $receipt->receiptProducts()->create([
+                        'receipt_id'    => $receipt->id,
+                        'product_id'    => $productId,
+                        'description'   => $productData['description'] ?? null,
+                        'quantity'      => (int)$productData['quantity'],
+                        'buying_price'  => $buyingPrice,
+                        'selling_price' => $sellingPrice,
+                    ]);
+
+                    ReceiptCreated::dispatch($productId, (int)$productData['quantity']);
+
+                    if ($receiptType === 'اقساط') {
+                        $this->createInstallment($receiptProduct, $productData);
+                    }
+
+                } elseif ($updatedProductIds->contains($productId)) {
+                    // Update product
+                    $receiptProduct = $existingReceiptProducts->get($productId);
+                    $oldQuantity = (int)$receiptProduct->quantity;
+                    $newQuantity = (int)$productData['quantity'];
+                    $description = $productData['description'] ?? $receiptProduct->description;
+
+                    $receiptProduct->update([
+                        'quantity'    => $newQuantity ?? $receiptProduct->quantity,
+                        'description' => $description ?? $receiptProduct->description,
+                    ]);
+
+                    $quantityDifference = $newQuantity - $oldQuantity;
+                    if ($quantityDifference !== 0) {
+                        ReceiptCreated::dispatch($productId, $quantityDifference);
+                    }
+
+                    if ($receipt->type === 'اقساط') {
+                        $this->createOrUpdateInstallment($receiptProduct, $productData);
+                    }
+                }
+            }
 
             $this->updateTotalPrice($receipt);
 
@@ -187,122 +237,36 @@ class ReceiptService
             return [
                 'status' => 200,
                 'message' => 'تم تحديث الفاتورة بنجاح.',
-                'data' => $receipt->load('receiptProducts.installment')
             ];
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Error in updateReceiptWithProducts: ' . $e->getMessage(), ['receipt_id' => $receipt->id, 'data' => $data, 'exception' => $e]);
+            Log::error('Error in updateReceiptWithProducts: ' . $e->getMessage(), [
+                'receipt_id' => $receipt->id,
+                'data'       => $data,
+                'exception'  => $e
+            ]);
 
             return [
                 'status' => 500,
-                'message' => 'حدث خطأ أثناء تحديث الفاتورة: ' . $e->getMessage(),
+                'message' => 'حدث خطأ أثناء تحديث الفاتورة: ',
             ];
         }
     }
 
     /**
-     * Updates the main Receipt details.
+     * Update receipt base info (not products).
      */
     protected function updateReceipt(Receipt $receipt, array $data): void
     {
-
         $receipt->update([
             'customer_id'  => $data['customer_id'] ?? $receipt->customer_id,
             'notes'        => $data['notes'] ?? $receipt->notes,
             'receipt_date' => $data['receipt_date'] ?? $receipt->receipt_date,
-
         ]);
     }
 
     /**
-     * Syncs receipt products (adds, updates, removes) and handles related installments.
-     * Note: This method might not handle all edge cases robustly compared to a more complete sync logic.
-     */
-    protected function syncReceiptProducts(Receipt $receipt, array $productsData, $existingReceiptProducts): void
-    {
-        $currentProductIds = [];
-
-        $receiptType = $receipt->type;
-
-
-        foreach ($productsData as $productData) {
-            if (!isset($productData['product_id']) || !isset($productData['quantity'])) {
-                Log::warning("Skipping product data due to missing product_id or quantity", ['product_data' => $productData]);
-                continue;
-            }
-
-            $productId = $productData['product_id'];
-            $currentProductIds[] = $productId;
-            $newQuantity = (int)$productData['quantity'];
-
-            $product = Product::findOrFail($productId);
-            $oldReceiptProduct = $existingReceiptProducts->get($productId);
-            $oldQuantity = $oldReceiptProduct ? (int)$oldReceiptProduct->quantity : 0;
-
-            $quantityDifference = $newQuantity - $oldQuantity;
-
-            if ($quantityDifference !== 0) {
-                ReceiptCreated::dispatch($productId, $quantityDifference);
-            }
-
-
-            $buyingPrice = $product->dolar_buying_price * $product->dollar_exchange;
-
-            // Use the receipt type
-            $sellingPrice = $product->getSellingPriceForReceiptType($receiptType);
-
-            $description = $productData['description'] ?? $oldReceiptProduct?->description;
-
-            $receiptProduct = $receipt->receiptProducts()->updateOrCreate(
-                ['product_id' => $productId],
-                [
-                    'description'   => $description,
-                    'quantity'      => $newQuantity,
-                    'buying_price'  => $buyingPrice,
-                    'selling_price' => $sellingPrice,
-                ]
-            );
-
-
-            if ($receiptType === 'اقساط') {
-
-                if (!isset($productData['pay_cont'], $productData['first_pay'], $productData['installment'], $productData['installment_type'])) {
-                    Log::error("Installment data incomplete for product ID during sync: " . $productId, ['product_data' => $productData]);
-
-                    continue;
-                }
-
-                $this->createOrUpdateInstallment($receiptProduct, $productData);
-            } else {
-
-                if ($receiptProduct->installment) {
-                    $receiptProduct->installment()->delete();
-                }
-            }
-
-
-        }
-
-
-        $productIdsToRemove = $existingReceiptProducts->keys()->diff($currentProductIds);
-        foreach ($productIdsToRemove as $productIdToRemove) {
-            $productToRemove = $existingReceiptProducts->get($productIdToRemove);
-
-            if ($productToRemove->installment) {
-                $productToRemove->installment()->delete();
-            }
-            ReceiptCreated::dispatch($productToRemove->product_id, -$productToRemove->quantity);
-            $productToRemove->delete(); // Delete the ReceiptProduct
-        }
-    }
-
-    /**
-     * Creates or updates the Installment record for a ReceiptProduct.
-     * Used in both create and sync processes.
-     *
-     * @param ReceiptProduct $receiptProduct
-     * @param array $productData The product data array containing installment details.
-     * @return void
+     * Create or update an installment entry for a product.
      */
     protected function createOrUpdateInstallment(ReceiptProduct $receiptProduct, array $productData): void
     {
@@ -310,7 +274,6 @@ class ReceiptService
             [],
             [
                 'pay_cont'         => $productData['pay_cont'],
-
                 'first_pay'        => $productData['first_pay'],
                 'installment'      => $productData['installment'],
                 'installment_type' => $productData['installment_type']
@@ -319,11 +282,10 @@ class ReceiptService
     }
 
     /**
-     * Recalculates and updates the total price of the receipt.
+     * Recalculate total price of the receipt.
      */
     protected function updateTotalPrice(Receipt $receipt): void
     {
-
         $receipt->load('receiptProducts');
 
         $totalPrice = $receipt->receiptProducts->sum(function ($receiptProduct) {
@@ -334,26 +296,17 @@ class ReceiptService
     }
 
     /**
-     * Delete a receipt and its related data.
+     * Delete receipt and related products/installments.
      */
     public function deleteReceipt(Receipt $receipt)
     {
         DB::beginTransaction();
         try {
-
-
             foreach ($receipt->receiptProducts as $receiptProduct) {
-                // Delete installment if it exists
-                if ($receiptProduct->installment) {
-                    $receiptProduct->installment()->delete();
-                }
                 ReceiptCreated::dispatch($receiptProduct->product_id, -$receiptProduct->quantity);
-
             }
 
             $receipt->receiptProducts()->delete();
-
-
             $receipt->delete();
 
             DB::commit();
@@ -372,6 +325,4 @@ class ReceiptService
             ];
         }
     }
-
-
 }

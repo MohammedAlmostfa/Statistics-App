@@ -58,6 +58,7 @@ class Product extends Model
 
         return ($type === 'اقساط') ? $this->installment_price : $this->selling_price;
     }
+
     /**
      * Relationship: A Product can have many ReceiptProducts.
      *

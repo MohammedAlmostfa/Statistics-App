@@ -4,34 +4,31 @@ namespace App\Rules;
 
 use App\Models\Product;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Facades\Log; // أضف هذا الاستيراد لتسجيل الخطأ إذا حدث السيناريو غير المتوقع
 
 class FirstInstallmentAmountValid implements Rule
 {
     protected $productId;
     protected $quantity;
 
-
-
     /**
      * Create a new rule instance.
      *
      * @param int $productId
      * @param int $quantity
-     * @param string $receiptType
      * @return void
      */
     public function __construct(int $productId, int $quantity)
     {
         $this->productId = $productId;
         $this->quantity = $quantity;
-
     }
 
     /**
      * Determine if the validation rule passes.
      *
      * @param string $attribute
-     * @param mixed
+     * @param mixed $value
      * @return bool
      */
     public function passes($attribute, $value)
@@ -40,6 +37,8 @@ class FirstInstallmentAmountValid implements Rule
         $product = Product::find($this->productId);
         $unitSellingPrice = $product->installment_price;
         $itemTotal = $this->quantity * $unitSellingPrice;
+
+
         return $first_pay <= $itemTotal;
     }
 
@@ -51,6 +50,6 @@ class FirstInstallmentAmountValid implements Rule
     public function message()
     {
 
-        return ('الدفعة الاولى اكبر من  قيمة المنتجات');
+        return ('الدفعة الاولى اكبر من قيمة المنتجات');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\ReceiptRequest;
 
+use Illuminate\Support\Facades\Log;
 use App\Rules\FirstInstallmentAmountValid;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
@@ -57,7 +58,7 @@ class StoreReceiptData extends FormRequest
                     $index = explode('.', $attribute)[1];
                     $productId = $this->input("products.{$index}.product_id");
                     $quantity = $this->input("products.{$index}.quantity");
-
+                    Log::error("message".    $attribute);
                     $rule = new FirstInstallmentAmountValid((int) $productId, (int) $quantity);
                     if (!$rule->passes($attribute, $value)) {
                         $fail($rule->message());
