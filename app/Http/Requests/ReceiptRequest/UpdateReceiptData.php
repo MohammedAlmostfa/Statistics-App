@@ -32,9 +32,9 @@ class UpdateReceiptData extends FormRequest
             'notes'           => 'nullable|string',
             'receipt_date'    => 'nullable|date|before_or_equal:now',
 
-            'products'                        => 'required_if:type,اقساط|nullable|array',
-            'products.*.product_id'           => 'required_if:type,اقساط|required|exists:products,id',
-            'products.*.description'          => 'nullable|string|max:255',
+            'products' => 'nullable|array',
+            'products.*.product_id' => 'required|exists:products,id',
+            'products.*.description' => 'required|string|max:255',
             'products.*.quantity' => [
                 'required',
                 'integer',
@@ -50,10 +50,10 @@ class UpdateReceiptData extends FormRequest
                 }
             ],
 
-            'products.*.pay_cont'             => 'required_if:type,اقساط|nullable|integer|min:1',
-            'products.*.installment'          => 'required_if:type,اقساط|nullable|integer|min:1',
-            'products.*.installment_type'     => 'required_if:type,اقساط|nullable|in:يومي,شهري,اسبوعي',
-        'products.*.amount' => [
+            'products.*.pay_cont' => 'required_if:type,اقساط|nullable|integer|min:1',
+            'products.*.installment' => 'required_if:type,اقساط|nullable|integer|min:1',
+            'products.*.installment_type' => 'required_if:type,اقساط|nullable|in:يومي,شهري,اسبوعي',
+            'products.*.amount' => [
                 'required_if:type,اقساط',
                 'nullable',
                 'integer',

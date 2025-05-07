@@ -6,9 +6,12 @@ use App\Models\Installment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class InstallmentPayment extends Model
 {
+    use HasFactory;
+
     /**
      * The attributes that are mass assignable.
      *
