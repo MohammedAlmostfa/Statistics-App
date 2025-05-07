@@ -64,12 +64,13 @@ class AvailableQuantityUpdate implements Rule
         $additionalQuantityNeeded = $value - $oldQuantityInReceipt;
 
 
-        if ($additionalQuantityNeeded > 0) {
-
-            return $product->quantity > $additionalQuantityNeeded;
 
 
-        }
+        return $product->quantity >= $additionalQuantityNeeded;
+
+
+
+
     }
 
 

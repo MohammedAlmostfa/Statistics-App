@@ -3,6 +3,7 @@
 namespace App\Http\Requests\ReceiptRequest;
 
 use App\Rules\AvailableQuantity;
+use App\Rules\AvailableQuantityUpdate;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -43,7 +44,10 @@ class UpdateReceiptData extends FormRequest
                     if (!is_numeric($productId)) {
                         return;
                     }
-                    $rule = new AvailableQuantity((int)$productId);
+                    $receiptId = $this->route('receipt');
+
+                    $rule = new AvailableQuantityUpdate((int)$productId, (int)$receiptId);
+
                     if (!$rule->passes($attribute, $value)) {
                         $fail($rule->message());
                     }
