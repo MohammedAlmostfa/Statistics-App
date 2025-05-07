@@ -6,11 +6,8 @@ use Illuminate\Support\Facades\Log;
 use App\Rules\FirstInstallmentAmountValid;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
-use PhpParser\NodeVisitor\FirstFindingVisitor;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use App\Rules\AvailableQuantityStore; // تأكد من أن هذا المستورد صحيح
-use App\Models\Product; // استورد نموذج المنتج لاستخدامه داخل الـ closure
-use App\Rules\AvailableQuantity; // تأكد من أن هذا المستورد صحيح إذا كان AvailableQuantity ما يزال مستخدماً
+use App\Rules\AvailableQuantityStore;
 
 class StoreReceiptData extends FormRequest
 {
@@ -70,7 +67,6 @@ class StoreReceiptData extends FormRequest
 
     /**
      * Handle a failed validation attempt.
-
      */
     protected function failedValidation(Validator $validator): void
     {

@@ -13,6 +13,8 @@ use App\Http\Controllers\ProductOriginController;
 use App\Http\Controllers\ReceiptProductController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\InstallmentPaymentController;
+use App\Http\Controllers\PaymentController;
+use App\Models\Payment;
 
 // Route to get authenticated user details
 // This route is used to fetch the authenticated user's details using Sanctum
@@ -82,5 +84,6 @@ Route::middleware('jwt')->group(function () {
 
     Route::apiResource('/installmentPayments', InstallmentPaymentController::class); // Displays, creates, updates, and deletes receipts
 
+    Route::apiResource('/payment', PaymentController::class);
 
 });
