@@ -61,12 +61,12 @@ class Installment extends Model
      *
      * 0 => 'اسبوع' (Weekly)
      * 1 => 'يومي' (Daily)
-     * 3 => 'شهري' (Monthly)
+     * 2 => 'شهري' (Monthly)
      */
     const TYPE_MAP = [
         0 => 'اسبوعي',   // Weekly installment
         1 => 'يومي',     // Daily installment
-        3 => 'شهري',     // Monthly installment
+        2 => 'شهري',     // Monthly installment
     ];
 
     /**

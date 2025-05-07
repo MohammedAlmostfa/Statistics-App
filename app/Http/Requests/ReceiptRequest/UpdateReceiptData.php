@@ -2,9 +2,10 @@
 
 namespace App\Http\Requests\ReceiptRequest;
 
+use App\Rules\AvailableQuantity;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class UpdateReceiptData extends FormRequest
 {
@@ -25,15 +26,29 @@ class UpdateReceiptData extends FormRequest
     {
         return [
             'customer_id'     => 'nullable|exists:customers,id',
-            'type'            => 'nullable|in:اقساط,نقدي',
-            'total_price'     => 'required|integer|min:0',
             'notes'           => 'nullable|string',
             'receipt_date'    => 'nullable|date|before_or_equal:now',
 
             'products'                        => 'required_if:type,اقساط|nullable|array',
             'products.*.product_id'           => 'required_if:type,اقساط|required|exists:products,id',
             'products.*.description'          => 'nullable|string|max:255',
-            'products.*.quantity'             => 'nullable|integer|min:1',
+    'products.*.quantity' => [
+                'required',
+                'integer',
+                'min:1',
+                function ($attribute, $value, $fail) {
+                    $index = explode('.', $attribute)[1];
+                    $productId = $this->input("products.{$index}.product_id");
+
+                    if (!is_numeric($productId)) {
+                        return;
+                    }
+                    $rule = new AvailableQuantity((int)$productId);
+                    if (!$rule->passes($attribute, $value)) {
+                        $fail($rule->message());
+                    }
+                }
+            ],
 
             'products.*.pay_cont'             => 'required_if:type,اقساط|nullable|integer|min:1',
             'products.*.installment'          => 'required_if:type,اقساط|nullable|integer|min:1',

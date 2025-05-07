@@ -16,6 +16,7 @@ class ReceiptProductResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'description'=>$this->description,
             'product_id' => $this->product_id,
             'product_name' => $this->product->name,
             'selling_price' => $this->product->selling_price,

@@ -3,10 +3,10 @@
 namespace App\Http\Requests\ReceiptRequest;
 
 use App\Rules\AvailableQuantity;
+use App\Rules\AvailableQuantityStore;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\Rule as ValidationRule;
 
 class StoreReceiptData extends FormRequest
 {
@@ -27,7 +27,7 @@ class StoreReceiptData extends FormRequest
             'products.*.description' => 'nullable|string|max:255',
 
             'products.*.quantity' => [
-                'nullable',
+                'required',
                 'integer',
                 'min:1',
                 function ($attribute, $value, $fail) {
@@ -37,7 +37,7 @@ class StoreReceiptData extends FormRequest
                     if (!is_numeric($productId)) {
                         return;
                     }
-                    $rule = new AvailableQuantity((int)$productId);
+                    $rule = new AvailableQuantityStore((int)$productId);
                     if (!$rule->passes($attribute, $value)) {
                         $fail($rule->message());
                     }

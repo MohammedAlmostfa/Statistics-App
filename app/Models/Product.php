@@ -47,6 +47,17 @@ class Product extends Model
         'category_id'       => 'integer',
     ];
 
+    public function getCalculatedBuyingPrice()
+    {
+
+        return $this->dolar_buying_price * $this->dollar_exchange;
+    }
+
+    public function getSellingPriceForReceiptType($type)
+    {
+
+        return ($type === 'اقساط') ? $this->installment_price : $this->selling_price;
+    }
     /**
      * Relationship: A Product can have many ReceiptProducts.
      *
