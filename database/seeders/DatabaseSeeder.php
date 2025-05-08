@@ -3,9 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Database\Factories\ProductFactory;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Database\Seeders\ReceiptSeeder;
+use Database\Factories\ProductFactory;
 
 class DatabaseSeeder extends Seeder
 {
@@ -21,7 +22,7 @@ class DatabaseSeeder extends Seeder
             ProductOriginSeeder::class,
             ProductCategorySeeder::class,
             ProductSeeder::class,
-           // ReceiptsTableSeeder::class,
+           ReceiptSeeder::class,
         ]);
     }
 }
