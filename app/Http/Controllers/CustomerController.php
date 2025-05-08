@@ -10,6 +10,7 @@ use App\Http\Requests\DebetRequest\fitrtinDebetgData;
 use App\Http\Requests\CustomerRequest\StoreCustomerData;
 use App\Http\Requests\CustomerRequest\UpdateCustomerData;
 use App\Http\Requests\CustomerRequest\FilteringCustomerData;
+use App\Http\Resources\CustomerResource;
 
 /**
  * CustomerController manages customer-related operations, such as:
@@ -53,7 +54,7 @@ class CustomerController extends Controller
     {
         $result = $this->customerService->getAllCustomers($request->validated());
         return $result['status'] === 200
-             ? $this->success($result['data'], $result['message'], $result['status'])
+             ? $this->paginated($result['data'], CustomerResource::class, $result['message'], $result['status'])
              : $this->error($result['data'], $result['message'], $result['status']);
     }
 

@@ -18,7 +18,7 @@ class PaymentService
     public function getAllPayments()
     {
         try {
-            $payment = Payment::with('user:id,name')->paginate(10);
+            $payment = Payment::with('user:id,name')->paginate(20);
             return $this->successResponse('تم استجاع الدفعات  بنجاح.', 200, $payment);
         } catch (Exception $e) {
             Log::error('Error creating payment: ' . $e->getMessage());

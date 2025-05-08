@@ -52,7 +52,7 @@ class ProductService
                     ->when(!empty($filteringData), function ($query) use ($filteringData) {
                         $query->filterBy($filteringData); // custom local scope (needs to be defined in model)
                     })
-                    ->get();
+                  ->paginate(20);
             });
 
             return [

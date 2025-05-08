@@ -25,13 +25,13 @@ class CustomerService
         try {
             $cacheKey = 'customers' . (empty($filteringData) ? '' : md5(json_encode($filteringData)));
 
-            $customers = Cache::remember($cacheKey, 1000, function () use ($filteringData) {
+            // تحسين تحديد مدة التخزين المؤقت باستخدام Carbon
+            $customers = Cache::remember($cacheKey, now()->addMinutes(16), function () use ($filteringData) {
                 return Customer::query()
-                    ->when(!empty($filteringData), function ($query) use ($filteringData) {
-                        $query->filterBy($filteringData);
-                    })
-                    ->get();
+                    ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
+                    ->paginate(20);
             });
+
 
             return $this->successResponse('تم جلب العملاء بنجاح.', 200, $customers);
         } catch (QueryException $e) {
@@ -42,6 +42,7 @@ class CustomerService
             return $this->errorResponse('فشل في جلب العملاء.');
         }
     }
+
 
     /**
      * Create a new customer and clear cache.

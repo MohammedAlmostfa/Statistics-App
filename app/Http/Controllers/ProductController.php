@@ -42,7 +42,7 @@ class ProductController extends Controller
 
         // Return paginated response if successful, otherwise return error.
         return $result['status'] === 200
-            ? $this->success(ProductResource::collection($result['data']), $result['message'], $result['status'])
+            ? $this->paginated($result['data'], ProductResource::class, $result['message'], $result['status'])
             : self::error(null, $result['message'], $result['status']);
     }
 
