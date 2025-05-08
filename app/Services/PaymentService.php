@@ -4,9 +4,10 @@ namespace App\Services;
 
 use Exception;
 use App\Models\Payment;
-use App\Models\Customer;
+
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Service class for managing Payment records.
@@ -18,13 +19,18 @@ class PaymentService
     public function getAllPayments()
     {
         try {
-            $payment = Payment::with('user:id,name')->paginate(20);
-            return $this->successResponse('تم استجاع الدفعات  بنجاح.', 200, $payment);
+            $cacheKey = 'payments';
+            $payments = Cache::remember($cacheKey, now()->addMinutes(16), function () {
+                return Payment::with('user:id,name')->paginate(20);
+            });
+
+            return $this->successResponse('تم استرجاع الدفعات بنجاح.', 200, $payments);
         } catch (Exception $e) {
-            Log::error('Error creating payment: ' . $e->getMessage());
-            return $this->errorResponse('فشل في إنشاء الدفعة.');
+            Log::error('Error retrieving payments: ' . $e->getMessage());
+            return $this->errorResponse('فشل في استرجاع الدفعات.');
         }
     }
+
     /**
      * Create a new payment entry.
      *

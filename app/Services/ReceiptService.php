@@ -10,6 +10,7 @@ use App\Models\ReceiptProduct;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class ReceiptService
 {
@@ -19,14 +20,14 @@ class ReceiptService
     public function getAllReceipt()
     {
         try {
-            $receipts = Receipt::with([
-                'user' => function ($q) {
-                    $q->select('id', 'name');
-                },
-                'customer' => function ($q) {
-                    $q->select('id', 'name');
-                }
-            ])->paginate(20);
+            $cacheKey = 'receipts';
+
+            $receipts = Cache::remember($cacheKey, now()->addMinutes(15), function () {
+                return Receipt::with([
+                    'user:id,name',
+                    'customer:id,name'
+                ])->paginate(20);
+            });
 
             return [
                 'status'  => 200,

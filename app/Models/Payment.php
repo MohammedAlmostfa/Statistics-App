@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class Payment extends Model
 {
@@ -36,6 +38,30 @@ class Payment extends Model
     {
 
         return $this->belongsTo(User::class);
+    }
+    /**
+         * The "booting" method of the model.
+         *
+         * @return void
+         */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($payment) {
+            Cache::forget('payments');
+            Log::info("تم إنشاء دفعة جديدة ({$payment->id}) وتم حذف كاش الدفعات.");
+        });
+
+        static::updated(function ($payment) {
+            Cache::forget('payments');
+            Log::info("تم تحديث الدفعة ({$payment->id}) وتم حذف كاش الدفعات.");
+        });
+
+        static::deleted(function ($payment) {
+            Cache::forget('payments');
+            Log::info("تم حذف الدفعة ({$payment->id}) وتم حذف كاش الدفعات.");
+        });
     }
 
 

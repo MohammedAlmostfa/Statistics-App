@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -92,4 +94,26 @@ class Receipt extends Model
             set: fn ($value) => array_search($value, self::TYPE_MAP)  // Convert the string back to its corresponding integer value
         );
     }
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($receipt) {
+            Cache::forget('receipts');
+            Log::info("تم إنشاء فاتورة جديدة ({$receipt->id}) وتم حذف كاش الفواتير.");
+        });
+
+        static::updated(function ($receipt) {
+            Cache::forget('receipts');
+            Log::info("تم تحديث الفاتورة ({$receipt->id}) وتم حذف كاش الفواتير.");
+        });
+
+        static::deleted(function ($receipt) {
+            Cache::forget('receipts');
+            Log::info("تم حذف الفاتورة ({$receipt->id}) وتم حذف كاش الفواتير.");
+        });
+    }
+
+
+
 }
