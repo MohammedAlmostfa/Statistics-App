@@ -8,6 +8,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\FinancialReportController;
 use App\Http\Controllers\WhatsappController;
 use App\Http\Controllers\ProductOriginController;
 use App\Http\Controllers\ReceiptProductController;
@@ -85,5 +86,7 @@ Route::middleware('jwt')->group(function () {
     Route::apiResource('/installmentPayments', InstallmentPaymentController::class); // Displays, creates, updates, and deletes receipts
 
     Route::apiResource('/payment', PaymentController::class);
+    Route::get('/financialReport', [FinancialReportController::class, 'index']);
+
 
 });

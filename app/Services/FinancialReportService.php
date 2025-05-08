@@ -27,8 +27,8 @@ class FinancialReportService
     public function GetFinancialReport($data)
     {
         try {
-            $startDate = $data["startDate"];
-            $endDate = $data["endDate"];
+            $startDate = $data["start_date"];
+            $endDate = $data["end_date"];
 
             // إجمالي المصروفات النقدية في الفترة المحددة
             $totalExpenses = Payment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
@@ -75,7 +75,7 @@ class FinancialReportService
             $netCashFlowInPeriod = $totalCashInflowInPeriod - $totalExpenses;
 
             // ملخص الديون حتى نهاية الفترة:
-            $totalInstallmentSalesValueInPeriod;
+
             // إجمالي قيمة مبيعات الأقساط حتى نهاية الفترة
             $allTimeTotalInstallmentSalesValue = Receipt::where('type', 'اقساط')
                 ->whereDate('receipt_date', '<=', $endDate)
@@ -88,7 +88,7 @@ class FinancialReportService
             })->sum('first_pay');
 
             // مجموع الأقساط المحصلة حتى نهاية الفترة
-            $allTimeTotalCollectedInstallmentPayments = InstallmentPayment::whereDate('receipt_date', '<=', $endDate)->sum('amount');
+            $allTimeTotalCollectedInstallmentPayments = InstallmentPayment::whereDate('payment_date', '<=', $endDate)->sum('amount');
 
             // مجموع ما تم تحصيله فعليًا من مبيعات الأقساط (دفعة أولى + أقساط محصلة)
             $allTimeTotalCollectedOnInstallments = $allTimeTotalFirstPayments + $allTimeTotalCollectedInstallmentPayments;
@@ -98,7 +98,8 @@ class FinancialReportService
 
             // إرجاع البيانات بصيغة منظمة
             return [
-                'success' => true,
+                'status' => 200,
+                'message'=>'تم استرجاع التقرير بنجاخ',
                 'data' => [
                     'period' => [
                         'startDate' => $startDate,
@@ -133,7 +134,11 @@ class FinancialReportService
         } catch (Exception $e) {
             // تسجيل الخطأ في السجل في حال حدوث استثناء غير متوقع
             Log::error("Unexpected error in GetFinancialReport: " . $e->getMessage());
-            return ['success' => false, 'error' => 'حدث خطأ غير متوقع.'];
+            return [
+                'status' => 500,
+                'message' => 'حدث خطأ أثناء جلب التقرير يرجى المحاولة مرة أخرى.',
+            ];
+
         }
     }
 }
