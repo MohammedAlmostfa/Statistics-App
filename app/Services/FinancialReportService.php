@@ -106,8 +106,8 @@ class FinancialReportService
                 'message'=>'تم استرجاع التقرير بنجاخ',
                 'data' => [
                     'period' => [
-                        'startDate' => $startDate->format('Y-m-d '),
-                        'endDate' => $endDate->format('Y-m-d '),
+                        'startDate' => $startDate,
+                        'endDate' => $endDate,
                     ],
                     'income_statement_summary' => [
                         'total_cash_sales_revenue' => (int)$totalCashSalesRevenue,
