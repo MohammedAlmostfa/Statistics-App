@@ -23,14 +23,15 @@ class CustomerService
     public function getAllCustomers(array $filteringData = null): array
     {
         try {
-            $cacheKey = 'customers' . (empty($filteringData) ? '' : md5(json_encode($filteringData)));
+            $page = request('page', 1);
+            $cacheKey = 'customers_' . $page . (empty($filteringData) ? '' : md5(json_encode($filteringData)));
 
-            // تحسين تحديد مدة التخزين المؤقت باستخدام Carbon
-            $customers = Cache::remember($cacheKey, now()->addMinutes(16), function () use ($filteringData) {
+            $customers = Cache::remember($cacheKey, now()->addMinutes(120), function () use ($filteringData) {
                 return Customer::query()
                     ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
                     ->paginate(10);
             });
+
 
 
             return $this->successResponse('تم جلب العملاء بنجاح.', 200, $customers);

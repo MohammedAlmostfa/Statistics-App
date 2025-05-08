@@ -26,8 +26,9 @@ class ProductService
     public function getAllProducts($filteringData = null): array
     {
         try {
+            $page = request('page', 1);
             // Generate a unique cache key based on filters if any
-            $cacheKey = 'products' . (!empty($filteringData) ? '_' . md5(json_encode($filteringData)) : '');
+            $cacheKey = 'products'. $page . (!empty($filteringData) ? '_' . md5(json_encode($filteringData)) : '');
 
             // Retrieve from cache or query the DB
             $products = Cache::remember($cacheKey, 1000, function () use ($filteringData) {

@@ -20,8 +20,9 @@ class ReceiptService
     public function getAllReceipt()
     {
         try {
-            $cacheKey = 'receipts';
 
+            $page = request('page', 1);
+            $cacheKey = 'receipts'. $page ;
             $receipts = Cache::remember($cacheKey, now()->addMinutes(15), function () {
                 return Receipt::with([
                     'user:id,name',

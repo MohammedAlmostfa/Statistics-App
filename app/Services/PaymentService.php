@@ -19,7 +19,9 @@ class PaymentService
     public function getAllPayments()
     {
         try {
-            $cacheKey = 'payments';
+            $page = request('page', 1);
+            $cacheKey = 'payments' . $page ;
+
             $payments = Cache::remember($cacheKey, now()->addMinutes(16), function () {
                 return Payment::with('user:id,name')->paginate(10);
             });
