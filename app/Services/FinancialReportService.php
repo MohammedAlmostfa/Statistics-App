@@ -121,7 +121,7 @@ class FinancialReportService
                     'cash_flow_summary' => [
                         'cash_inflow_from_cash_sales' => (int)$totalCashSalesRevenue,
                         'cash_inflow_from_first_payments_new_installments' =>(int) $firstPaymentsFromPeriodSales,
-                        'cash_inflow_from_collected_installments' => $collectedInstallmentPayments,
+                        'cash_inflow_from_collected_installments' =>(int)$collectedInstallmentPayments,
                         'total_cash_inflow_in_period' => (int)$totalCashInflowInPeriod,
                         'total_cash_outflow_expenses_in_period' => (int)$totalExpenses,
                         'net_cash_flow_in_period' => (int)$netCashFlowInPeriod,
