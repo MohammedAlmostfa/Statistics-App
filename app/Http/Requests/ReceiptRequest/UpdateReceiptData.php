@@ -50,14 +50,14 @@ class UpdateReceiptData extends FormRequest
                 }
             ],
 
-            'products.*.pay_cont' => 'required_if:type,اقساط|nullable|integer|min:1',
-            'products.*.installment' => 'required_if:type,اقساط|nullable|integer|min:1',
+            'products.*.pay_cont' => 'required_if:type,اقساط|nullable|integer|min:0',
+            'products.*.installment' => 'required_if:type,اقساط|nullable|integer|min:0',
             'products.*.installment_type' => 'required_if:type,اقساط|nullable|in:يومي,شهري,اسبوعي',
             'products.*.first_pay' => [
                 'required_if:type,اقساط',
                 'nullable',
                 'integer',
-                'min:1',
+                'min:0',
                 function ($attribute, $value, $fail) {
                     $index = explode('.', $attribute)[1];
                     $productId = $this->input("products.{$index}.product_id");

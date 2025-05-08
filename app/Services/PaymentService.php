@@ -21,7 +21,7 @@ class PaymentService
         try {
             $cacheKey = 'payments';
             $payments = Cache::remember($cacheKey, now()->addMinutes(16), function () {
-                return Payment::with('user:id,name')->paginate(20);
+                return Payment::with('user:id,name')->paginate(10);
             });
 
             return $this->successResponse('تم استرجاع الدفعات بنجاح.', 200, $payments);

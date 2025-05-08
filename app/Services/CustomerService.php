@@ -29,7 +29,7 @@ class CustomerService
             $customers = Cache::remember($cacheKey, now()->addMinutes(16), function () use ($filteringData) {
                 return Customer::query()
                     ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
-                    ->paginate(20);
+                    ->paginate(10);
             });
 
 

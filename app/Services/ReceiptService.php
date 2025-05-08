@@ -26,7 +26,7 @@ class ReceiptService
                 return Receipt::with([
                     'user:id,name',
                     'customer:id,name'
-                ])->paginate(20);
+                ])->paginate(10);
             });
 
             return [
@@ -52,7 +52,7 @@ class ReceiptService
         try {
             $receipts = Receipt::with(['user:id,name'])
                 ->where('customer_id', $id)
-                ->paginate(20);
+                ->paginate(10);
 
             return [
                 'status'  => 200,
