@@ -27,8 +27,12 @@ class FinancialReportService
     public function GetFinancialReport($data)
     {
         try {
-            $startDate = $data["start_date"];
-            $endDate = $data["end_date"];
+
+
+            $startDate = $data["start_date"]?? Receipt::first()?->receipt_date ?? now();
+
+
+            $endDate = $data["end_date"]??now();
 
             // إجمالي المصروفات النقدية في الفترة المحددة
             $totalExpenses = Payment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
@@ -102,8 +106,8 @@ class FinancialReportService
                 'message'=>'تم استرجاع التقرير بنجاخ',
                 'data' => [
                     'period' => [
-                        'startDate' => $startDate,
-                        'endDate' => $endDate,
+                        'startDate' => $startDate->format('Y-m-d '),
+                        'endDate' => $endDate->format('Y-m-d '),
                     ],
                     'income_statement_summary' => [
                         'total_cash_sales_revenue' => $totalCashSalesRevenue,
