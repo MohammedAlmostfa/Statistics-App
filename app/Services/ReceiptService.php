@@ -120,7 +120,7 @@ class ReceiptService
 
         ActivitiesLog::create([
          'user_id'     => Auth::id(),
-         'description' => 'تم اضافقة فاتورذات الرقم : ' . $receipt->receipt_number,
+         'description' => 'تم اضافة فاتورة ذات الرقم : ' . $receipt->receipt_number,
          'type_id'     => $receipt->id,
          'type_type'   => Receipt::class,
         ]);
@@ -281,7 +281,7 @@ class ReceiptService
         ]);
         ActivitiesLog::create([
            'user_id'     => Auth::id(),
-           'description' => 'تم تعديل فاتورذات الرقم : ' . $receipt->receipt_number,
+           'description' => 'تم تعديل فاتورة ذات الرقم : ' . $receipt->receipt_number,
            'type_id'     => $receipt->id,
            'type_type'   => Receipt::class,
 ]);
