@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\ActivitiesLog;
+use App\Models\ReceiptProduct;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
@@ -59,6 +61,10 @@ class Product extends Model
         return ($type === 'اقساط') ? $this->installment_price : $this->selling_price;
     }
 
+    public function activities()
+    {
+        return $this->morphMany(ActivitiesLog::class, 'type');
+    }
     /**
      * Relationship: A Product can have many ReceiptProducts.
      *

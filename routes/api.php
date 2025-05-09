@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivitiesLogController;
 use Illuminate\Http\Request;
 use Database\Seeders\ProductSeeder;
 use Illuminate\Support\Facades\Route;
@@ -15,6 +16,7 @@ use App\Http\Controllers\ReceiptProductController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\InstallmentPaymentController;
 use App\Http\Controllers\PaymentController;
+use App\Models\ActivitiesLog;
 use App\Models\Payment;
 
 // Route to get authenticated user details
@@ -87,6 +89,7 @@ Route::middleware('jwt')->group(function () {
 
     Route::apiResource('/payment', PaymentController::class);
     Route::get('/financialReport', [FinancialReportController::class, 'index']);
+    Route::get('/activiteLog', [ActivitiesLogController::class, 'index']);
 
 
 });

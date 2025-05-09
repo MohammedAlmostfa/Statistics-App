@@ -51,7 +51,7 @@ class PaymentController extends Controller
      */
     public function store(StorePaymentData $request): JsonResponse
     {
-        $result = $this->paymentService->createPaymant($request->validated());
+        $result = $this->paymentService->createPayment($request->validated());
 
         return $result['status'] === 200
             ? $this->success(null, $result['message'], $result['status'])

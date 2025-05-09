@@ -77,7 +77,10 @@ class Receipt extends Model
         0 => 'اقساط',  // Installment payment type
         1 => 'نقدي',   // Cash payment type
     ];
-
+    public function activities()
+    {
+        return $this->morphMany(ActivitiesLog::class, 'type');
+    }
     /**
      * Mutator for the 'type' attribute.
      *

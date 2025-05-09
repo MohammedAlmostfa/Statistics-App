@@ -2,107 +2,114 @@
 
 namespace App\Services;
 
-use App\Models\Installment;
-use App\Models\InstallmentPayment;
 use Exception;
+use App\Models\Installment;
+use App\Models\ActivitiesLog;
+use App\Models\InstallmentPayment;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class InstallmentPaymentService
 {
-    /**
-     * Create a new installment payment.
-     *
-     * @param array $data Payment data (already validated).
-     * @param string $id Installment ID.
-     * @return array Status, message, and optional payment.
-     */
     public function createInstallmentPayment(array $data, $id): array
     {
-        try {
-            $installment = Installment::with('receiptProduct.product')->findOrFail($id);
+        DB::beginTransaction();
 
-            $installment->installmentPayments()->create([
+        try {
+            $installment = Installment::findOrFail($id);
+
+            $installmentPayment = $installment->installmentPayments()->create([
                 'payment_date' => $data['payment_date'],
-                'amount' => $data['amount'],
-                'status' => 0,
+                'amount'       => $data['amount'],
+                'status'       => 0,
             ]);
 
+            ActivitiesLog::create([
+                'user_id'     => Auth::id(),
+                'description' => 'تم تحصيل مبلغ قدره ' . $data['amount'] . ' من العميل ' . $installment->receiptProduct->receipt->customer->name,
+                'type_id'     => $installmentPayment->id,
+                'type_type'   => InstallmentPayment::class,
+            ]);
+
+            DB::commit();
+
             return [
-                'status' => 201,
+                'status'  => 201,
                 'message' => 'تم تسجيل دفعة القسط بنجاح',
             ];
         } catch (Exception $e) {
-            Log::error('Error creating installment payment: ' . $e->getMessage(), [
-                'installment_id' => $installment->id ?? null,
-                'amount' => $data['amount'] ?? null,
-
-            ]);
+            DB::rollBack();
+            Log::error('Error creating installment payment: ' . $e->getMessage());
 
             return [
-                'status' => 500,
+                'status'  => 500,
                 'message' => 'حدث خطأ أثناء تسديد القسط، يرجى المحاولة مرة أخرى.',
             ];
         }
     }
 
-    /**
-     * Update an existing installment payment.
-     *
-     * @param array $data Payment data (already validated).
-     * @param string $id InstallmentPayment ID.
-     * @return array Status, message, and optional updated payment.
-     */
     public function updateInstallmentPayment(array $data, $id): array
     {
+        DB::beginTransaction();
+
         try {
             $installmentPayment = InstallmentPayment::findOrFail($id);
+
+            ActivitiesLog::create([
+                'user_id'     => Auth::id(),
+                'description' => 'تم تعديل المبلغ المحصل من ' . $installmentPayment->amount . ' إلى ' . $data['amount'] . ' من العميل ' . $installmentPayment->installment->receipt->customer->name,
+                'type_id'     => $installmentPayment->id,
+                'type_type'   => InstallmentPayment::class,
+            ]);
 
             $installmentPayment->update([
                 'amount' => $data['amount'],
             ]);
 
+            DB::commit();
+
             return [
-                'status' => 200,
+                'status'  => 200,
                 'message' => 'تم تحديث دفعة القسط بنجاح',
             ];
         } catch (Exception $e) {
-            Log::error('Error updating installment payment: ' . $e->getMessage(), [
-                'installment_payment_id' => $id,
-                'amount' => $data['amount'] ?? null,
-                'status' => $data['status'] ?? null,
-
-            ]);
+            DB::rollBack();
+            Log::error('Error updating installment payment: ' . $e->getMessage());
 
             return [
-                'status' => 500,
+                'status'  => 500,
                 'message' => 'حدث خطأ أثناء تحديث دفعة القسط، يرجى المحاولة مرة أخرى.',
             ];
         }
     }
 
-    /**
-     * Delete an installment payment.
-     *
-     * @param string $id InstallmentPayment ID.
-     * @return array Status and message.
-     */
     public function deleteInstallmentPayment(InstallmentPayment $installmentPayment): array
     {
+        DB::beginTransaction();
+
         try {
+            ActivitiesLog::create([
+                'user_id'     => Auth::id(),
+                'description' => 'تم حذف دفعة قسط بمبلغ ' . $installmentPayment->amount . ' من العميل ' . $installmentPayment->installment->receipt->customer->name,
+                'type_id'     => $installmentPayment->id,
+                'type_type'   => InstallmentPayment::class,
+            ]);
 
             $installmentPayment->delete();
 
+            DB::commit();
+
             return [
-                'status' => 200,
+                'status'  => 200,
                 'message' => 'تم حذف دفعة القسط بنجاح',
             ];
         } catch (Exception $e) {
-            Log::error('Error deleting installment payment: ' . $e->getMessage(), [
-
-            ]);
+            DB::rollBack();
+            Log::error('Error deleting installment payment: ' . $e->getMessage());
 
             return [
-                'status' => 500,
+                'status'  => 500,
                 'message' => 'حدث خطأ أثناء حذف دفعة القسط، يرجى المحاولة مرة أخرى.',
             ];
         }

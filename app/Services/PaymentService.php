@@ -4,23 +4,19 @@ namespace App\Services;
 
 use Exception;
 use App\Models\Payment;
-
+use App\Models\ActivitiesLog;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
-/**
- * Service class for managing Payment records.
- * Handles creating, updating, and deleting payments with proper error logging.
- */
 class PaymentService
 {
-
     public function getAllPayments()
     {
         try {
             $page = request('page', 1);
-            $cacheKey = 'payments' . $page ;
+            $cacheKey = 'payments_page_' . $page;
 
             $payments = Cache::remember($cacheKey, now()->addMinutes(16), function () {
                 return Payment::with('user:id,name')->paginate(10);
@@ -33,100 +29,101 @@ class PaymentService
         }
     }
 
-    /**
-     * Create a new payment entry.
-     *
-     * @param array $data Payment data to be saved.
-     * @return array API response with status and message.
-     */
-    public function createPaymant(array $data): array
+    public function createPayment(array $data): array
     {
+        DB::beginTransaction();
         try {
-            $userId = Auth::id(); // Get authenticated user ID
+            $userId = Auth::id();
 
-            Payment::create([
-                'amount' => $data['amount'],
+            $payment = Payment::create([
+                'amount'       => $data['amount'],
                 'payment_date' => $data['payment_date'],
-                'details' => $data['details'],
-                'user_id' =>      $userId,
+                'details'      => $data['details'],
+                'user_id'      => $userId,
             ]);
 
-            return $this->successResponse('تم إنشاء الدفعة بنجاح.', 200);
+            ActivitiesLog::create([
+                'user_id'     => $userId,
+                'description' => 'تم إضافة دفعة بمبلغ ' . $payment->amount,
+                'type_id'     => $payment->id,
+                'type_type'   => Payment::class,
+            ]);
+
+            DB::commit();
+            return $this->successResponse('تم إنشاء الدفعة بنجاح.', 201);
         } catch (Exception $e) {
+            DB::rollBack();
             Log::error('Error creating payment: ' . $e->getMessage());
             return $this->errorResponse('فشل في إنشاء الدفعة.');
         }
     }
 
-    /**
-     * Update existing payment details.
-     *
-     * @param array $data New data to update.
-     * @param Payment $Payment Existing payment model instance.
-     * @return array API response with status and message.
-     */
-    public function updatePayment(array $data, Payment $Payment): array
+    public function updatePayment(array $data, Payment $payment): array
     {
+        DB::beginTransaction();
         try {
-            $Payment->update([
-                'amount' => $data['amount'] ?? $Payment->amount,
-                'payment_date' => $data['payment_date'] ?? $Payment->payment_date,
-                'details' => $data['details'] ?? $Payment->details,
+            $userId = Auth::id();
+
+            ActivitiesLog::create([
+                'user_id'     => $userId,
+                'description' => 'تم تعديل دفعة من ' . $payment->amount . ' إلى ' . $data['amount'],
+                'type_id'     => $payment->id,
+                'type_type'   => Payment::class,
             ]);
 
+            $payment->update([
+                'amount'       => $data['amount'] ?? $payment->amount,
+                'payment_date' => $data['payment_date'] ?? $payment->payment_date,
+                'details'      => $data['details'] ?? $payment->details,
+            ]);
+
+            DB::commit();
             return $this->successResponse('تم تحديث بيانات الدفعة بنجاح.', 200);
         } catch (Exception $e) {
+            DB::rollBack();
             Log::error('Error updating payment: ' . $e->getMessage());
             return $this->errorResponse('فشل في تحديث بيانات الدفعة.');
         }
     }
 
-    /**
-     * Delete a payment record.
-     *
-     * @param Payment $Payment Payment model instance to delete.
-     * @return array API response with status and message.
-     */
-    public function deletePayment(Payment $Payment): array
+    public function deletePayment(Payment $payment): array
     {
+        DB::beginTransaction();
         try {
-            $Payment->delete(); // Remove payment from database
+            $userId = Auth::id();
+
+            ActivitiesLog::create([
+                'user_id'     => $userId,
+                'description' => 'تم حذف دفعة بمبلغ ' . $payment->amount,
+                'type_id'     => $payment->id,
+                'type_type'   => Payment::class,
+            ]);
+
+            $payment->delete();
+
+            DB::commit();
             return $this->successResponse('تم حذف الدفعة بنجاح.', 200);
         } catch (Exception $e) {
+            DB::rollBack();
             Log::error('Error deleting payment: ' . $e->getMessage());
             return $this->errorResponse('فشل في حذف الدفعة.');
         }
     }
 
-    /**
-     * Standard success response formatter.
-     *
-     * @param string $message Message to return.
-     * @param int $status HTTP status code.
-     * @param mixed|null $data Optional payload.
-     * @return array
-     */
     private function successResponse(string $message, int $status = 200, $data = null): array
     {
         return [
             'message' => $message,
-            'status' => $status,
-            'data' => $data,
+            'status'  => $status,
+            'data'    => $data,
         ];
     }
 
-    /**
-     * Standard error response formatter.
-     *
-     * @param string $message Error message.
-     * @param int $status HTTP error code.
-     * @return array
-     */
     private function errorResponse(string $message, int $status = 500): array
     {
         return [
             'message' => $message,
-            'status' => $status,
+            'status'  => $status,
         ];
     }
 }

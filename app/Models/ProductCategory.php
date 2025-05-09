@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\ActivitiesLog;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * ProductCategory model represents the category assigned to products.
@@ -31,6 +32,11 @@ class ProductCategory extends Model
         'name' => 'string',
 
     ];
+
+    public function activities()
+    {
+        return $this->morphMany(ActivitiesLog::class, 'type');
+    }
 
     /**
      * A category may have many products.

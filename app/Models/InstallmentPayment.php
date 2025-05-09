@@ -35,8 +35,13 @@ class InstallmentPayment extends Model
          'amount' => 'integer',
 
     ];
+    public function activities()
+    {
+        return $this->morphMany(ActivitiesLog::class, 'type');
+    }
     /**
-     * Relationship: An installment payment belongs to an installment.
+     *
+     *  Relationship: An installment payment belongs to an installment.
      *
      * This function defines the relationship between the `InstallmentPayment`
      * and the `Installment` model, where each payment is associated with an installment.

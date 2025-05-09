@@ -5,6 +5,7 @@ namespace App\Services;
 use Exception;
 use App\Models\Product;
 use App\Models\Receipt;
+use App\Models\ActivitiesLog;
 use App\Events\ReceiptCreated;
 use App\Models\ReceiptProduct;
 use Illuminate\Support\Facades\DB;
@@ -81,6 +82,8 @@ class ReceiptService
             $receipt = $this->storeReceipt($data);
 
             $this->storeReceiptProducts($receipt, $data['products'], $data['type']);
+
+
             DB::commit();
 
             return [
@@ -103,15 +106,25 @@ class ReceiptService
      */
     protected function storeReceipt(array $data)
     {
-        return Receipt::create([
-            'customer_id'    => $data['customer_id'],
-            'receipt_number' => $data['receipt_number'],
-            'type'           => $data['type'],
-            'total_price'    => $data['total_price'],
-            'notes'          => $data['notes'] ?? null,
-            'receipt_date'   => $data['receipt_date'] ?? now(),
-            'user_id'        => Auth::id(),
+
+
+        $receipt= Receipt::create([
+             'customer_id'    => $data['customer_id'],
+             'receipt_number' => $data['receipt_number'],
+             'type'           => $data['type'],
+             'total_price'    => $data['total_price'],
+             'notes'          => $data['notes'] ?? null,
+             'receipt_date'   => $data['receipt_date'] ?? now(),
+             'user_id'        => Auth::id(),
+         ]);
+
+        ActivitiesLog::create([
+         'user_id'     => Auth::id(),
+         'description' => 'تم اضافقة فاتورذات الرقم : ' . $receipt->receipt_number,
+         'type_id'     => $receipt->id,
+         'type_type'   => Receipt::class,
         ]);
+        return   $receipt ;
     }
 
     /**
@@ -168,6 +181,7 @@ class ReceiptService
         DB::beginTransaction();
 
         try {
+
             $existingReceiptProducts = $receipt->receiptProducts()->get()->keyBy('product_id');
 
             $this->updateReceipt($receipt, $data);
@@ -265,6 +279,14 @@ class ReceiptService
             'notes'        => $data['notes'] ?? $receipt->notes,
             'receipt_date' => $data['receipt_date'] ?? $receipt->receipt_date,
         ]);
+        ActivitiesLog::create([
+           'user_id'     => Auth::id(),
+           'description' => 'تم تعديل فاتورذات الرقم : ' . $receipt->receipt_number,
+           'type_id'     => $receipt->id,
+           'type_type'   => Receipt::class,
+]);
+
+
     }
 
     /**
@@ -309,6 +331,14 @@ class ReceiptService
             }
 
             $receipt->receiptProducts()->delete();
+
+            ActivitiesLog::create([
+                'user_id'     => Auth::id(),
+                'description' => 'تم حذف فاتورذات الرقم : ' . $receipt->receipt_number,
+                'type_id'     => $receipt->id,
+                'type_type'   => Receipt::class,
+            ]);
+
             $receipt->delete();
 
             DB::commit();
