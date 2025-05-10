@@ -2,12 +2,14 @@
 
 use App\Http\Middleware\JwtMiddleware;
 use Illuminate\Foundation\Application;
+use App\Console\Commands\CheckLatePayments;
 use App\Http\Middleware\SecurityMiddleware;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Support\Facades\Schedule;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -30,6 +32,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
         ]);
      })
+    //  ->withSchedule(function (Schedule $schedule) {
+    //      $schedule->job(new CheckLatePayments)->quarterly();
+
+
+    //  })
     ->withExceptions(function (Exceptions $exceptions) {
         // Exception handling configuration
         $exceptions->render(function (AuthorizationException $e) {

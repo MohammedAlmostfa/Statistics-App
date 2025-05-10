@@ -76,4 +76,15 @@ class ReceiptProduct extends Model
     {
         return $this->hasOne(Installment::class);
     }
+
+    /**
+ * Get the total price for this receipt product.
+ *
+ * @return int
+ */
+    public function getTotalPriceAttribute(): int
+    {
+        return $this->selling_price * $this->quantity;
+    }
+
 }

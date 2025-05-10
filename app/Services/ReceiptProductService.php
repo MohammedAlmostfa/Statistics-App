@@ -36,7 +36,7 @@ class ReceiptProductService
                     $q->select('id', 'name');
                 },
                 'receiptProducts.installment' => function ($q) {
-                    $q->select('id', 'receipt_product_id', 'pay_cont', 'first_pay', 'installment_type', 'installment', 'id');
+                    $q->select('id', 'receipt_product_id', 'pay_cont', 'first_pay', 'installment_type', 'status', 'installment', 'id');
                 },
                 'receiptProducts.installment.installmentPayments' => function ($q) {
                     $q->select('id', 'installment_id', 'payment_date', 'amount');
@@ -86,7 +86,7 @@ class ReceiptProductService
                 'product' => function ($q) {
                     $q->select('id', 'name', 'selling_price', 'quantity', 'installment_price'); // Select specific fields for product
                 },
-                'installment'  // Include installment details
+                'installment'
             ])
                 ->where('receipt_id', $id)  // Filter by receipt ID
                 ->get();

@@ -20,6 +20,7 @@ return new class extends Migration {
             $table->integer('status')->default(1);
             $table->timestamps();
 
+            $table->index('receipt_product_id');
 
         });
     }

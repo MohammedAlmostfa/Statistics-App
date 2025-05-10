@@ -16,10 +16,12 @@ return new class extends Migration {
             $table->integer('total_price');
             $table->string('notes')->nullable();
             $table->integer('type');
-            $table->date('receipt_date');
+            $table->date('receipt_date')->index();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('customer_id')->constrained('customers')->cascadeOnDelete();
             $table->timestamps();
+            $table->index(['customer_id', 'type']);
+
         });
     }
 

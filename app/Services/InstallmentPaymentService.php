@@ -6,9 +6,10 @@ use Exception;
 use App\Models\Installment;
 use App\Models\ActivitiesLog;
 use App\Models\InstallmentPayment;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Events\InstallmentPaidEvent;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Service class to handle installment payments including create, update, and delete operations.
@@ -42,6 +43,7 @@ class InstallmentPaymentService
                 'type_id'     => $installmentPayment->id,
                 'type_type'   => InstallmentPayment::class,
             ]);
+            event(new InstallmentPaidEvent($installment));
 
             DB::commit();
 

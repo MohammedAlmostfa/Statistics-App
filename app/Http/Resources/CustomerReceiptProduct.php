@@ -30,6 +30,7 @@ class CustomerReceiptProduct extends JsonResource
             'pay_cont' => $installment ? $installment->pay_cont : null,
             'installment_id' => $installment ? $installment->id : null,
             'first_pay' => $installment ? $installment->first_pay: null,
+            'status' => $installment ? $installment->status: null,
             'installment_type' => $installment ? $installment->installment_type : null,
             'installment_amount' => $installment ? $installment->installment : null,
             'payments' => $payments,
