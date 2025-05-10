@@ -4,7 +4,7 @@ namespace App\Http\Requests\WhatsAppRequest;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class FiltterData extends FormRequest
+class FiltterWhatsAppData extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

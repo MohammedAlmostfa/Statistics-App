@@ -130,8 +130,8 @@ class Product extends Model
      */
     public function scopeFilterBy($query, array $filteringData)
     {
-        if (isset($filteringData['category_id'])) {
-            $query->where('category_id', $filteringData['category_id']);
+        if (isset($filteringData['name'])) {
+            $query->where('name', 'LIKE', "%{$filteringData['name']}%");
         }
 
         return $query;

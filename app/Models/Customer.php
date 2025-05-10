@@ -80,13 +80,6 @@ class Customer extends Model
             $query->where('phone', $filteringData['phone']);
         }
 
-        if (isset($filteringData['Record_id'])) {
-            $query->where('Record_id', $filteringData['Record_id']);
-        }
-
-        if (isset($filteringData['Page_id'])) {
-            $query->where('Page_id', $filteringData['Page_id']);
-        }
 
         return $query;
     }

@@ -9,14 +9,17 @@ use Illuminate\Support\Facades\Log;
 class UserService
 {
     /**
-     * Fetch all users.
+     * Fetch all users from the database.
      *
-     * @return array Response with status, message, and users data.
+     * This method retrieves a list of all users, including their id, name, status, and the date they were created.
+     * It uses basic column selection for optimization purposes.
+     *
+     * @return array Response containing the status, message, and the list of users.
      */
     public function getAllUsers()
     {
         try {
-            // Fetch all users with specified columns
+            // Fetch all users with specified columns (id, name, status, created_at)
             $users = User::select('id', 'name', 'status', 'created_at')->get();
 
             return [
@@ -36,8 +39,10 @@ class UserService
     /**
      * Create a new user.
      *
-     * @param array $data User data (name and password).
-     * @return array Response with status and message or data.
+     * This method creates a new user with the provided name and password. The password is encrypted using bcrypt before saving.
+     *
+     * @param array $data User data containing name and password.
+     * @return array Response containing the status, message, and the created user data.
      */
     public function createUser($data)
     {
@@ -63,15 +68,18 @@ class UserService
     }
 
     /**
-     * Update an existing user.
+     * Update an existing user's details.
      *
-     * @param array $data Updated user data.
-     * @param User $user User model instance.
-     * @return array Response with status and message.
+     * This method updates the user's name and password. The password is encrypted using bcrypt.
+     *
+     * @param array $data Updated user data containing the new name and password.
+     * @param User $user The user model instance that will be updated.
+     * @return array Response containing the status and message after the update.
      */
     public function updateUser($data, User $user)
     {
         try {
+            // Update the user details with the provided data
             $user->update([
                 'name' => $data['name'],
                 'password' => bcrypt($data['password']),
@@ -91,14 +99,17 @@ class UserService
     }
 
     /**
-     * Delete a user.
+     * Delete a user from the system.
      *
-     * @param User $user User model instance.
-     * @return array Response with status and message.
+     * This method deletes a specific user from the database.
+     *
+     * @param User $user The user model instance that needs to be deleted.
+     * @return array Response containing the status and message after deletion.
      */
     public function deleteUser(User $user)
     {
         try {
+            // Delete the user from the database
             $user->delete();
 
             return [
@@ -115,15 +126,18 @@ class UserService
     }
 
     /**
-     * Update user status.
+     * Update the status of a user.
      *
-     * @param array $data Contains the status value.
-     * @param User $user User model instance.
-     * @return array Response with status and message.
+     * This method updates the user's status (active, inactive, etc.) based on the provided data.
+     *
+     * @param array $data Contains the status value to be updated.
+     * @param User $user The user model instance whose status needs to be updated.
+     * @return array Response containing the status and message after updating the status.
      */
     public function updateUserStatus($data, User $user)
     {
         try {
+            // Update the user's status with the new value
             $user->update([
                 'status' => $data['status'],
             ]);

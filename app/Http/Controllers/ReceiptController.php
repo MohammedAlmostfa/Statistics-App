@@ -10,6 +10,7 @@ use App\Http\Resources\ReceiptResource;
 use App\Http\Resources\CustomerReceiptResource;
 use App\Http\Requests\ReceiptRequest\StoreReceiptData;
 use App\Http\Requests\ReceiptRequest\UpdateReceiptData;
+use App\Http\Requests\ReceiptRequest\FiltterReceiptData;
 
 class ReceiptController extends Controller
 {
@@ -19,9 +20,9 @@ class ReceiptController extends Controller
     {
         $this->receiptService = $receiptService;
     }
-    public function index(): JsonResponse
+    public function index(FiltterReceiptData $request): JsonResponse
     {
-        $result = $this->receiptService->getAllReceipt();
+        $result = $this->receiptService->getAllReceipt($request->validated());
 
         return $result['status'] === 200
             ? $this->paginated($result["data"], ReceiptResource::class, $result['message'], $result['status'])

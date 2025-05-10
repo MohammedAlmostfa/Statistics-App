@@ -10,20 +10,31 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * Service class for managing products.
+ * Includes methods for retrieving, creating, updating, and deleting products.
+ */
 class ProductService
 {
     /**
      * Retrieve all products, optionally filtered by provided criteria.
      *
-     * @param array|null $filteringData
-     * @return array
+     * This method will fetch the products, either with or without filtering, and
+     * return them in a paginated format. The results are cached for performance optimization.
+     *
+     * @param array|null $filteringData Optional filtering criteria.
+     * @return array Structured response with success or error message in Arabic.
      */
     public function getAllProducts($filteringData = null): array
     {
         try {
+            // Retrieve the current page from the request (default is 1)
             $page = request('page', 1);
+
+            // Generate a cache key based on the page number and filtering criteria
             $cacheKey = 'products' . $page . (!empty($filteringData) ? '_' . md5(json_encode($filteringData)) : '');
 
+            // Retrieve products from the cache or fetch from the database if not cached
             $products = Cache::remember($cacheKey, 1000, function () use ($filteringData) {
                 return Product::select(
                     'id',
@@ -43,20 +54,23 @@ class ProductService
                         'category:id,name',
                         'user:id,name'
                     ])
+                    // Apply filters if provided
                     ->when(!empty($filteringData), function ($query) use ($filteringData) {
                         $query->filterBy($filteringData);
                     })
+                    // Paginate the results
                     ->paginate(10);
             });
 
+            // Return success response with product data
             return [
                 'status'  => 200,
                 'message' => 'تم جلب جميع المنتجات بنجاح.',
                 'data'    => $products,
             ];
         } catch (Exception $e) {
+            // Log any errors and return failure response
             Log::error('Error in getAllProducts: ' . $e->getMessage());
-
             return [
                 'status'  => 500,
                 'message' => 'حدث خطأ أثناء جلب المنتجات، يرجى المحاولة مرة أخرى.',
@@ -67,16 +81,20 @@ class ProductService
     /**
      * Create a new product record in the database.
      *
-     * @param array $data
-     * @return array
+     * This method will create a new product and log the activity.
+     *
+     * @param array $data Product data to create the new product.
+     * @return array Structured response with success or error message in Arabic.
      */
     public function createProduct(array $data): array
     {
         DB::beginTransaction();
 
         try {
+            // Get the authenticated user's ID
             $userId = Auth::id();
 
+            // Create the new product in the database
             $product = Product::create([
                 'name'               => $data['name'],
                 'dollar_exchange'    => $data['dollar_exchange'],
@@ -89,6 +107,7 @@ class ProductService
                 'user_id'            => $userId,
             ]);
 
+            // Log the activity of adding a new product
             ActivitiesLog::create([
                 'user_id'     => $userId,
                 'description' => 'تم إضافة المنتج: ' . $product->name,
@@ -96,17 +115,21 @@ class ProductService
                 'type_type'   => Product::class,
             ]);
 
+            // Commit the transaction
             DB::commit();
 
+            // Return success response
             return [
                 'status'  => 201,
                 'message' => 'تم إنشاء المنتج بنجاح.',
                 'data'    => $product,
             ];
         } catch (Exception $e) {
+            // Log the error and rollback the transaction
             Log::error('Error in createProduct: ' . $e->getMessage());
             DB::rollBack();
 
+            // Return failure response
             return [
                 'status'  => 500,
                 'message' => 'حدث خطأ أثناء إنشاء المنتج، يرجى المحاولة مرة أخرى.',
@@ -117,18 +140,22 @@ class ProductService
     /**
      * Update an existing product in the database.
      *
-     * @param array $data
-     * @param int $id
-     * @return array
+     * This method will update the product data with the provided values and log the activity.
+     *
+     * @param array $data Updated product data.
+     * @param int $id ID of the product to update.
+     * @return array Structured response with success or error message in Arabic.
      */
     public function updateProduct(array $data, $id): array
     {
         DB::beginTransaction();
 
         try {
+            // Lock the product record to prevent concurrent modifications
             $updatedProduct = Product::lockForUpdate()->findOrFail($id);
             $userId = Auth::id();
 
+            // Update the product with the new data
             $updatedProduct->update([
                 'name'               => $data['name'] ?? $updatedProduct->name,
                 'dollar_exchange'    => $data['dollar_exchange'] ?? $updatedProduct->dollar_exchange,
@@ -140,6 +167,7 @@ class ProductService
                 'dolar_buying_price' => $data['dolar_buying_price'] ?? $updatedProduct->dolar_buying_price,
             ]);
 
+            // Log the activity based on the change (whether quantity changed or not)
             if ($data['quantity']) {
                 ActivitiesLog::create([
                     'user_id'     => $userId,
@@ -156,16 +184,20 @@ class ProductService
                 ]);
             }
 
+            // Commit the transaction
             DB::commit();
 
+            // Return success response
             return [
                 'status'  => 200,
                 'message' => 'تم تحديث المنتج بنجاح.',
             ];
         } catch (Exception $e) {
+            // Log the error and rollback the transaction
             Log::error('Error in updateProduct: ' . $e->getMessage());
             DB::rollBack();
 
+            // Return failure response
             return [
                 'status'  => 500,
                 'message' => 'حدث خطأ أثناء تحديث المنتج، يرجى المحاولة مرة أخرى.',
@@ -176,17 +208,21 @@ class ProductService
     /**
      * Delete a product from the database.
      *
-     * @param Product $product
-     * @return array
+     * This method will delete the specified product and log the activity.
+     *
+     * @param Product $product The product to delete.
+     * @return array Structured response with success or error message in Arabic.
      */
     public function deleteProduct(Product $product): array
     {
         DB::beginTransaction();
 
         try {
+            // Delete the product from the database
             $product->delete();
             $userId = Auth::id();
 
+            // Log the activity of deleting the product
             ActivitiesLog::create([
                 'user_id'     => $userId,
                 'description' => 'تم حذف المنتج: ' . $product->name,
@@ -194,16 +230,20 @@ class ProductService
                 'type_type'   => Product::class,
             ]);
 
+            // Commit the transaction
             DB::commit();
 
+            // Return success response
             return [
                 'status'  => 200,
                 'message' => 'تم حذف المنتج بنجاح.',
             ];
         } catch (Exception $e) {
+            // Log the error and rollback the transaction
             Log::error('Error in deleteProduct: ' . $e->getMessage());
             DB::rollBack();
 
+            // Return failure response
             return [
                 'status'  => 500,
                 'message' => 'حدث خطأ أثناء حذف المنتج، يرجى المحاولة مرة أخرى.',

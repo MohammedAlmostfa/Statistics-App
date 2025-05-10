@@ -11,46 +11,39 @@ use App\Notifications\SendWhatsAppNotification;
 
 class CheckLatePayments extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'check:late-payments';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Check invoices for late installment payments and send a message if overdue by a month.';
 
-    /**
-     * Execute the console command.
-     */
     public function handle(): int
     {
         $now = Carbon::now();
         $oneMonthAgo = $now->copy()->subMonth();
 
-        $receiptsWithInstallments = Receipt::where('type', 'اقساط')->get();
+        $receipts = Receipt::where('type', 'اقساط')
+            ->with(['receiptProducts.installment.InstallmentPayments', 'receiptProducts.product', 'customer'])
+            ->get();
 
-        foreach ($receiptsWithInstallments as $receipt) {
-            $latestPayment = InstallmentPayment::whereHas('installment.receiptProduct.receipt', function ($query) use ($receipt) {
-                $query->where('id', $receipt->id);
-            })
-            ->orderByDesc('payment_date')
-            ->first();
+        foreach ($receipts as $receipt) {
+            foreach ($receipt->receiptProducts as $product) {
+                $installment = $product->installment;
 
-            if ($latestPayment) {
-                $lastPaymentDate = Carbon::parse($latestPayment->payment_date);
+                if (!$installment || $installment->status !== 'قيد التسديد') {
+                    continue;
+                }
 
-                if ($lastPaymentDate->lt($oneMonthAgo)) {
-                    $message = "تنبيه: تاريخ الفاتورة رقم {$receipt->receipt_number} هو {$receipt->receipt_date->format('Y-m-d')}، وتاريخ آخر دفعة هو {$lastPaymentDate->format('Y-m-d')}.";
+                $latestPayment = $installment->InstallmentPayments->sortByDesc('payment_date')->first();
+
+                if ($latestPayment && Carbon::parse($latestPayment->payment_date)->lt($oneMonthAgo)) {
+                    $lastPaymentDate = Carbon::parse($latestPayment->payment_date)->format('Y-m-d');
+                    $productName = $product->description ?: ($product->product->name ?? 'منتج غير محدد');
+                    $customerName = $receipt->customer->name ;
+
+                    $message = "تنبيه: القسط الخاص بالمنتج '{$productName}' في الفاتورة رقم {$receipt->receipt_number} (تاريخها: {$receipt->receipt_date->format('Y-m-d')}) ";
+                    $message .= "التابع للعميل {$customerName} متأخر، حيث أن آخر دفعة كانت بتاريخ {$lastPaymentDate}. يرجى المبادرة بالسداد.";
 
                     if ($receipt->customer) {
                         Notification::send($receipt->customer, new SendWhatsAppNotification($message));
-                        $this->info("✅ تم إرسال تنبيه WhatsApp إلى العميل رقم {$receipt->customer->id}.");
+                        $this->info("✅ تم إرسال تنبيه WhatsApp إلى العميل {$customerName} بخصوص المنتج '{$productName}'.");
                     }
                 }
             }

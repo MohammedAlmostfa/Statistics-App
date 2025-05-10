@@ -9,6 +9,7 @@ use App\Http\Resources\ProductResource;
 use App\Http\Requests\ProductRequest\filtterdata;
 use App\Http\Requests\ProductRequest\StoreProductData;
 use App\Http\Requests\ProductRequest\UpdateProductData;
+use App\Http\Requests\ProductRequest\FiltterProductData;
 
 class ProductController extends Controller
 {
@@ -35,7 +36,7 @@ class ProductController extends Controller
      * @param filtterdata $request Validated filter data for retrieving products.
      * @return \Illuminate\Http\JsonResponse JSON response with paginated product data.
      */
-    public function index(filtterdata $request)
+    public function index(FiltterProductData $request)
     {
         // Fetch products using ProductService with applied filters.
         $result = $this->productService->getAllProducts($request->validated());

@@ -13,6 +13,7 @@ return new class extends Migration {
             $table->integer('amount');
             $table->integer('status');
             $table->date('payment_date');
+
             $table->timestamps();
         });
     }

@@ -26,8 +26,7 @@ class FilteringCustomerData extends FormRequest
         return [
             'name' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
-            'Record_id'=>'nullable|integer',
-           'Page_id'=>'nullable|integer',
+
 
 
         ];

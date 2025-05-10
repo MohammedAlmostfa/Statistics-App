@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Services\WhatsappService; //
+use App\Services\WhatsappService;
 use App\Http\Resources\WhatsappResource;
 use App\Http\Requests\WhatsAppRequest\FiltterData;
+use App\Http\Requests\WhatsAppRequest\FiltterWhatsAppData;
 
 class WhatsappController extends Controller
 {
@@ -29,7 +29,7 @@ class WhatsappController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(FiltterData $request)
+    public function index(FiltterWhatsAppData $request)
     {
         // Validate and retrieve the data from the request
         $validatedData = $request->validated();

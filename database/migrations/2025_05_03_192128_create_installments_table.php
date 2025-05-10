@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->integer('installment');
             $table->integer('first_pay');
             $table->integer('installment_type');
+            $table->integer('status')->default(1);
             $table->timestamps();
 
 

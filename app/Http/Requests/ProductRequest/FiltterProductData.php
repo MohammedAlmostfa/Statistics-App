@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Http\Requests\ReceiptRequest;
+namespace App\Http\Requests\ProductRequest;
 
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Contracts\Validation\Validator;
 
-use Illuminate\Foundation\Http\FormRequest;
-
-class fitrtingReceiptData extends FormRequest
+class FiltterProductData extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,19 +24,17 @@ class fitrtingReceiptData extends FormRequest
     public function rules(): array
     {
         return [
-         'customer_name' => 'nullable|string|max:255',
-            'receipt_date' => 'nullable|date',
-            'type'=>'nullable|string',
+      'name' => 'nullable|string|exists:product_categories,name',
         ];
     }
     /**
-     * Handle a failed validation attempt.
-     * This method is called when validation fails.
-     * Logs failed attempts and throws validation exception.
-     * @param \Illuminate\Validation\Validator $validator
-     * @return void
-     *
-     */
+    * Handle a failed validation attempt.
+    * This method is called when validation fails.
+    * Logs failed attempts and throws validation exception.
+    * @param \Illuminate\Validation\Validator $validator
+    * @return void
+    *
+    */
 
     protected function failedValidation(Validator $validator): void
     {

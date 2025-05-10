@@ -18,17 +18,17 @@ class ReceiptService
     /**
      * Get all receipts with related user and customer info.
      */
-    public function getAllReceipt()
+    public function getAllReceipt(array $filteringData)
     {
         try {
-
             $page = request('page', 1);
-            $cacheKey = 'receipts'. $page ;
-            $receipts = Cache::remember($cacheKey, now()->addMinutes(15), function () {
+            $cacheKey = 'receipts_'.$page.'_'.md5(json_encode($filteringData));
+
+            $receipts = Cache::remember($cacheKey, now()->addMinutes(15), function () use ($filteringData) {
                 return Receipt::with([
                     'user:id,name',
                     'customer:id,name'
-                ])->paginate(10);
+                ])->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))->paginate(10);
             });
 
             return [
@@ -36,15 +36,16 @@ class ReceiptService
                 'message' => 'تم استرجاع جميع الفواتير بنجاح',
                 'data'    => $receipts,
             ];
-        } catch (Exception $e) {
-            Log::error('Error in getAllReceipt: ' . $e->getMessage());
+        } catch (\Exception $e) {
+            Log::error(' خطأ في استرجاع الفواتير: ' . $e->getMessage());
 
             return [
                 'status'  => 500,
-                'message' => 'حدث خطأ أثناء استرجاع الفواتير.',
+                'message' => ' حدث خطأ أثناء استرجاع الفواتير.',
             ];
         }
     }
+
 
     /**
      * Get receipts for a specific customer.
@@ -182,7 +183,9 @@ class ReceiptService
 
         try {
 
-            $existingReceiptProducts = $receipt->receiptProducts()->get()->keyBy('product_id');
+            $receipt->load('receiptProducts');
+
+            $existingReceiptProducts = $receipt->receiptProducts->keyBy('product_id');
 
             $this->updateReceipt($receipt, $data);
 
@@ -191,7 +194,7 @@ class ReceiptService
             $addedProductIds = collect($currentProductIds)->diff($existingReceiptProducts->keys());
             $updatedProductIds = $existingReceiptProducts->keys()->intersect($currentProductIds);
 
-            // Remove deleted products
+
             foreach ($deletedProductIds as $productIdToRemove) {
                 $productToRemove = $existingReceiptProducts->get($productIdToRemove);
                 ReceiptCreated::dispatch($productToRemove->product_id, -$productToRemove->quantity);
@@ -202,7 +205,7 @@ class ReceiptService
                 $productId = $productData['product_id'];
 
                 if ($addedProductIds->contains($productId)) {
-                    // Add new product
+
                     $product = Product::findOrFail($productId);
                     $receiptType = $receipt->type;
                     $buyingPrice = $product->getCalculatedBuyingPrice();
@@ -222,9 +225,8 @@ class ReceiptService
                     if ($receiptType === 'اقساط') {
                         $this->createInstallment($receiptProduct, $productData);
                     }
-
                 } elseif ($updatedProductIds->contains($productId)) {
-                    // Update product
+
                     $receiptProduct = $existingReceiptProducts->get($productId);
                     $oldQuantity = (int)$receiptProduct->quantity;
                     $newQuantity = (int)$productData['quantity'];
@@ -264,7 +266,7 @@ class ReceiptService
 
             return [
                 'status' => 500,
-                'message' => 'حدث خطأ أثناء تحديث الفاتورة: ',
+                'message' => 'حدث خطأ أثناء تحديث الفاتورة.',
             ];
         }
     }
@@ -326,11 +328,14 @@ class ReceiptService
     {
         DB::beginTransaction();
         try {
-            foreach ($receipt->receiptProducts as $receiptProduct) {
-                ReceiptCreated::dispatch($receiptProduct->product_id, -$receiptProduct->quantity);
-            }
+            $receipt->load('receiptProducts');
 
-            $receipt->receiptProducts()->delete();
+            if ($receipt->receiptProducts->isNotEmpty()) {
+                foreach ($receipt->receiptProducts as $receiptProduct) {
+                    ReceiptCreated::dispatch($receiptProduct->product_id, -$receiptProduct->quantity);
+                }
+            }
+            $receipt->delete();
 
             ActivitiesLog::create([
                 'user_id'     => Auth::id(),
@@ -339,7 +344,7 @@ class ReceiptService
                 'type_type'   => Receipt::class,
             ]);
 
-            $receipt->delete();
+
 
             DB::commit();
 
