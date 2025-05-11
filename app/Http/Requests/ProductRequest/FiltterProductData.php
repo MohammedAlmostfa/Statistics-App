@@ -24,17 +24,17 @@ class FiltterProductData extends FormRequest
     public function rules(): array
     {
         return [
-      'name' => 'nullable|string|exists:product_categories,name',
+            'name' => 'nullable|string',
         ];
     }
     /**
-    * Handle a failed validation attempt.
-    * This method is called when validation fails.
-    * Logs failed attempts and throws validation exception.
-    * @param \Illuminate\Validation\Validator $validator
-    * @return void
-    *
-    */
+     * Handle a failed validation attempt.
+     * This method is called when validation fails.
+     * Logs failed attempts and throws validation exception.
+     * @param \Illuminate\Validation\Validator $validator
+     * @return void
+     *
+     */
 
     protected function failedValidation(Validator $validator): void
     {

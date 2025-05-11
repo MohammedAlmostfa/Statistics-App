@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
             ProductOriginSeeder::class,
             ProductCategorySeeder::class,
             ProductSeeder::class,
-          // ReceiptSeeder::class,
+           ReceiptSeeder::class,
           PaymentSeeder::class,
         ]);
     }

@@ -103,13 +103,13 @@ class InstallmentPaymentService
         DB::beginTransaction();
 
         try {
-            ActivitiesLog::create([
-                'user_id'     => Auth::id(),
-                'description' => 'تم حذف دفعة قسط بمبلغ ' . $installmentPayment->amount . ' من العميل ' . $installmentPayment->installment->receipt->customer->name,
-                'type_id'     => $installmentPayment->id,
-                'type_type'   => InstallmentPayment::class,
-            ]);
 
+            ActivitiesLog::create([
+                        'user_id'     => Auth::id(),
+                        'description' => 'تم حذف دفعة قسط بمبلغ ' . $installmentPayment->amount . ' من العميل ' . $installmentPayment->installment->receiptProduct->receipt->customer->name,
+                         'type_id'     => $installmentPayment->id,
+                        'type_type'   => InstallmentPayment::class,
+                    ]);
             $installmentPayment->delete();
 
             DB::commit();

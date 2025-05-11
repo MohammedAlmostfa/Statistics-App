@@ -6,11 +6,8 @@ use App\Models\User;
 
 class ProductCategoryPolicy
 {
-    /**
-     * Create a new policy instance.
-     */
-    public function __construct()
+    public function deleteProductCategory(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('productCategory.delete');
     }
 }
