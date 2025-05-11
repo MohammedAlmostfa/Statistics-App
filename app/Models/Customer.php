@@ -63,28 +63,7 @@ class Customer extends Model
         return $this->hasMany(Receipt::class);
     }
 
-    /**
-     * Scope to filter customers by optional criteria.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param array $filteringData
-     * @return \Illuminate\Database\Eloquent\Builder
-     *
-     * @documented
-     */
-    public function scopeFilterBy($query, array $filteringData)
-    {
-        if (isset($filteringData['name'])) {
-            $query->where('name', 'LIKE', "%{$filteringData['name']}%");
-        }
 
-        if (isset($filteringData['phone'])) {
-            $query->where('phone', $filteringData['phone']);
-        }
-
-
-        return $query;
-    }
     /**
      * The "booting" method of the model.
      *
@@ -143,11 +122,39 @@ class Customer extends Model
     public function status(): Attribute
     {
         return Attribute::make(
-            // Accessor: Get the human-readable status value (e.g., "مدفوعة" or "متأخر").
             get: fn ($value) => self::TYPE_MAP[$value] ?? 'Unknown',
-
-            // Mutator: Convert the human-readable status back to its numeric representation.
-            set: fn ($value) => array_search($value, self::TYPE_MAP)
+            set: fn ($value) => array_search($value, self::TYPE_MAP) ?? $value
         );
+
     }
+
+    /**
+     * Scope to filter customers by optional criteria.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param array $filteringData
+     * @return \Illuminate\Database\Eloquent\Builder
+     *
+     * @documented
+     */
+    public function scopeFilterBy($query, array $filteringData)
+    {
+        if (isset($filteringData['name'])) {
+            $query->where('name', 'LIKE', "%{$filteringData['name']}%");
+        }
+
+        if (isset($filteringData['phone'])) {
+            $query->where('phone', $filteringData['phone']);
+        }
+
+        if (isset($filteringData['status'])) {
+            $status = array_search($filteringData['status'], self::TYPE_MAP);
+            if ($status !== false) {
+                $query->where('status', $status);
+            }
+        }
+
+        return $query;
+    }
+
 }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class ActivitiesLog extends Model
 {
@@ -39,6 +40,37 @@ class ActivitiesLog extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function scopeFilterBy($query, $filteringData)
+    {
+        if (isset($filteringData['type'])) {
+            $typeClass = array_search($filteringData['type'], self::TYPE_MAP);
+            if ($typeClass) {
+                $query->where('type_type', $typeClass);
+            }
+        }
+
+        return $query;
+    }
+
+
+    const TYPE_MAP = [
+        'App\\Models\\Receipt' => 'فاتورة',
+        'App\\Models\\Payment' => 'دفعة',
+        'App\\Models\\Customer' => 'زبائن',
+        'App\\Models\\InstallmentPayment' => 'قسط',
+        'App\\Models\\Product' => 'منتج',
+        'App\\Models\\ProductCategory' => 'صنف منج',
+    ];
+
+    public function typeType(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => self::TYPE_MAP[$value] ?? class_basename($value),
+            set: fn ($value) => array_search($value, self::TYPE_MAP) ?: $value
+        );
+
     }
 
     /**

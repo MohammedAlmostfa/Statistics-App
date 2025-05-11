@@ -30,7 +30,7 @@ class ReceiptProductService
 
             $receipts = Receipt::with([
                 'receiptProducts' => function ($q) {
-                    $q->select('id', 'receipt_id', 'product_id', 'quantity', 'selling_price', 'receipt_date');
+                    $q->select('id', 'receipt_id', 'product_id', 'quantity', 'selling_price');
                 },
                 'receiptProducts.product' => function ($q) {
                     $q->select('id', 'name');

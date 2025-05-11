@@ -31,7 +31,7 @@ class ReceiptService
             $receipts = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($filteringData) {
                 return Receipt::with(['user:id,name', 'customer:id,name'])
                     ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
-                    ->orderByDesc('created_at')->paginate(10);
+                    ->orderByDesc('receipt_date')->paginate(10);
             });
 
             return [
@@ -58,6 +58,7 @@ class ReceiptService
         try {
             $receipts = Receipt::with(['user:id,name'])
                 ->where('customer_id', $id)
+                ->orderByDesc('receipt_date')
                 ->paginate(10);
 
             return [

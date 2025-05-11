@@ -24,7 +24,7 @@ class CustomerResource extends JsonResource
             'notes' => $this->notes,
             'status' => $this->status,
             'created_at' => $this->created_at,
-
+            'sponsor_phone' => $this->sponsor_phone,
         ];
     }
 }

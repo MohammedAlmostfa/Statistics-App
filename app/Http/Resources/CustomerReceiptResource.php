@@ -17,7 +17,7 @@ class CustomerReceiptResource extends JsonResource
         return [
             'id' => $this->id,
             'receipt_number' => $this->receipt_number,
-               'total_price' => $this->total_price,
+            'total_price' => $this->total_price,
             'user_name' => $this->user->name ?? null,
             'notes' => $this->notes,
             'type' => $this->type,
@@ -25,6 +25,5 @@ class CustomerReceiptResource extends JsonResource
             'user_id' => $this->user_id,
             'customer_name' => $this->customer->name,
         ];
-
     }
 }
