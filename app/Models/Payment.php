@@ -30,7 +30,7 @@ class Payment extends Model
      */
     protected $casts = [
         'payment_date' => 'date',
-        'amount'=>'integer'
+        'amount' => 'integer'
 
     ];
 
@@ -40,29 +40,42 @@ class Payment extends Model
         return $this->belongsTo(User::class);
     }
     /**
-         * The "booting" method of the model.
-         *
-         * @return void
-         */
+     * The "booting" method of the model.
+     *
+     * @return void
+     */
     protected static function boot()
     {
         parent::boot();
 
         static::created(function ($payment) {
-            Cache::forget('payments');
+            $cacheKeys = Cache::get('all_payments_keys', []);
+            foreach ($cacheKeys as $key) {
+                Cache::forget($key);
+            }
+            Cache::forget('all_payments_keys');
+
             Log::info("تم إنشاء دفعة جديدة ({$payment->id}) وتم حذف كاش الدفعات.");
         });
 
         static::updated(function ($payment) {
-            Cache::forget('payments');
+            $cacheKeys = Cache::get('all_payments_keys', []);
+            foreach ($cacheKeys as $key) {
+                Cache::forget($key);
+            }
+            Cache::forget('all_payments_keys');
+
             Log::info("تم تحديث الدفعة ({$payment->id}) وتم حذف كاش الدفعات.");
         });
 
         static::deleted(function ($payment) {
-            Cache::forget('payments');
+            $cacheKeys = Cache::get('all_payments_keys', []);
+            foreach ($cacheKeys as $key) {
+                Cache::forget($key);
+            }
+            Cache::forget('all_payments_keys');
+
             Log::info("تم حذف الدفعة ({$payment->id}) وتم حذف كاش الدفعات.");
         });
     }
-
-
 }

@@ -96,35 +96,50 @@ class Customer extends Model
         parent::boot();
 
         static::created(function ($customer) {
-            Cache::forget('customers');
+            $cacheKeys = Cache::get('all_customers_keys', []);
+            foreach ($cacheKeys as $key) {
+                Cache::forget($key);
+            }
+            Cache::forget('all_customers_keys');
+
             Log::info("تم إنشاء زبون جديد ({$customer->id}) وتم حذف كاش الزبائن.");
         });
 
         static::updated(function ($customer) {
-            Cache::forget('customers');
+            $cacheKeys = Cache::get('all_customers_keys', []);
+            foreach ($cacheKeys as $key) {
+                Cache::forget($key);
+            }
+            Cache::forget('all_customers_keys');
+
             Log::info("تم تحديث الزبون ({$customer->id}) وتم حذف كاش الزبائن.");
         });
 
         static::deleted(function ($customer) {
-            Cache::forget('customers');
+            $cacheKeys = Cache::get('all_customers_keys', []);
+            foreach ($cacheKeys as $key) {
+                Cache::forget($key);
+            }
+            Cache::forget('all_customers_keys');
+
             Log::info("تم حذف الزبون ({$customer->id}) وتم حذف كاش الزبائن.");
         });
     }
     const TYPE_MAP = [
-           0 => 'قديم',  // Installment payment type
-           1 => 'جديد',   // Cash payment type
-       ];
+        0 => 'قديم',  // Installment payment type
+        1 => 'جديد',   // Cash payment type
+    ];
 
 
     /**
-        * Mutator for the 'type' attribute.
-        *
-        * This method defines an accessor and mutator for the 'type' attribute.
-        * The accessor converts the numeric 'type' value (0 or 1) into a human-readable string ('قديم' or 'جديد').
-        * The mutator converts the string back to its corresponding numeric value before saving it to the database.
-        *
-        * @return \Illuminate\Database\Eloquent\Casts\Attribute
-        */
+     * Mutator for the 'type' attribute.
+     *
+     * This method defines an accessor and mutator for the 'type' attribute.
+     * The accessor converts the numeric 'type' value (0 or 1) into a human-readable string ('قديم' or 'جديد').
+     * The mutator converts the string back to its corresponding numeric value before saving it to the database.
+     *
+     * @return \Illuminate\Database\Eloquent\Casts\Attribute
+     */
     public function status(): Attribute
     {
         return Attribute::make(
@@ -135,5 +150,4 @@ class Customer extends Model
             set: fn ($value) => array_search($value, self::TYPE_MAP)
         );
     }
-
 }

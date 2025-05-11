@@ -17,7 +17,14 @@ class ActivitiesLogService
 
             $cacheKey = 'activities_logs' . $page . (empty($filteringData) ? '' : md5(json_encode($filteringData)));
 
-            // Retrieve logs from cache or query the database
+            $cacheKeys = Cache::get('activities', []);
+
+            if (!in_array($cacheKey, $cacheKeys)) {
+                $cacheKeys[] = $cacheKey;
+                Cache::put('activities', $cacheKeys, now()->addHours(2));
+            }
+
+
             $activitiesLog = Cache::remember($cacheKey, now()->addMinutes(120), function () use ($filteringData) {
                 return ActivitiesLog::with('user')
                     ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
@@ -34,6 +41,7 @@ class ActivitiesLogService
             return $this->errorResponse('حدث خطأ أثناء جلب سجلات الأنشطة.');
         }
     }
+
 
 
 

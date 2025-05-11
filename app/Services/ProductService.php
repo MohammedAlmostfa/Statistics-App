@@ -28,13 +28,19 @@ class ProductService
     public function getAllProducts($filteringData = null): array
     {
         try {
-            // Retrieve the current page from the request (default is 1)
+
             $page = request('page', 1);
 
-            // Generate a cache key based on the page number and filtering criteria
             $cacheKey = 'products' . $page . (!empty($filteringData) ? '_' . md5(json_encode($filteringData)) : '');
 
-            // Retrieve products from the cache or fetch from the database if not cached
+            $cacheKeys = Cache::get('all_products_keys', []);
+
+            if (!in_array($cacheKey, $cacheKeys)) {
+                $cacheKeys[] = $cacheKey;
+                Cache::put('all_products_keys', $cacheKeys, now()->addHours(2));
+            }
+
+            // Use cache if available
             $products = Cache::remember($cacheKey, 1000, function () use ($filteringData) {
                 return Product::select(
                     'id',
@@ -54,22 +60,19 @@ class ProductService
                         'category:id,name',
                         'user:id,name'
                     ])
-                    // Apply filters if provided
                     ->when(!empty($filteringData), function ($query) use ($filteringData) {
                         $query->filterBy($filteringData);
                     })
-                    // Paginate the results
+                    ->orderByDesc('created_at')
                     ->paginate(10);
             });
 
-            // Return success response with product data
             return [
                 'status'  => 200,
                 'message' => 'تم جلب جميع المنتجات بنجاح.',
                 'data'    => $products,
             ];
         } catch (Exception $e) {
-            // Log any errors and return failure response
             Log::error('Error in getAllProducts: ' . $e->getMessage());
             return [
                 'status'  => 500,

@@ -49,8 +49,12 @@ class ActivitiesLog extends Model
         parent::boot();
 
         static::created(function ($activitiesLog) {
+            $cacheKeys = Cache::get('activities', []);
 
-            Cache::forget('activities_logs');
+            foreach ($cacheKeys as $key) {
+                Cache::forget($key);
+            }
+            Cache::forget('activities');
 
             Log::info("تم إنشاء سجل جديد للأنشطة ({$activitiesLog->id}) وتم حذف كاش السجلات.");
         });

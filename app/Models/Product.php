@@ -147,17 +147,33 @@ class Product extends Model
         parent::boot();
 
         static::created(function ($product) {
-            Cache::forget('products');
+            $cacheKeys = Cache::get('all_products_keys', []);
+
+            foreach ($cacheKeys as $key) {
+                Cache::forget($key);
+            }
+
+            Cache::forget('all_products_keys');
+
             Log::info("تم إنشاء منتج جديد ({$product->id}) وتم حذف كاش المنتجات.");
         });
 
         static::updated(function ($product) {
-            Cache::forget('products');
+            $cacheKeys = Cache::get('all_products_keys', []);
+
+            foreach ($cacheKeys as $key) {
+                Cache::forget($key);
+            }
+            Cache::forget('all_products_keys');
             Log::info("تم تحديث المنتج ({$product->id}) وتم حذف كاش المنتجات.");
         });
-
         static::deleted(function ($product) {
-            Cache::forget('products');
+            $cacheKeys = Cache::get('all_products_keys', []);
+            foreach ($cacheKeys as $key) {
+                Cache::forget($key);
+            }
+            Cache::forget('all_products_keys');
+
             Log::info("تم حذف المنتج ({$product->id}) وتم حذف كاش المنتجات.");
         });
     }

@@ -145,11 +145,9 @@ class Receipt extends Model
 
         static::created(function ($receipt) {
             $cacheKeys = Cache::get('all_receipts_keys', []);
-
             foreach ($cacheKeys as $key) {
                 Cache::forget($key);
             }
-
             Cache::forget('all_receipts_keys');
 
 

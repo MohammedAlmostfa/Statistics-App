@@ -27,9 +27,14 @@ class CustomerService
     {
         try {
             $page = request('page', 1);
-
-            // Generate a unique cache key based on pagination and filters
             $cacheKey = 'customers_' . $page . (empty($filteringData) ? '' : md5(json_encode($filteringData)));
+            $cacheKeys = Cache::get('all_customers_keys', []);
+
+            if (!in_array($cacheKey, $cacheKeys)) {
+                $cacheKeys[] = $cacheKey;
+                Cache::put('all_customers_keys', $cacheKeys, now()->addHours(2));
+            }
+
 
             // Retrieve customers from cache or fetch from the database
             $customers = Cache::remember($cacheKey, now()->addMinutes(120), function () use ($filteringData) {
