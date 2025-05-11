@@ -30,6 +30,8 @@ class UserController extends Controller
 
     public function index()
     {
+        $this->authorize('getUser', User::class);
+
         // Create the user using UserService
         $result = $this->userService->getAllUsers();
 
@@ -46,6 +48,8 @@ class UserController extends Controller
      */
     public function store(StoreUserData $request)
     {
+        $this->authorize('createUser', User::class);
+
         // Validate and get the input data
         $validatedData = $request->validated(); // Corrected: use `validated` method
 
@@ -59,6 +63,8 @@ class UserController extends Controller
     }
     public function update(UpdateUserData $request, User $user)
     {
+        $this->authorize('updateUser', User::class);
+
         // Validate and get the input data
         $validatedData = $request->validated(); // Corrected: use `validated` method
 
@@ -72,8 +78,7 @@ class UserController extends Controller
     }
     public function destroy(User $user)
     {
-
-
+        $this->authorize('deleteUser', User::class);
         // Create the user using UserService
         $result = $this->userService->deleteUser($user);
 
@@ -84,6 +89,7 @@ class UserController extends Controller
     }
     public function updateUserStatus(UpdateStatus $request, User $user)
     {
+        $this->authorize('changeStatusUser', User::class);
         $validatedData = $request->validated();
 
         $result = $this->userService->updateUserStatus($validatedData, $user);

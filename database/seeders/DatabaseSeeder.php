@@ -21,8 +21,8 @@ class DatabaseSeeder extends Seeder
             CustomerSeeder::class,
             ProductOriginSeeder::class,
             ProductCategorySeeder::class,
-            ProductSeeder::class,
-           ReceiptSeeder::class,
+           // ProductSeeder::class,
+          // ReceiptSeeder::class,
           PaymentSeeder::class,
         ]);
     }

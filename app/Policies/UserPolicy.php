@@ -48,8 +48,8 @@ class UserPolicy
     /**
      * Check if the user has permission to view user details.
      */
-    public function showUser(User $user): bool
+    public function changeStatusUser(User $user): bool
     {
-        return $user->hasPermissionTo('user.details');
+        return $user->hasPermissionTo('user.change_status');
     }
 }

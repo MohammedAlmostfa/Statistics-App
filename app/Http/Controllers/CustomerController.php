@@ -113,6 +113,8 @@ class CustomerController extends Controller
      */
     public function destroy(Customer $customer): JsonResponse
     {
+        $this->authorize('deleteCustomer', $customer);
+
         $result = $this->customerService->deleteCustomer($customer);
 
         return $result['status'] === 200
