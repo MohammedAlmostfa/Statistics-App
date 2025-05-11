@@ -9,6 +9,7 @@ use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
  * User model represents the authenticated user of the system.
@@ -49,8 +50,8 @@ class User extends Authenticatable implements JWTSubject
      * @documented
      */
     const STATUS_MAP = [
-        0 => 'exists',
-        1 => 'deleted',
+        0 => 'موجدود ',
+        1 => 'محذوف',
     ];
 
     /**
@@ -64,13 +65,13 @@ class User extends Authenticatable implements JWTSubject
     {
         return self::STATUS_MAP[$value] ?? 'Unknown';
     }
-    // public function status(): Attribute
-    //     {
-    //         return Attribute::make(
-    //             get: fn($value) => self::STATUS_MAP[$value] ?? 'Unknown',
-    //             set: fn($value) => array_search($value, self::STATUS_MAP)
-    //         );
-    //     }
+    public function status(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => self::STATUS_MAP[$value] ?? 'Unknown',
+            set: fn ($value) => array_search($value, self::STATUS_MAP)
+        );
+    }
 
     /**
      * Attribute casting.

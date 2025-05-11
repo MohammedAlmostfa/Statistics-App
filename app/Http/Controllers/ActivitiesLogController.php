@@ -20,6 +20,7 @@ class ActivitiesLogController extends Controller
      */
     public function index(FiltteringActivtiesLogData $request)
     {
+        $this->authorize('GetActivitesLog', ActivitiesLog::class);
 
         $result = $this->activitiesLogService->getAllActivitiesLog($request->validated());
 

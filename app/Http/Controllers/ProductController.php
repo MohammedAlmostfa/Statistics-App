@@ -96,6 +96,8 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
+        $this->authorize('deleteProduct', Product::class);
+
         // Delete the product using ProductService.
         $result = $this->productService->deleteProduct($product);
 

@@ -78,6 +78,8 @@ class ProductCategoryController extends Controller
      */
     public function destroy(ProductCategory $productCategory): JsonResponse
     {
+        $this->authorize('deleteProductCategory', ProductCategory::class);
+
         $result = $this->productcategoryService->deleteProductCategory($productCategory);
 
         return $result['status'] === 200

@@ -27,8 +27,23 @@ class AuthService
                 ];
             }
 
-
             $user = JWTAuth::user();
+
+            Log::error("Error during login: User status is '{$user->status}'");
+
+            if (!isset($user->status)) {
+                return [
+                    'status' => 500,
+                    'message' => 'حدث خطأ غير متوقع. حالة الحساب غير معروفة.',
+                ];
+            }
+
+            if ($user->status === "محذوف") {
+                return [
+                    'status' => 403,
+                    'message' => 'لقد تم حذف الحساب. يرجى التواصل مع المدير.',
+                ];
+            }
 
             return [
                 'status' => 200,
@@ -36,11 +51,11 @@ class AuthService
                 'data' => [
                     'token' => $token,
                     'type' => 'bearer',
-'role' => $user->getRoleNames()->first(),
+                    'role' => $user->getRoleNames()->first(),
                 ],
             ];
         } catch (Exception $e) {
-            Log::error('Error during login: ' . $e->getMessage());
+            Log::error("Error during login for user: {$credentials['email']}. Exception: " . $e->getMessage());
 
             return [
                 'status' => 500,
@@ -83,23 +98,34 @@ class AuthService
     {
         try {
             $newToken = Auth::refresh();
+            $user = Auth::user();
+
+
+            if ($user->status === "محذوف") {
+
+                Auth::logout(true);
+                return [
+                    'status' => 403,
+                    'message' => 'لقد تم حذف الحساب. يرجى التواصل مع المدير.',
+                ];
+            }
 
             return [
                 'status' => 200,
                 'message' => 'تم تحديث التوكن بنجاح.',
                 'data' => [
-                    'user' => Auth::user(),
+                    'user' => $user,
                     'token' => $newToken,
                     'type' => 'bearer',
                 ],
             ];
         } catch (Exception $e) {
             Log::error('Error during token refresh: ' . $e->getMessage());
-
             return [
                 'status' => 500,
                 'message' => 'حدث خطأ أثناء تحديث التوكن. يرجى إعادة المحاولة لاحقًا.',
             ];
         }
     }
+
 }

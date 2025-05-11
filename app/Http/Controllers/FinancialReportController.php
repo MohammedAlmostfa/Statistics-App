@@ -44,6 +44,8 @@ class FinancialReportController extends Controller
      */
     public function index(FilterFinancialReportData $request)
     {
+        $this->authorize('GetFinacialReport');
+
         // Validate request input
         $validatedData = $request->validated();
 
