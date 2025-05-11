@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Log;
 
 class FilterFinancialReportData extends FormRequest
 {
@@ -31,11 +32,16 @@ class FilterFinancialReportData extends FormRequest
         ];
     }
 
+
     /**
-     * معالجة فشل التحقق
+     * Handle a failed validation attempt.
+     * This method is called when validation fails.
+     * Logs failed attempts and throws validation exception.
+     * @param \Illuminate\Validation\Validator $validator
+     * @return void
      *
-     * @param Validator $validator
      */
+
     protected function failedValidation(Validator $validator): void
     {
         throw new HttpResponseException(response()->json([

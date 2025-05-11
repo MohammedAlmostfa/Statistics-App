@@ -26,12 +26,17 @@ class AuthService
                     'message' => 'بيانات الاعتماد غير صحيحة.',
                 ];
             }
+
+
+            $user = JWTAuth::user();
+
             return [
                 'status' => 200,
                 'message' => 'تم تسجيل الدخول بنجاح.',
                 'data' => [
                     'token' => $token,
                     'type' => 'bearer',
+'role' => $user->getRoleNames()->first(),
                 ],
             ];
         } catch (Exception $e) {
@@ -43,6 +48,7 @@ class AuthService
             ];
         }
     }
+
 
     /**
      * Logout the authenticated user.

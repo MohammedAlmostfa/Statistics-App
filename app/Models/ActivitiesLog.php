@@ -44,6 +44,13 @@ class ActivitiesLog extends Model
 
     public function scopeFilterBy($query, $filteringData)
     {
+        if (isset($filteringData['name'])) {
+            $query->whereHas('user', function ($q) use ($filteringData) {
+                $q->where('name', 'LIKE', "%{$filteringData['name']}%");
+            });
+        }
+
+
         if (isset($filteringData['type'])) {
             $typeClass = array_search($filteringData['type'], self::TYPE_MAP);
             if ($typeClass) {
@@ -56,12 +63,12 @@ class ActivitiesLog extends Model
 
 
     const TYPE_MAP = [
-        'App\\Models\\Receipt' => 'فاتورة',
-        'App\\Models\\Payment' => 'دفعة',
+        'App\\Models\\Receipt' => 'فواتير',
+        'App\\Models\\Payment' => 'دفعات',
         'App\\Models\\Customer' => 'زبائن',
-        'App\\Models\\InstallmentPayment' => 'قسط',
-        'App\\Models\\Product' => 'منتج',
-        'App\\Models\\ProductCategory' => 'صنف منج',
+        'App\\Models\\InstallmentPayment' => 'اقساط',
+        'App\\Models\\Product' => 'منتجات',
+        'App\\Models\\ProductCategory' => 'اصناف ',
     ];
 
     public function typeType(): Attribute

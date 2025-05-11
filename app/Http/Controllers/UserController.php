@@ -50,12 +50,9 @@ class UserController extends Controller
     {
         $this->authorize('createUser', User::class);
 
-        // Validate and get the input data
-        $validatedData = $request->validated(); // Corrected: use `validated` method
+        $validatedData = $request->validated();
 
-        // Create the user using UserService
         $result = $this->userService->createUser($validatedData);
-
         // Return response based on the result
         return $result['status'] === 201
             ? self::success(null, $result['message'], $result['status'])

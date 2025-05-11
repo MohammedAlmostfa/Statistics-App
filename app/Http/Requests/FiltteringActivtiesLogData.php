@@ -3,6 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Validation\Validator;
 
 class FiltteringActivtiesLogData extends FormRequest
 {
@@ -22,7 +25,26 @@ class FiltteringActivtiesLogData extends FormRequest
     public function rules(): array
     {
         return [
-      'type'=>'nullable'
+      'type'=>'nullable',
+      'name'=>'nullable',
         ];
+    }
+
+    /**
+     * Handle a failed validation attempt.
+     * This method is called when validation fails.
+     * Logs failed attempts and throws validation exception.
+     * @param \Illuminate\Validation\Validator $validator
+     * @return void
+     *
+     */
+
+    protected function failedValidation(Validator $validator): void
+    {
+        throw new HttpResponseException(response()->json([
+            'status' => 'error',
+            'message' => 'فشل التحقق من صحة البيانات',
+            'errors' => $validator->errors(),
+        ], 422));
     }
 }

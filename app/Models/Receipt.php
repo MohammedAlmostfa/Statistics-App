@@ -158,10 +158,10 @@ class Receipt extends Model
             $cacheKeys = Cache::get('all_receipts_keys', []);
 
             foreach ($cacheKeys as $key) {
-                Cache::forget($key); // حذف كل مفتاح من الكاش
+                Cache::forget($key);
             }
 
-            // حذف القائمة نفسها بعد تفريغ الكاش
+
             Cache::forget('all_receipts_keys');
 
             Log::info("تم تحديث الفاتورة ({$receipt->id}) وتم حذف كاش الفواتير.");
@@ -171,10 +171,9 @@ class Receipt extends Model
             $cacheKeys = Cache::get('all_receipts_keys', []);
 
             foreach ($cacheKeys as $key) {
-                Cache::forget($key); // حذف كل مفتاح من الكاش
+                Cache::forget($key);
             }
 
-            // حذف القائمة نفسها بعد تفريغ الكاش
             Cache::forget('all_receipts_keys');
 
             Log::info("تم حذف الفاتورة ({$receipt->id}) وتم حذف كاش الفواتير.");
