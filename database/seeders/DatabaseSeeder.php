@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
             ProductCategorySeeder::class,
            // ProductSeeder::class,
           // ReceiptSeeder::class,
-          PaymentSeeder::class,
+          //PaymentSeeder::class,
         ]);
     }
 }
