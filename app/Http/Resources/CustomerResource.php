@@ -22,6 +22,7 @@ class CustomerResource extends JsonResource
             'Record_id' => $this->Record_id,
             'Page_id' => $this->Page_id,
             'notes' => $this->notes,
+            'status' => $this->status,
             'created_at' => $this->created_at,
 
         ];

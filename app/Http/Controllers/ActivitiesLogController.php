@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\ActivitiesLog;
 use App\Services\ActivitiesLogService;
 use App\Http\Resources\ActivityLogResource;
+use App\Http\Requests\FiltteringActivtiesLogData;
 
 class ActivitiesLogController extends Controller
 {
@@ -17,11 +18,10 @@ class ActivitiesLogController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(FiltteringActivtiesLogData $request)
     {
 
-        $result = $this->activitiesLogService->getAllActivitiesLog();
-
+        $result = $this->activitiesLogService->getAllActivitiesLog($request->validated());
 
         return $result['status'] === 200
             ? self::paginated($result['data'], ActivityLogResource::class, $result['message'], $result['status'])

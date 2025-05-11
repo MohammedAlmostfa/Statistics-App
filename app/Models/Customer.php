@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
@@ -30,7 +31,8 @@ class Customer extends Model
         'sponsor_name',
         'sponsor_phone',
         'Record_id',
-        'Page_id'
+        'Page_id',
+        'status',
     ];
 
     /**
@@ -108,4 +110,30 @@ class Customer extends Model
             Log::info("تم حذف الزبون ({$customer->id}) وتم حذف كاش الزبائن.");
         });
     }
+    const TYPE_MAP = [
+           0 => 'قديم',  // Installment payment type
+           1 => 'جديد',   // Cash payment type
+       ];
+
+
+    /**
+        * Mutator for the 'type' attribute.
+        *
+        * This method defines an accessor and mutator for the 'type' attribute.
+        * The accessor converts the numeric 'type' value (0 or 1) into a human-readable string ('قديم' or 'جديد').
+        * The mutator converts the string back to its corresponding numeric value before saving it to the database.
+        *
+        * @return \Illuminate\Database\Eloquent\Casts\Attribute
+        */
+    public function status(): Attribute
+    {
+        return Attribute::make(
+            // Accessor: Get the human-readable status value (e.g., "مدفوعة" or "متأخر").
+            get: fn ($value) => self::TYPE_MAP[$value] ?? 'Unknown',
+
+            // Mutator: Convert the human-readable status back to its numeric representation.
+            set: fn ($value) => array_search($value, self::TYPE_MAP)
+        );
+    }
+
 }

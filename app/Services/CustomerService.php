@@ -11,15 +11,14 @@ use Illuminate\Database\QueryException;
 /**
  * CustomerService
  *
- * Service class for managing customer records.
- * Provides methods for retrieving, creating, updating, and deleting customers
- * with caching and error logging support.
+ * This service provides methods for managing customer records,
+ * including retrieving, creating, updating, and deleting customers.
+ * It also supports caching and error logging for optimized performance.
  */
 class CustomerService
 {
     /**
-     * Retrieve all customers with optional filtering and pagination.
-     * Results are cached for improved performance.
+     * Retrieve all customers with optional filtering and caching.
      *
      * @param array|null $filteringData Optional filters (e.g., name, phone).
      * @return array Structured success or error response.
@@ -29,33 +28,31 @@ class CustomerService
         try {
             $page = request('page', 1);
 
-            // Generate a unique cache key based on page and filters
+            // Generate a unique cache key based on pagination and filters
             $cacheKey = 'customers_' . $page . (empty($filteringData) ? '' : md5(json_encode($filteringData)));
 
-            // Retrieve customers from cache or query database
+            // Retrieve customers from cache or fetch from the database
             $customers = Cache::remember($cacheKey, now()->addMinutes(120), function () use ($filteringData) {
                 return Customer::query()
                     ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
+                    ->orderByDesc('created_at')
                     ->paginate(10);
             });
 
-            return $this->successResponse('Customers retrieved successfully.', 200, $customers);
-
+            return $this->successResponse('تم جلب بيانات العملاء بنجاح.', 200, $customers);
         } catch (QueryException $e) {
-            // Log query-specific errors
-            Log::error('Database query error while fetching customers: ' . $e->getMessage());
-            return $this->errorResponse('Failed to retrieve customers.');
+            Log::error('Database query error while retrieving customers: ' . $e->getMessage());
+            return $this->errorResponse('فشل في جلب بيانات العملاء.');
         } catch (Exception $e) {
-            // Log general errors
-            Log::error('General error retrieving customers: ' . $e->getMessage());
-            return $this->errorResponse('Failed to retrieve customers.');
+            Log::error('General error while retrieving customers: ' . $e->getMessage());
+            return $this->errorResponse('حدث خطأ أثناء جلب بيانات العملاء.');
         }
     }
 
     /**
      * Create a new customer record.
      *
-     * @param array $data Associative array containing customer details.
+     * @param array $data Customer details.
      * @return array Structured success or error response.
      */
     public function createCustomer(array $data): array
@@ -64,32 +61,30 @@ class CustomerService
             // Create the customer record
             $customer = Customer::create($data);
 
-            // Optionally clear or refresh related cache here if needed
-
-            return $this->successResponse('Customer created successfully.', 200);
+            return $this->successResponse('تم إنشاء العميل بنجاح.', 200);
         } catch (Exception $e) {
-            Log::error('Error creating customer: ' . $e->getMessage());
-            return $this->errorResponse('Failed to create customer.');
+            Log::error('Error while creating customer: ' . $e->getMessage());
+            return $this->errorResponse('فشل في إنشاء العميل.');
         }
     }
 
     /**
      * Update an existing customer's information.
      *
-     * @param array $data Associative array of updated fields.
+     * @param array $data Updated customer details.
      * @param Customer $customer Customer model instance to update.
      * @return array Structured success or error response.
      */
     public function updateCustomer(array $data, Customer $customer): array
     {
         try {
-            // Update customer data
+            // Update the customer record
             $customer->update($data);
 
-            return $this->successResponse('Customer updated successfully.', 200);
+            return $this->successResponse('تم تحديث بيانات العميل بنجاح.', 200);
         } catch (Exception $e) {
-            Log::error('Error updating customer: ' . $e->getMessage());
-            return $this->errorResponse('Failed to update customer.');
+            Log::error('Error while updating customer: ' . $e->getMessage());
+            return $this->errorResponse('فشل في تحديث بيانات العميل.');
         }
     }
 
@@ -102,20 +97,20 @@ class CustomerService
     public function deleteCustomer(Customer $customer): array
     {
         try {
-            // Delete the customer
+            // Delete the customer record
             $customer->delete();
 
-            return $this->successResponse('Customer deleted successfully.', 200);
+            return $this->successResponse('تم حذف العميل بنجاح.', 200);
         } catch (Exception $e) {
-            Log::error('Error deleting customer: ' . $e->getMessage());
-            return $this->errorResponse('Failed to delete customer.');
+            Log::error('Error while deleting customer: ' . $e->getMessage());
+            return $this->errorResponse('فشل في حذف العميل.');
         }
     }
 
     /**
      * Generate a standardized success response.
      *
-     * @param string $message Descriptive message.
+     * @param string $message Success message.
      * @param int $status HTTP status code (default is 200).
      * @param mixed|null $data Optional data payload.
      * @return array Structured response.
@@ -132,7 +127,7 @@ class CustomerService
     /**
      * Generate a standardized error response.
      *
-     * @param string $message Descriptive error message.
+     * @param string $message Error message.
      * @param int $status HTTP status code (default is 500).
      * @return array Structured response.
      */

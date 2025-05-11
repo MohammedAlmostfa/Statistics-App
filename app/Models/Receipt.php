@@ -144,17 +144,41 @@ class Receipt extends Model
         parent::boot();
 
         static::created(function ($receipt) {
-            Cache::forget('receipts'); // Clear cache after creating a receipt
+            $cacheKeys = Cache::get('all_receipts_keys', []);
+
+            foreach ($cacheKeys as $key) {
+                Cache::forget($key);
+            }
+
+            Cache::forget('all_receipts_keys');
+
+
             Log::info("تم إنشاء فاتورة جديدة ({$receipt->id}) وتم حذف كاش الفواتير.");
         });
 
         static::updated(function ($receipt) {
-            Cache::forget('receipts'); // Clear cache after updating a receipt
+            $cacheKeys = Cache::get('all_receipts_keys', []);
+
+            foreach ($cacheKeys as $key) {
+                Cache::forget($key); // حذف كل مفتاح من الكاش
+            }
+
+            // حذف القائمة نفسها بعد تفريغ الكاش
+            Cache::forget('all_receipts_keys');
+
             Log::info("تم تحديث الفاتورة ({$receipt->id}) وتم حذف كاش الفواتير.");
         });
 
         static::deleted(function ($receipt) {
-            Cache::forget('receipts'); // Clear cache after deleting a receipt
+            $cacheKeys = Cache::get('all_receipts_keys', []);
+
+            foreach ($cacheKeys as $key) {
+                Cache::forget($key); // حذف كل مفتاح من الكاش
+            }
+
+            // حذف القائمة نفسها بعد تفريغ الكاش
+            Cache::forget('all_receipts_keys');
+
             Log::info("تم حذف الفاتورة ({$receipt->id}) وتم حذف كاش الفواتير.");
         });
     }

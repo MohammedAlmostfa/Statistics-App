@@ -31,18 +31,19 @@ class UpdateCustomerData extends FormRequest
             'sponsor_phone' => 'nullable',
             'Record_id' => 'nullable|integer',
             'Page_id' => 'nullable|integer',
+            'status' => 'nullable|in:جديد,قديم',
 
 
         ];
     }
     /**
-    * Handle a failed validation attempt.
-    * This method is called when validation fails.
-    * Logs failed attempts and throws validation exception.
-    * @param \Illuminate\Validation\Validator $validator
-    * @return void
-    *
-    */
+     * Handle a failed validation attempt.
+     * This method is called when validation fails.
+     * Logs failed attempts and throws validation exception.
+     * @param \Illuminate\Validation\Validator $validator
+     * @return void
+     *
+     */
 
     protected function failedValidation(Validator $validator): void
     {

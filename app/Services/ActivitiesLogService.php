@@ -6,13 +6,24 @@ use App\Models\ActivitiesLog;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Cache;
 
 class ActivitiesLogService
 {
-    public function getAllActivitiesLog()
+    public function getAllActivitiesLog($filteringData)
     {
         try {
-            $activitiesLog = ActivitiesLog::with('user')->paginate(10);
+            $page = request('page', 1);
+
+            $cacheKey = 'activities_logs' . $page . (empty($filteringData) ? '' : md5(json_encode($filteringData)));
+
+            // Retrieve logs from cache or query the database
+            $activitiesLog = Cache::remember($cacheKey, now()->addMinutes(120), function () use ($filteringData) {
+                return ActivitiesLog::with('user')
+                    ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
+                    ->orderByDesc('created_at')
+                    ->paginate(10);
+            });
 
             return $this->successResponse('تم جلب سجلات الأنشطة بنجاح.', 200, $activitiesLog);
         } catch (QueryException $e) {
@@ -23,6 +34,9 @@ class ActivitiesLogService
             return $this->errorResponse('حدث خطأ أثناء جلب سجلات الأنشطة.');
         }
     }
+
+
+
 
     private function successResponse(string $message, int $status = 200, $data = null): array
     {

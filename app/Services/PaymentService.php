@@ -32,7 +32,7 @@ class PaymentService
 
             // Attempt to retrieve payments from the cache, if not found, fetch from database
             $payments = Cache::remember($cacheKey, now()->addMinutes(16), function () {
-                return Payment::with('user:id,name')->paginate(10);
+                return Payment::with('user:id,name') ->orderByDesc('payment_date') ->paginate(10);
             });
 
             return $this->successResponse('تم استرجاع الدفعات بنجاح.', 200, $payments);

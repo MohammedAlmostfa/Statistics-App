@@ -23,12 +23,15 @@ class ReceiptService
         try {
             $page = request('page', 1);
             $cacheKey = 'receipts_'.$page.'_'.md5(json_encode($filteringData));
+            $cacheKeys = Cache::get('all_receipts_keys', []);
+
+            $cacheKeys[] = $cacheKey;
+            Cache::put('all_receipts_keys', $cacheKeys, now()->addHours(2));
 
             $receipts = Cache::remember($cacheKey, now()->addMinutes(15), function () use ($filteringData) {
-                return Receipt::with([
-                    'user:id,name',
-                    'customer:id,name'
-                ])->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))->paginate(10);
+                return Receipt::with(['user:id,name', 'customer:id,name'])
+                    ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
+                    ->orderByDesc('created_at')->paginate(10);
             });
 
             return [

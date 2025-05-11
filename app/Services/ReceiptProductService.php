@@ -27,10 +27,10 @@ class ReceiptProductService
     public function getCustomerReceiptProducts($id)
     {
         try {
-            // Retrieve the receipts with products and related installment information for the customer
+
             $receipts = Receipt::with([
                 'receiptProducts' => function ($q) {
-                    $q->select('id', 'receipt_id', 'product_id', 'quantity', 'selling_price');
+                    $q->select('id', 'receipt_id', 'product_id', 'quantity', 'selling_price', 'receipt_date');
                 },
                 'receiptProducts.product' => function ($q) {
                     $q->select('id', 'name');
@@ -43,6 +43,7 @@ class ReceiptProductService
                 },
             ])
                 ->where('customer_id', $id)  // Filter receipts by the customer ID
+                ->orderByDesc('receipt_date')
                 ->where('type', 'اقساط')     // Filter only installment type receipts
                 ->get();
 
