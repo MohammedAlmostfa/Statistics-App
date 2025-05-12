@@ -16,7 +16,7 @@ class ReceiptFactory extends Factory
             'receipt_number' => $this->faker->unique()->numberBetween(1000, 9999),
             'type' => $this->faker->randomElement(['اقساط', 'نقدي']), // نصوص بدل الأرقام
             'total_price' => $this->faker->numberBetween(100, 5000),
-            'receipt_date' => $this->faker->dateTimeThisYear('+1 day')->format('Y-m-d'),
+            'receipt_date' =>"2025-4-12",
             'user_id' => 1,
             'notes' => $this->faker->sentence(),
         ];

@@ -37,11 +37,11 @@ class ProductService
 
             if (!in_array($cacheKey, $cacheKeys)) {
                 $cacheKeys[] = $cacheKey;
-                Cache::put('all_products_keys', $cacheKeys, now()->addHours(2));
+                Cache::put('all_products_keys', $cacheKeys, now()->addHours(120));
             }
 
             // Use cache if available
-            $products = Cache::remember($cacheKey, 1000, function () use ($filteringData) {
+            $products = Cache::remember($cacheKey, now()->addMinutes(120), function () use ($filteringData) {
                 return Product::select(
                     'id',
                     'name',

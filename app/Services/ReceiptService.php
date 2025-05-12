@@ -26,7 +26,7 @@ class ReceiptService
             $cacheKeys = Cache::get('all_receipts_keys', []);
             if (!in_array($cacheKey, $cacheKeys)) {
                 $cacheKeys[] = $cacheKey;
-                Cache::put('all_receipts_keys', $cacheKeys, now()->addHours(2));
+                Cache::put('all_receipts_keys', $cacheKeys, now()->addHours(120));
             }
             $receipts = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($filteringData) {
                 return Receipt::with(['user:id,name', 'customer:id,name'])

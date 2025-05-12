@@ -24,7 +24,7 @@ class ProductOriginService
             $cacheKey = 'origins';
 
             // Retrieve origins from cache, or fetch from DB and store in cache
-            $origins = Cache::remember($cacheKey, 1000, function () {
+            $origins = Cache::remember($cacheKey, now()->addMinutes(1200), function () {
                 return ProductOrigin::select('id', 'name')->get();
             });
 

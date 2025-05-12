@@ -36,7 +36,7 @@ class PaymentService
                 Cache::put('all_payments_keys', $cacheKeys, now()->addHours(2));
             }
             // Attempt to retrieve payments from the cache, if not found, fetch from database
-            $payments = Cache::remember($cacheKey, now()->addMinutes(16), function () {
+            $payments = Cache::remember($cacheKey, now()->addMinutes(120), function () {
                 return Payment::with('user:id,name') ->orderByDesc('payment_date') ->paginate(10);
             });
 

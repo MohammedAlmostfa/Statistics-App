@@ -26,7 +26,7 @@ class CustomerFactory extends Factory
     {
         return [
             'name' => $this->faker->name(),
-            'phone' => $this->faker->numerify('05########'),
+            'phone' => "+963991851269",
             'notes' => $this->faker->sentence(),
             'sponsor_name' => $this->faker->name(),
             'sponsor_phone' => $this->faker->numerify('05########'),

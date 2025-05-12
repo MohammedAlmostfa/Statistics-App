@@ -30,7 +30,7 @@ class ProductCategoryService
             $cacheKey = 'categories';  // Cache key to store the product categories
 
             // Retrieve categories from the cache or fetch them from the database if not cached
-            $categories = Cache::remember($cacheKey, 1000, function () {
+            $categories = Cache::remember($cacheKey, now()->addMinutes(360), function () {
                 return ProductCategory::select('id', 'name')->get();
             });
 

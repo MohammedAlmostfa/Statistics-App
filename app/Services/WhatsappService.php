@@ -22,8 +22,8 @@ class WhatsappService
             $response = Http::get("https://api.ultramsg.com/" . env("INSTANCE_ID") . "/messages", [
                 'token'  => env("API_TOKEN"), // Fetch the token from the environment
                 'page'   => $data['page'] ?? 1,  // Default to page 1 if not provided
-                'limit'  => $data['limit'] ?? 100, // Default to 100 messages if not provided
-             'to' => $data['to'] ?? null ? $data['to'] . '@c.us' : null, // Optional: recipient phone number
+                'limit'  => $data['limit'] ?? 20, // Default to 100 messages if not provided
+                'to' => $data['to'] ?? null ? $data['to'] . '@c.us' : null, // Optional: recipient phone number
                 'status' => $data['status'] ?? null, // Optional: message status
             ]);
 
@@ -36,7 +36,6 @@ class WhatsappService
                 'message' => 'Messages fetched successfully',
                 'data'    => $responseData,
             ];
-
         } catch (Exception $e) {
             // If an error occurs, log the error message
             Log::error('Error in getMessage: ' . $e->getMessage());
