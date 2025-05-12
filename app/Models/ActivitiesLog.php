@@ -94,7 +94,7 @@ class ActivitiesLog extends Model
      */
     const TYPE_MAP = [
         'App\\Models\\Receipt' => 'فواتير',
-        'App\\Models\\Payment' => 'دفعات',
+        'App\\Models\\Payment' => 'صرفيات',
         'App\\Models\\Customer' => 'زبائن',
         'App\\Models\\InstallmentPayment' => 'اقساط',
         'App\\Models\\Product' => 'منتجات',
