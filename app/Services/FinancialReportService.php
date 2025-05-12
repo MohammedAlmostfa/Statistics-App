@@ -33,66 +33,91 @@ class FinancialReportService
             $startDate = $data['start_date'] ?? Receipt::first()?->receipt_date ?? now();
             $endDate = $data['end_date'] ?? now();
 
-            // Total expenses during the period
+            // // Total expenses during the period
+            // $totalExpenses = Payment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
+
+            // // Revenue from cash sales
+            // $totalCashSalesRevenue = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
+            //     ->where('type', 'نقدي')
+            //     ->sum('total_price');
+
+            // // Value of installment sales during the period
+            // $totalInstallmentSalesValueInPeriod = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
+            //     ->where('type', 'اقساط')
+            //     ->sum('total_price');
+
+            // // First payments collected for new installment sales
+            // $firstPaymentsFromPeriodSales = Installment::whereHas('receiptProduct.receipt', function ($query) use ($startDate, $endDate) {
+            //     $query->whereBetween('receipt_date', [$startDate, $endDate])->where('type', 'اقساط');
+            // })->sum('first_pay');
+
+            // // Installment payments collected during the period
+            // $collectedInstallmentPayments = InstallmentPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
+
+            // // Cost of goods sold = buying_price * quantity
+            // $cogsForPeriodSales = ReceiptProduct::whereHas('receipt', function ($query) use ($startDate, $endDate) {
+            //     $query->whereBetween('receipt_date', [$startDate, $endDate]);
+            // })->sum(DB::raw('buying_price * quantity'));
+
+            // // Total revenue = cash sales + installment sales
+            // $totalRevenueFromSalesInPeriod = $totalCashSalesRevenue + $totalInstallmentSalesValueInPeriod;
+
+            // // Gross profit = total revenue - COGS
+            // $grossProfitFromSalesInPeriod = $totalRevenueFromSalesInPeriod - $cogsForPeriodSales;
+
+            // // Operating net profit = gross profit - expenses
+            // $operatingNetProfit = $grossProfitFromSalesInPeriod - $totalExpenses;
+
+            // // Total cash inflow
+            // $totalCashInflowInPeriod = $totalCashSalesRevenue + $firstPaymentsFromPeriodSales + $collectedInstallmentPayments;
+
+            // // Net cash flow = inflow - outflow
+            // $netCashFlowInPeriod = $totalCashInflowInPeriod - $totalExpenses;
+
+            // // Total installment sales up to end date
+            // $allTimeTotalInstallmentSalesValue = Receipt::where('type', 'اقساط')
+            //     ->whereDate('receipt_date', '<=', $endDate)
+            //     ->sum('total_price');
+
+            // // All first payments received up to end date
+            // $allTimeTotalFirstPayments = Installment::whereHas('receiptProduct.receipt', function ($query) use ($endDate) {
+            //     $query->where('type', 'اقساط')->whereDate('receipt_date', '<=', $endDate);
+            // })->sum('first_pay');
+
+            // // All collected installment payments up to end date
+            // $allTimeTotalCollectedInstallmentPayments = InstallmentPayment::whereDate('payment_date', '<=', $endDate)->sum('amount');
+
+            // // Total collected = first payments + installment payments
+            // $allTimeTotalCollectedOnInstallments = $allTimeTotalFirstPayments + $allTimeTotalCollectedInstallmentPayments;
+
+            // // Outstanding debts = total sales - collected amount
+            // $totalOutstandingDebtsAsOfEndDate = $allTimeTotalInstallmentSalesValue - $allTimeTotalCollectedOnInstallments;
             $totalExpenses = Payment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
 
-            // Revenue from cash sales
-            $totalCashSalesRevenue = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
-                ->where('type', 'نقدي')
-                ->sum('total_price');
-
-            // Value of installment sales during the period
+            // العملية ضرورية لحساب totalInstallmentSalesValueInPeriod
             $totalInstallmentSalesValueInPeriod = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
                 ->where('type', 'اقساط')
                 ->sum('total_price');
 
-            // First payments collected for new installment sales
-            $firstPaymentsFromPeriodSales = Installment::whereHas('receiptProduct.receipt', function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('receipt_date', [$startDate, $endDate])->where('type', 'اقساط');
-            })->sum('first_pay');
+            // العملية ضرورية لحساب totalRevenueFromSalesInPeriod
+            $totalCashSalesRevenue = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
+                ->where('type', 'نقدي')
+                ->sum('total_price');
 
-            // Installment payments collected during the period
-            $collectedInstallmentPayments = InstallmentPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
 
-            // Cost of goods sold = buying_price * quantity
+            // جمع الإيرادات = نقدي + أقساط
+            $totalRevenueFromSalesInPeriod = $totalCashSalesRevenue + $totalInstallmentSalesValueInPeriod;
+
+            // العملية ضرورية لحساب operatingNetProfit
             $cogsForPeriodSales = ReceiptProduct::whereHas('receipt', function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('receipt_date', [$startDate, $endDate]);
             })->sum(DB::raw('buying_price * quantity'));
 
-            // Total revenue = cash sales + installment sales
-            $totalRevenueFromSalesInPeriod = $totalCashSalesRevenue + $totalInstallmentSalesValueInPeriod;
-
-            // Gross profit = total revenue - COGS
+            // حساب الربح الإجمالي
             $grossProfitFromSalesInPeriod = $totalRevenueFromSalesInPeriod - $cogsForPeriodSales;
 
-            // Operating net profit = gross profit - expenses
+            // حساب الربح التشغيلي
             $operatingNetProfit = $grossProfitFromSalesInPeriod - $totalExpenses;
-
-            // Total cash inflow
-            $totalCashInflowInPeriod = $totalCashSalesRevenue + $firstPaymentsFromPeriodSales + $collectedInstallmentPayments;
-
-            // Net cash flow = inflow - outflow
-            $netCashFlowInPeriod = $totalCashInflowInPeriod - $totalExpenses;
-
-            // Total installment sales up to end date
-            $allTimeTotalInstallmentSalesValue = Receipt::where('type', 'اقساط')
-                ->whereDate('receipt_date', '<=', $endDate)
-                ->sum('total_price');
-
-            // All first payments received up to end date
-            $allTimeTotalFirstPayments = Installment::whereHas('receiptProduct.receipt', function ($query) use ($endDate) {
-                $query->where('type', 'اقساط')->whereDate('receipt_date', '<=', $endDate);
-            })->sum('first_pay');
-
-            // All collected installment payments up to end date
-            $allTimeTotalCollectedInstallmentPayments = InstallmentPayment::whereDate('payment_date', '<=', $endDate)->sum('amount');
-
-            // Total collected = first payments + installment payments
-            $allTimeTotalCollectedOnInstallments = $allTimeTotalFirstPayments + $allTimeTotalCollectedInstallmentPayments;
-
-            // Outstanding debts = total sales - collected amount
-            $totalOutstandingDebtsAsOfEndDate = $allTimeTotalInstallmentSalesValue - $allTimeTotalCollectedOnInstallments;
-
             return $this->successResponse(
                 'Financial report retrieved successfully',
                 200,
@@ -102,28 +127,28 @@ class FinancialReportService
                         'endDate' => $endDate,
                     ],
                     'income_statement_summary' => [
-                        'total_cash_sales_revenue' => (int) $totalCashSalesRevenue,
+                        //'total_cash_sales_revenue' => (int) $totalCashSalesRevenue,
                         'total_installment_sales_value_in_period' => (int) $totalInstallmentSalesValueInPeriod,
                         'total_revenue_from_sales_in_period' => (int) $totalRevenueFromSalesInPeriod,
-                        'cogs_for_period_sales' => (int) $cogsForPeriodSales,
-                        'gross_profit_from_sales_in_period' => (int) $grossProfitFromSalesInPeriod,
+                        //'cogs_for_period_sales' => (int) $cogsForPeriodSales,
+                       // 'gross_profit_from_sales_in_period' => (int) $grossProfitFromSalesInPeriod,
                         'total_expenses_in_period' => (int) $totalExpenses,
                         'operating_net_profit_in_period' => (int) $operatingNetProfit,
                     ],
                     'cash_flow_summary' => [
-                        'cash_inflow_from_cash_sales' => (int) $totalCashSalesRevenue,
-                        'cash_inflow_from_first_payments_new_installments' => (int) $firstPaymentsFromPeriodSales,
-                        'cash_inflow_from_collected_installments' => (int) $collectedInstallmentPayments,
-                        'total_cash_inflow_in_period' => (int) $totalCashInflowInPeriod,
-                        'total_cash_outflow_expenses_in_period' => (int) $totalExpenses,
-                        'net_cash_flow_in_period' => (int) $netCashFlowInPeriod,
+                        //'cash_inflow_from_cash_sales' => (int) $totalCashSalesRevenue,
+                        //'cash_inflow_from_first_payments_new_installments' => (int) $firstPaymentsFromPeriodSales,
+                        //'cash_inflow_from_collected_installments' => (int) $collectedInstallmentPayments,
+                        //'total_cash_inflow_in_period' => (int) $totalCashInflowInPeriod,
+                       // 'total_cash_outflow_expenses_in_period' => (int) $totalExpenses,
+                        //'net_cash_flow_in_period' => (int) $netCashFlowInPeriod,
                     ],
                     'debt_summary' => [
-                        'installment_sales_value_up_to_end_date' => (int) $allTimeTotalInstallmentSalesValue,
-                        'first_payments_up_to_end_date' => (int) $allTimeTotalFirstPayments,
-                        'collected_installments_up_to_end_date' => (int) $allTimeTotalCollectedInstallmentPayments,
-                        'collected_on_installments_up_to_end_date' => (int) $allTimeTotalCollectedOnInstallments,
-                        'outstanding_debts_as_of_end_date' => (int) $totalOutstandingDebtsAsOfEndDate,
+                        //'installment_sales_value_up_to_end_date' => (int) $allTimeTotalInstallmentSalesValue,
+                        //'first_payments_up_to_end_date' => (int) $allTimeTotalFirstPayments,
+                       // 'collected_installments_up_to_end_date' => (int) $allTimeTotalCollectedInstallmentPayments,
+                       // 'collected_on_installments_up_to_end_date' => (int) $allTimeTotalCollectedOnInstallments,
+                       // 'outstanding_debts_as_of_end_date' => (int) $totalOutstandingDebtsAsOfEndDate,
                     ]
                 ]
             );
