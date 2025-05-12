@@ -46,8 +46,6 @@ The Statistics App is built using:
 
 ---
 
----
-
 ## 🔐 User Roles & Permissions
 
 The system supports two primary roles:
