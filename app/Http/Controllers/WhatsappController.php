@@ -42,9 +42,15 @@ class WhatsappController extends Controller
 
         // Return response based on the result
         return $result['status'] === 200
-            // If the status is 200 (success), return a success response with the data
-            ? self::success(new WhatsappResource($result['data']), $result['message'], $result['status'])
-            // If there's an error, return an error response with the message
-            : self::error(null, $result['message'], $result['status']);
+        ? response()->json([
+            'status'     => 'success',
+            'message'    => $result['message'],
+            'data'       => new WhatsappResource($result['data']),
+            'pagination' => $result['pagination'],
+        ], $result['status'])
+        : response()->json([
+            'status'  => 'error',
+            'message' => $result['message'],
+        ], $result['status']);
     }
 }

@@ -20,21 +20,27 @@ class WhatsappService
         try {
             // Send a GET request to the API with the provided filter data
             $response = Http::get("https://api.ultramsg.com/" . env("INSTANCE_ID") . "/messages", [
-                'token'  => env("API_TOKEN"), // Fetch the token from the environment
-                'page'   => $data['page'] ?? 1,  // Default to page 1 if not provided
-                'limit'  => $data['limit'] ?? 20, // Default to 100 messages if not provided
-                'to' => $data['to'] ?? null ? $data['to'] . '@c.us' : null, // Optional: recipient phone number
-                'status' => $data['status'] ?? null, // Optional: message status
+                'token'  => env("API_TOKEN"),
+                'page'   => $data['page'] ?? 1,
+                'limit'  => $data['limit'] ?? 10,
+                'to'     => isset($data['to']) ? $data['to'] . '@c.us' : null,
+                'status' => $data['status'] ?? null,
             ]);
-
-            // Convert the response into a JSON array
-            $responseData = $response->json();
-
+            $dataResponse = $response->json();
+            Log::info('API Response:', $dataResponse);
+            // استخراج بيانات `pagination`
+            $pagination = [
+                'total'        => $dataResponse['total'] ?? 0,
+                'total_pages'  => $dataResponse['pages'] ?? 0,
+                'per_page'     => $dataResponse['limit'] ?? 0,
+                'current_page' => $dataResponse['page'] ?? 0,
+            ];
             // Return success response with the data
             return [
                 'status'  => 200,
                 'message' => 'Messages fetched successfully',
-                'data'    => $responseData,
+                'data'    => $dataResponse,
+                'pagination'=>$pagination
             ];
         } catch (Exception $e) {
             // If an error occurs, log the error message
