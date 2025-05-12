@@ -171,7 +171,7 @@ class ProductService
             ]);
 
             // Log the activity based on the change (whether quantity changed or not)
-            if ($data['quantity']) {
+            if (isset($data['quantity'])) {
                 ActivitiesLog::create([
                     'user_id'     => $userId,
                     'description' => 'تم تعديل كمية المنتج: ' . $updatedProduct->name,
