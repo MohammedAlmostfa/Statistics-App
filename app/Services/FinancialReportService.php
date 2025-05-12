@@ -12,57 +12,51 @@ use App\Models\InstallmentPayment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * FinancialReportService
- *
- * This service provides methods to generate detailed financial reports
- * for a specified period. It calculates income, expenses, profit,
- * cash flow, and outstanding debts.
- */
 class FinancialReportService
 {
-    /**
-     * Generate a detailed financial report for a given date range.
-     *
-     * @param array $data Should contain 'start_date' and 'end_date'.
-     * @return array Standard response with financial report or error message.
-     */
     public function GetFinancialReport($data): array
     {
         try {
-            // Get the start and end dates, fallback to earliest receipt or current date.
+            // ضبط التواريخ بدون الوقت
             $startDate = Carbon::parse($data['start_date'] ?? Receipt::first()?->receipt_date ?? now())->toDateString();
             $endDate = Carbon::parse($data['end_date'] ?? now())->toDateString();
 
-
+            // مجموع الدفعات المستلمة من الأقساط
             $collectedInstallmentPayments = InstallmentPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
 
-
+            // إجمالي المصاريف خلال الفترة
             $totalExpenses = Payment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
 
-
+            // إجمالي قيمة مبيعات الأقساط خلال الفترة
             $totalInstallmentSalesValueInPeriod = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
-                ->where('type', '0')
+                ->where('type', 0) // استخدام القيمة الصحيحة كعدد صحيح
                 ->sum('total_price');
 
-
+            // إجمالي الإيرادات من المبيعات النقدية
             $totalCashSalesRevenue = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
-                ->where('type', '1')
+                ->where('type', 1)
                 ->sum('total_price');
 
+            // حساب إجمالي الإيرادات
             $totalRevenueFromSalesInPeriod = $totalCashSalesRevenue + $totalInstallmentSalesValueInPeriod;
 
+            // حساب تكلفة البضائع المباعة (COGS)
             $cogsForPeriodSales = ReceiptProduct::whereHas('receipt', function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('receipt_date', [$startDate, $endDate]);
             })->sum(DB::raw('buying_price * quantity'));
 
+            // حساب الدفعات الأولية المستلمة للأقساط
             $firstpay = Installment::whereHas('receiptProduct.receipt', function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('receipt_date', [$startDate, $endDate]);
             })->sum('first_pay');
 
+            // حساب إجمالي الربح
             $grossProfitFromSalesInPeriod = $totalRevenueFromSalesInPeriod - $cogsForPeriodSales;
-            $cogsForPeriodSales =  $cogsForPeriodSales -     $firstpay -  $collectedInstallmentPayments ;
 
+            // تصحيح `cogsForPeriodSales` لضمان دقة الحسابات
+            $adjustedCOGS = $cogsForPeriodSales - $firstpay - $collectedInstallmentPayments;
+
+            // حساب صافي الربح التشغيلي
             $operatingNetProfit = $grossProfitFromSalesInPeriod - $totalExpenses;
 
             return $this->successResponse(
@@ -80,29 +74,18 @@ class FinancialReportService
                         'operating_net_profit_in_period' => (int) $operatingNetProfit,
                     ],
                     'cash_flow_summary' => [
-
                         'cash_inflow_from_collected_installments' => (int) $collectedInstallmentPayments,
-
                     ],
-
                 ]
             );
 
         } catch (Exception $e) {
-            // Log unexpected errors and return a user-friendly message
+            // تسجيل الخطأ للحصول على تفاصيل المشكلة
             Log::error("Unexpected error in GetFinancialReport: " . $e->getMessage());
-            return $this->errorResponse('An error occurred while generating the report. Please try again later.');
+            return $this->errorResponse('حدث خطأ أثناء توليد التقرير المالي، يرجى المحاولة لاحقًا.');
         }
     }
 
-    /**
-     * Return a standardized success response.
-     *
-     * @param string $message
-     * @param int $status
-     * @param mixed|null $data
-     * @return array
-     */
     private function successResponse(string $message, int $status = 200, $data = null): array
     {
         return [
@@ -112,13 +95,6 @@ class FinancialReportService
         ];
     }
 
-    /**
-     * Return a standardized error response.
-     *
-     * @param string $message
-     * @param int $status
-     * @return array
-     */
     private function errorResponse(string $message, int $status = 500): array
     {
         return [
