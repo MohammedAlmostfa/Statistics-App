@@ -98,7 +98,7 @@ class ActivitiesLog extends Model
         'App\\Models\\Customer' => 'زبائن',
         'App\\Models\\InstallmentPayment' => 'اقساط',
         'App\\Models\\Product' => 'منتجات',
-        'App\\Models\\ProductCategory' => 'اصناف ',
+        'App\\Models\\ProductCategory' => 'اصناف',
     ];
 
     /**

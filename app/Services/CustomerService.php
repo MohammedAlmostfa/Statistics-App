@@ -4,11 +4,14 @@ namespace App\Services;
 
 use Exception;
 use App\Models\Customer;
+use App\Models\ActivitiesLog;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Auth;
 
-/**
+/**use Illuminate\Support\Facades\Auth;
+
  * CustomerService
  *
  * This service provides methods for managing customer records,
@@ -63,8 +66,18 @@ class CustomerService
     public function createCustomer(array $data): array
     {
         try {
+
+
             // Create the customer record
             $customer = Customer::create($data);
+            $userId = Auth::id();
+
+            ActivitiesLog::create([
+                'user_id'     => $userId,
+                'description' => 'تم إضافة زبون: ' . $customer->name,
+                'type_id'     => $customer->id,
+                'type_type'   => Customer::class,
+            ]);
 
             return $this->successResponse('تم إنشاء العميل بنجاح.', 200);
         } catch (Exception $e) {
@@ -85,6 +98,14 @@ class CustomerService
         try {
             // Update the customer record
             $customer->update($data);
+            $userId = Auth::id();
+
+            ActivitiesLog::create([
+                'user_id'     => $userId,
+                'description' => 'تم تعديل زبون: ' . $customer->name,
+                'type_id'     => $customer->id,
+                'type_type'   => Customer::class,
+            ]);
 
             return $this->successResponse('تم تحديث بيانات العميل بنجاح.', 200);
         } catch (Exception $e) {
@@ -102,8 +123,20 @@ class CustomerService
     public function deleteCustomer(Customer $customer): array
     {
         try {
-            // Delete the customer record
+
+
+            $userId = Auth::id();
+
+            ActivitiesLog::create([
+                'user_id'     => $userId,
+                'description' => 'تم حذف زبون: ' . $customer->name,
+                'type_id'     => $customer->id,
+                'type_type'   => Customer::class,
+            ]);
+            // Delete the customer recor
+
             $customer->delete();
+
 
             return $this->successResponse('تم حذف العميل بنجاح.', 200);
         } catch (Exception $e) {

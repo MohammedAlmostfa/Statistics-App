@@ -62,7 +62,10 @@ class Customer extends Model
     {
         return $this->hasMany(Receipt::class);
     }
-
+    public function activities()
+    {
+        return $this->morphMany(ActivitiesLog::class, 'type');
+    }
 
     /**
      * The "booting" method of the model.
