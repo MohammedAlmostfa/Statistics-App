@@ -40,6 +40,10 @@ class RoleAndPermissionSeeder extends Seeder
             'guard_name' => 'api',
         ]);
 
+        $accountantRole = Role::firstOrCreate([
+            'name' => 'Accountant',
+            'guard_name' => 'api',
+        ]);
 
 
         $adminRole->givePermissionTo($permissions);

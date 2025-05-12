@@ -52,7 +52,7 @@ class UserService
                 'name' => $data['name'],
                 'password' => bcrypt($data['password']),
             ]);
-
+            $user->assignRole('Accountant');
             return [
                 'status' => 201,
                 'message' => 'تم إنشاء المستخدم بنجاح',
