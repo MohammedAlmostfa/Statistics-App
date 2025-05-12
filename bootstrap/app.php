@@ -32,11 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         ]);
      })
-    //  ->withSchedule(function (Schedule $schedule) {
-    //      $schedule->job(new CheckLatePayments)->quarterly();
 
-
-    //  })
     ->withExceptions(function (Exceptions $exceptions) {
         // Exception handling configuration
         $exceptions->render(function (AuthorizationException $e) {

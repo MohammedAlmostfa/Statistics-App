@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Events\InstallmentPaidEvent;
 use Illuminate\Support\Facades\Auth;
+use NunoMaduro\Collision\Adapters\Laravel\Inspector;
 
 /**
  * Service class to handle installment payments including create, update, and delete operations.
@@ -110,6 +111,12 @@ class InstallmentPaymentService
                          'type_id'     => $installmentPayment->id,
                         'type_type'   => InstallmentPayment::class,
                     ]);
+
+            $installment = $installmentPayment->installment;
+            if ($installment->status === 'مسدد') {
+                $installment->status = 'قيد التسديد';
+                $installment->save();
+            }
             $installmentPayment->delete();
 
             DB::commit();
