@@ -72,6 +72,7 @@ class FinancialReportService
                         'total_revenue_from_sales_in_period' => (int) $totalRevenueFromSalesInPeriod,
                         'total_expenses_in_period' => (int) $totalExpenses,
                         'operating_net_profit_in_period' => (int) $operatingNetProfit,
+                        'adjustedCOGS'=>(int) $adjustedCOGS
                     ],
                     'cash_flow_summary' => [
                         'cash_inflow_from_collected_installments' => (int) $collectedInstallmentPayments,
