@@ -53,7 +53,7 @@ class FinancialReportService
             $grossProfitFromSalesInPeriod = $totalRevenueFromSalesInPeriod - $cogsForPeriodSales;
 
             // تصحيح `cogsForPeriodSales` لضمان دقة الحسابات
-            $adjustedCOGS = $totalCashSalesRevenue - $firstpay - $collectedInstallmentPayments;
+            $adjustedCOGS = $totalInstallmentSalesValueInPeriod - $firstpay - $collectedInstallmentPayments;
 
             // حساب صافي الربح التشغيلي
             $operatingNetProfit = $grossProfitFromSalesInPeriod - $totalExpenses;
