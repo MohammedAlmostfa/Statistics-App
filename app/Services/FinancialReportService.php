@@ -32,7 +32,6 @@ class FinancialReportService
                 ->where('type', 0) // استخدام القيمة الصحيحة كعدد صحيح
                 ->sum('total_price');
 
-            // إجمالي الإيرادات من المبيعات النقدية
             $totalCashSalesRevenue = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
                 ->where('type', 1)
                 ->sum('total_price');
@@ -54,7 +53,7 @@ class FinancialReportService
             $grossProfitFromSalesInPeriod = $totalRevenueFromSalesInPeriod - $cogsForPeriodSales;
 
             // تصحيح `cogsForPeriodSales` لضمان دقة الحسابات
-            $adjustedCOGS = $cogsForPeriodSales - $firstpay - $collectedInstallmentPayments;
+            $adjustedCOGS = $totalCashSalesRevenue - $firstpay - $collectedInstallmentPayments;
 
             // حساب صافي الربح التشغيلي
             $operatingNetProfit = $grossProfitFromSalesInPeriod - $totalExpenses;
