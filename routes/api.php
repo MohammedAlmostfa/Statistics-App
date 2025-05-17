@@ -50,7 +50,6 @@ Route::get('productCategory', [ProductCategoryController::class, 'index']);
 Route::middleware('jwt')->group(function () {
 
     // User management
-    Route::post('/user/{user}/updatestatus', [UserController::class, 'updateUserStatus'])->name('user.change_status');
     Route::apiResource('user', UserController::class)->names([
         'index' => 'user.list',
         'store' => 'user.create',
@@ -99,6 +98,8 @@ Route::middleware('jwt')->group(function () {
 
     // Installment and payment management
     Route::post('installments/{id}/payments', [InstallmentPaymentController::class, 'store']);
+    Route::post('/installment/receipt/{id}', [InstallmentPaymentController::class,'installmentPaymentReceipt']);
     Route::apiResource('/installmentPayments', InstallmentPaymentController::class);
+
     Route::apiResource('/payment', PaymentController::class);
 });

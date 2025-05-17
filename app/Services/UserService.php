@@ -20,7 +20,7 @@ class UserService
     {
         try {
             // Fetch all users with specified columns (id, name, status, created_at)
-            $users = User::select('id', 'name', 'status', 'created_at')->orderByDesc('created_at')->get();
+            $users = User::select('id', 'name', 'status', 'created_at')->where("status", 'موجود')->orderByDesc('created_at')->get();
 
             return [
                 'status' => 200,
@@ -109,8 +109,15 @@ class UserService
     public function deleteUser(User $user)
     {
         try {
-            // Delete the user from the database
-            $user->delete();
+            if ($user->hasRole("Admin")) {
+                return [
+                    'status' => 403,
+                    'message' => 'لا يمكن حذف المدير',
+                ];
+            }
+            $user->update([
+                'status' => 'محذوف',
+            ]);
 
             return [
                 'status' => 200,
@@ -121,36 +128,6 @@ class UserService
             return [
                 'status' => 500,
                 'message' => 'حدث خطأ أثناء حذف المستخدم. يرجى إعادة المحاولة.',
-            ];
-        }
-    }
-
-    /**
-     * Update the status of a user.
-     *
-     * This method updates the user's status (active, inactive, etc.) based on the provided data.
-     *
-     * @param array $data Contains the status value to be updated.
-     * @param User $user The user model instance whose status needs to be updated.
-     * @return array Response containing the status and message after updating the status.
-     */
-    public function updateUserStatus($data, User $user)
-    {
-        try {
-            // Update the user's status with the new value
-            $user->update([
-                'status' => $data['status'],
-            ]);
-
-            return [
-                'status' => 200,
-                'message' => 'تم تحديث حالة المستخدم بنجاح',
-            ];
-        } catch (Exception $e) {
-            Log::error('Error in updateUserStatus: ' . $e->getMessage());
-            return [
-                'status' => 500,
-                'message' => 'حدث خطأ أثناء تحديث حالة المستخدم. يرجى إعادة المحاولة.',
             ];
         }
     }

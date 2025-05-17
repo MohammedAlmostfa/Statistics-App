@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Http\Requests\UserRequest;
+namespace App\Http\Requests\InstallmentPaymentRequest;
 
+use App\Models\Receipt;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Validation\Validator;
+use App\Rules\StoreValidInstallmentReceiptAmount;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
-class UpdateStatus extends FormRequest
+class StoreInstallmentPaymentReceiptData extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,11 +26,9 @@ class UpdateStatus extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => 'required|in:موجود,محذوف',
+            'amount' => ['required', 'integer', new StoreValidInstallmentReceiptAmount(Receipt::findOrFail($this->route('id')))],
         ];
-    }
-
-    /**
+    }    /**
     * Handle a failed validation attempt.
     * This method is called when validation fails.
     * Logs failed attempts and throws validation exception.

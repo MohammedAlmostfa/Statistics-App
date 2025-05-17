@@ -10,6 +10,7 @@ use App\Services\InstallmentPaymentService;
 use App\Http\Requests\StoreInstallmentPaymentRequest;
 use App\Http\Requests\InstallmentPaymentRequest\StoreInstallmentPaymentData;
 use App\Http\Requests\InstallmentPaymentRequest\UpdateInstallmentPaymentData;
+use App\Http\Requests\InstallmentPaymentRequest\StoreInstallmentPaymentReceiptData;
 
 class InstallmentPaymentController extends Controller
 {
@@ -37,10 +38,6 @@ class InstallmentPaymentController extends Controller
             ? $this->success(null, $result['message'], $result['status'])
             : $this->error(null, $result['message'], $result['status']);
     }
-
-
-
-
     /**
      * Update the specified resource in storage.
      */
@@ -61,6 +58,18 @@ class InstallmentPaymentController extends Controller
     public function destroy(InstallmentPayment $installmentPayment)
     {
         $result = $this->installmentPaymentService->deleteInstallmentPayment($installmentPayment);
+
+        return $result['status'] === 200
+            ? $this->success(null, $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
+    }
+
+
+    public function installmentPaymentReceipt(StoreInstallmentPaymentReceiptData $request, $id): JsonResponse
+    {
+        $validatedData = $request->validated();
+
+        $result = $this->installmentPaymentService->installmentPaymentReceipt($validatedData, $id);
 
         return $result['status'] === 200
             ? $this->success(null, $result['message'], $result['status'])

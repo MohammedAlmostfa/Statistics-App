@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\ReceiptProduct;
+use App\Models\InstallmentPayment;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Receipt extends Model
 {
@@ -207,4 +210,5 @@ class Receipt extends Model
 
         return $query;
     }
+
 }

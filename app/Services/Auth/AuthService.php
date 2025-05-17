@@ -32,8 +32,6 @@ class AuthService
 
             $user = JWTAuth::user();
 
-            Log::error("Error during login: User status is '{$user->status}'");
-
             if (!isset($user->status)) {
                 return [
                     'status' => 500,

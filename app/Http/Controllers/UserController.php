@@ -84,16 +84,4 @@ class UserController extends Controller
             ? self::success(null, $result['message'], $result['status'])
             : self::error(null, $result['message'], $result['status']);
     }
-    public function updateUserStatus(UpdateStatus $request, User $user)
-    {
-        $this->authorize('changeStatusUser', User::class);
-        $validatedData = $request->validated();
-
-        $result = $this->userService->updateUserStatus($validatedData, $user);
-
-        // Return response based on the result
-        return $result['status'] === 200
-            ? self::success(null, $result['message'], $result['status'])
-            : self::error(null, $result['message'], $result['status']);
-    }
 }
