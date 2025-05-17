@@ -14,50 +14,58 @@ use Illuminate\Support\Facades\Log;
 
 class FinancialReportService
 {
+    /**
+     * Generate a financial report for the given date range.
+     *
+     * @param array $data Associative array containing 'start_date' and 'end_date' keys (optional).
+     * @return array Structured response containing the report data or an error message.
+     */
     public function GetFinancialReport($data): array
     {
         try {
-            // ضبط التواريخ بدون الوقت
+            // Parse and format the start and end dates (defaults to earliest receipt or today)
             $startDate = Carbon::parse($data['start_date'] ?? Receipt::first()?->receipt_date ?? now())->toDateString();
             $endDate = Carbon::parse($data['end_date'] ?? now())->toDateString();
 
-            // مجموع الدفعات المستلمة من الأقساط
+            // Sum of all installment payments collected within the date range
             $collectedInstallmentPayments = InstallmentPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
 
-            // إجمالي المصاريف خلال الفترة
+            // Total expenses recorded within the date range
             $totalExpenses = Payment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
 
-            // إجمالي قيمة مبيعات الأقساط خلال الفترة
+            // Total value of installment-based sales (type 0) in the period
             $totalInstallmentSalesValueInPeriod = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
-                ->where('type', 0) // استخدام القيمة الصحيحة كعدد صحيح
+                ->where('type', 0)
                 ->sum('total_price');
 
+            // Total cash-based sales (type 1) in the period
             $totalCashSalesRevenue = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
                 ->where('type', 1)
                 ->sum('total_price');
 
-            // حساب إجمالي الإيرادات
+            // Total revenue from both cash and installment sales
             $totalRevenueFromSalesInPeriod = $totalCashSalesRevenue + $totalInstallmentSalesValueInPeriod;
 
-            // حساب تكلفة البضائع المباعة (COGS)
+            // Cost of goods sold (COGS) based on the purchase price of sold products
             $cogsForPeriodSales = ReceiptProduct::whereHas('receipt', function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('receipt_date', [$startDate, $endDate]);
             })->sum(DB::raw('buying_price * quantity'));
 
-            // حساب الدفعات الأولية المستلمة للأقساط
+            // Total of first payments received on installment purchases
             $firstpay = Installment::whereHas('receiptProduct.receipt', function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('receipt_date', [$startDate, $endDate]);
             })->sum('first_pay');
 
-            // حساب إجمالي الربح
+            // Gross profit = Revenue - COGS
             $grossProfitFromSalesInPeriod = $totalRevenueFromSalesInPeriod - $cogsForPeriodSales;
 
-            // تصحيح `cogsForPeriodSales` لضمان دقة الحسابات
+            // Adjusted cost of goods sold for installment-specific analysis
             $adjustedCOGS = $totalInstallmentSalesValueInPeriod - $firstpay - $collectedInstallmentPayments;
 
-            // حساب صافي الربح التشغيلي
+            // Operating net profit = Gross profit - Expenses
             $operatingNetProfit = $grossProfitFromSalesInPeriod - $totalExpenses;
 
+            // Return a successful structured financial report
             return $this->successResponse(
                 'Financial report retrieved successfully',
                 200,
@@ -71,7 +79,7 @@ class FinancialReportService
                         'total_revenue_from_sales_in_period' => (int) $totalRevenueFromSalesInPeriod,
                         'total_expenses_in_period' => (int) $totalExpenses,
                         'operating_net_profit_in_period' => (int) $operatingNetProfit,
-                        'adjustedCOGS'=>(int) $adjustedCOGS
+                        'adjustedCOGS' => (int) $adjustedCOGS
                     ],
                     'cash_flow_summary' => [
                         'cash_inflow_from_collected_installments' => (int) $collectedInstallmentPayments,
@@ -80,12 +88,20 @@ class FinancialReportService
             );
 
         } catch (Exception $e) {
-            // تسجيل الخطأ للحصول على تفاصيل المشكلة
+            // Log the error for debugging
             Log::error("Unexpected error in GetFinancialReport: " . $e->getMessage());
             return $this->errorResponse('حدث خطأ أثناء توليد التقرير المالي، يرجى المحاولة لاحقًا.');
         }
     }
 
+    /**
+     * Format a successful API response.
+     *
+     * @param string $message The response message.
+     * @param int $status HTTP status code.
+     * @param mixed $data The data to return.
+     * @return array Formatted response array.
+     */
     private function successResponse(string $message, int $status = 200, $data = null): array
     {
         return [
@@ -95,6 +111,13 @@ class FinancialReportService
         ];
     }
 
+    /**
+     * Format an error API response.
+     *
+     * @param string $message The error message.
+     * @param int $status HTTP status code.
+     * @return array Formatted error response.
+     */
     private function errorResponse(string $message, int $status = 500): array
     {
         return [

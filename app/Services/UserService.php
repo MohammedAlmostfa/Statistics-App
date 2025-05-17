@@ -20,7 +20,7 @@ class UserService
     {
         try {
             // Fetch all users with specified columns (id, name, status, created_at)
-            $users = User::select('id', 'name', 'status', 'created_at')  ->orderByDesc('created_at')->get();
+            $users = User::select('id', 'name', 'status', 'created_at')->orderByDesc('created_at')->get();
 
             return [
                 'status' => 200,

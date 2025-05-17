@@ -54,24 +54,15 @@ class User extends Authenticatable implements JWTSubject
         1 => 'محذوف',
     ];
 
-    /**
-     * Get human-readable status attribute.
-     *
-     * @param int $value
-     * @return string
-     * @documented
-     */
-    public function getStatusAttribute($value): string
-    {
-        return self::STATUS_MAP[$value] ?? 'Unknown';
-    }
+
     public function status(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => self::STATUS_MAP[$value] ?? 'Unknown',
+            get: fn ($value) => self::STATUS_MAP[(int) $value] ?? 'Unknown',
             set: fn ($value) => array_search($value, self::STATUS_MAP)
         );
     }
+
 
     /**
      * Attribute casting.

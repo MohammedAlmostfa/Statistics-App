@@ -19,37 +19,48 @@ class WhatsappService
     {
         try {
             // Send a GET request to the API with the provided filter data
-            $response = Http::get("https://api.ultramsg.com/" . env("INSTANCE_ID") . "/messages", [
-                'token'  => env("API_TOKEN"),
+            $response = Http::get("https://api.ultramsg.com/" . config("services.ultramsg.instance_id") . "/messages", [
+                'token'  => config("services.ultramsg.api_token"),
                 'page'   => $data['page'] ?? 1,
                 'limit'  => $data['limit'] ?? 10,
                 'to'     => isset($data['to']) ? $data['to'] . '@c.us' : null,
                 'status' => $data['status'] ?? null,
             ]);
+
+            // Handle API failure
+            if ($response->failed()) {
+                Log::error('فشل طلب API بالحالة: ' . $response->status());
+                return [
+                    'status'  => 500,
+                    'message' => 'فشل في جلب رسائل الواتس اب.',
+                    'data'    => null
+                ];
+            }
+
             $dataResponse = $response->json();
             Log::info('API Response:', $dataResponse);
-            // استخراج بيانات `pagination`
+
+            // Pagination data extraction
             $pagination = [
                 'total'        => $dataResponse['total'] ?? 0,
                 'total_pages'  => $dataResponse['pages'] ?? 0,
                 'per_page'     => $dataResponse['limit'] ?? 0,
                 'current_page' => $dataResponse['page'] ?? 0,
             ];
-            // Return success response with the data
-            return [
-                'status'  => 200,
-                'message' => 'Messages fetched successfully',
-                'data'    => $dataResponse,
-                'pagination'=>$pagination
-            ];
-        } catch (Exception $e) {
-            // If an error occurs, log the error message
-            Log::error('Error in getMessage: ' . $e->getMessage());
 
-            // Return an error response
+            return [
+                 'status'     => 200,
+                 'message'    => 'تم جلب الرسائل بنجاح.',
+                 'data'       => $dataResponse,
+                 'pagination' => $pagination
+             ];
+
+        } catch (Exception $e) {
+            Log::error('خطأ في getMessage: ' . $e->getMessage());
+
             return [
                 'status'  => 500,
-                'message' => 'An error occurred while fetching messages. Please try again.',
+                'message' => 'حدث خطأ أثناء جلب الرسائل، يرجى المحاولة لاحقًا.',
                 'data'    => null
             ];
         }

@@ -6,6 +6,9 @@ use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 
 class AuthService
 {
@@ -97,12 +100,10 @@ class AuthService
     public function refresh()
     {
         try {
-            $newToken = Auth::refresh();
-            $user = Auth::user();
-
+            $newToken = JWTAuth::parseToken()->refresh();
+            $user = JWTAuth::setToken($newToken)->toUser();
 
             if ($user->status === "محذوف") {
-
                 Auth::logout(true);
                 return [
                     'status' => 403,
@@ -114,18 +115,28 @@ class AuthService
                 'status' => 200,
                 'message' => 'تم تحديث التوكن بنجاح.',
                 'data' => [
-                    'user' => $user,
                     'token' => $newToken,
                     'type' => 'bearer',
                 ],
             ];
-        } catch (Exception $e) {
-            Log::error('Error during token refresh: ' . $e->getMessage());
+        } catch (TokenExpiredException $e) {
+            return [
+                'status' => 401,
+                'message' => 'انتهت صلاحية التوكن، يرجى تسجيل الدخول مرة أخرى.',
+            ];
+        } catch (TokenInvalidException $e) {
+            return [
+                'status' => 401,
+                'message' => 'التوكن غير صالح، يرجى تسجيل الدخول من جديد.',
+            ];
+        } catch (JWTException $e) {
+            Log::error('JWT Refresh Error: ' . $e->getMessage());
             return [
                 'status' => 500,
-                'message' => 'حدث خطأ أثناء تحديث التوكن. يرجى إعادة المحاولة لاحقًا.',
+                'message' => 'حدث خطأ أثناء تحديث التوكن، يرجى المحاولة لاحقًا.',
             ];
         }
     }
+
 
 }

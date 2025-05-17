@@ -10,8 +10,8 @@ class WhatsAppChannel
     {
         $message = $notification->toWhatsApp($notifiable);
 
-        $instanceId = env('INSTANCE_ID');
-        $token = env('API_TOKEN');
+        $instanceId = config("services.ultramsg.instance_id");
+        $token =config("services.ultramsg.api_token");
         $url = "https://api.ultramsg.com/{$instanceId}/messages/chat";
 
         $response = Http::post($url, [

@@ -17,6 +17,10 @@ return [
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],
+'ultramsg' => [
+    'instance_id' => 'instance117739',
+    'api_token'   => 'b398x2u0a9zlf78s',
+],
 
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
