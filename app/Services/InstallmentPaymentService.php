@@ -36,7 +36,6 @@ class InstallmentPaymentService
             $installmentPayment = $installment->installmentPayments()->create([
                 'payment_date' => $data['payment_date'],
                 'amount'       => $data['amount'],
-                'status'       => 0,
             ]);
 
             ActivitiesLog::create([
@@ -218,7 +217,7 @@ class InstallmentPaymentService
                         $installment->installmentPayments()->create([
                             'payment_date' => now(),
                             'amount' => $actualPayment,
-                            'status' => 0, // Payment status: 0 means paid.
+
                         ]);
 
                         // Update the remaining payment amount.

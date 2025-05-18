@@ -21,7 +21,6 @@ class InstallmentPayment extends Model
         'installment_id',
         'payment_date',
         'amount',
-        'status',
     ];
     /**
  * Casts for attributes.
@@ -33,6 +32,7 @@ class InstallmentPayment extends Model
          'installment_id' => 'integer',
          'payment_date' => 'date',
          'amount' => 'integer',
+         'user_id'=>'integer',
 
     ];
     public function activities()
@@ -53,38 +53,5 @@ class InstallmentPayment extends Model
         return $this->belongsTo(Installment::class);
     }
 
-    /**
-     * Mapping of payment statuses to human-readable values.
-     *
-     * This map is used to translate the numeric values stored in the database
-     * into human-readable strings and vice versa.
-     *
-     * 0 => 'مدفوعة' (Paid)
-     * 1 => 'متأخر' (Late)
-     */
-    const TYPE_MAP = [
-        0 => 'مدفوعة',   // Paid
-        1 => 'متأخر',     // Late
-    ];
 
-    /**
-     * Accessor and Mutator for the payment status.
-     *
-     * The `status` attribute is stored as a numeric value in the database.
-     * This accessor converts the stored numeric value into a human-readable string,
-     * and the mutator converts the string back to the numeric value when updating.
-     *
-     * @param mixed $value The stored value in the database.
-     * @return string The human-readable status (e.g., "مدفوعة" or "متأخر").
-     */
-    public function status(): Attribute
-    {
-        return Attribute::make(
-            // Accessor: Get the human-readable status value (e.g., "مدفوعة" or "متأخر").
-            get: fn ($value) => self::TYPE_MAP[$value] ?? 'Unknown',
-
-            // Mutator: Convert the human-readable status back to its numeric representation.
-            set: fn ($value) => array_search($value, self::TYPE_MAP)
-        );
-    }
 }

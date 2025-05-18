@@ -12,49 +12,51 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
- * User model represents the authenticated user of the system.
- * Implements JWTSubject for API authentication.
+ * Class User
  *
- * @documented
+ * Represents an authenticated user in the system.
+ * Implements JWT authentication using JWTSubject for API authentication.
  */
 class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable, HasRoles;
 
     /**
-     * Attributes that are mass assignable.
+     * The attributes that are mass assignable.
      *
      * @var array<string>
-     * @documented
      */
     protected $fillable = [
-        'name',
-        'password',
-        'status',
+        'name',         // Name of the user
+        'password',     // Hashed password
+        'status',       // Status of the user (active/deleted)
     ];
 
     /**
-     * Hidden attributes from array/json serialization.
+     * The attributes that should be hidden when serialized to JSON.
      *
      * @var array<string>
-     * @documented
      */
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password',         // Hide password for security reasons
+        'remember_token',   // Hide the remember token
     ];
 
     /**
-     * Status map for readability.
+     * Status constants to enhance readability.
      *
-     * @documented
+     * @var array<int, string>
      */
     const STATUS_MAP = [
-        0 => 'موجدود ',
-        1 => 'محذوف',
+        0 => 'Active',   // User exists
+        1 => 'Deleted',  // User is removed
     ];
 
-
+    /**
+     * Get and set the user status dynamically using attribute casting.
+     *
+     * @return \Illuminate\Database\Eloquent\Casts\Attribute
+     */
     public function status(): Attribute
     {
         return Attribute::make(
@@ -63,22 +65,19 @@ class User extends Authenticatable implements JWTSubject
         );
     }
 
-
     /**
-     * Attribute casting.
+     * The attributes that should be cast to native types.
      *
      * @var array<string, string>
-     * @documented
      */
     protected $casts = [
-        'password' => 'hashed',
+        'password' => 'hashed', // Secure hashing of password
     ];
 
     /**
-     * Get identifier for JWT.
+     * Get the identifier for JWT.
      *
      * @return mixed
-     * @documented
      */
     public function getJWTIdentifier()
     {
@@ -86,10 +85,9 @@ class User extends Authenticatable implements JWTSubject
     }
 
     /**
-     * Custom JWT claims.
+     * Return custom claims for JWT authentication.
      *
      * @return array
-     * @documented
      */
     public function getJWTCustomClaims()
     {
@@ -97,17 +95,32 @@ class User extends Authenticatable implements JWTSubject
     }
 
     /**
-     * A user may have many products.
+     * Define a one-to-many relationship where a user can have multiple products.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     * @documented
      */
-    public function product()
+    public function products()
     {
         return $this->hasMany(Product::class);
     }
+
+    /**
+     * Define a one-to-many relationship where a user can have multiple payments.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Define a one-to-many relationship where a user can have multiple debts.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function debts()
+    {
+        return $this->hasMany(Debt::class);
     }
 }

@@ -159,5 +159,9 @@ class Customer extends Model
 
         return $query;
     }
+    public function debt()
+    {
+        return $this->hasMany(Debt::class);
+    }
 
 }

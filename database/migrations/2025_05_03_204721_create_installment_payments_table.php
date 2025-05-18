@@ -11,10 +11,8 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('installment_id')->constrained('installments')->cascadeOnDelete();
             $table->integer('amount');
-            $table->integer('status');
             $table->date('payment_date');
             $table->index('installment_id');
-
             $table->timestamps();
         });
     }
