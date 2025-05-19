@@ -26,6 +26,7 @@ class CustomerReceiptProduct extends JsonResource
             'product_id' => $this->product_id,
             'product_name' => $this->product->name,
             'quantity' => $this->quantity,
+            'description'     => $this->description,
             'product_price' => $this->selling_price,
             'pay_cont' => $installment ? $installment->pay_cont : null,
             'installment_id' => $installment ? $installment->id : null,

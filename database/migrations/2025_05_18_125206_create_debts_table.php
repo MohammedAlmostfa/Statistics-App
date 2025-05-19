@@ -9,9 +9,7 @@ class CreateDebtsTable extends Migration
     public function up()
     {
         Schema::create('debts', function (Blueprint $table) {
-
             $table->id();
-            $table->unsignedInteger('receipt_number')->index();
             $table->foreignId('customer_id')->constrained('customers')->cascadeOnDelete();
             $table->unsignedInteger('payment_amount');
             $table->unsignedInteger('remaining_debt');

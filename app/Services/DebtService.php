@@ -75,7 +75,6 @@ class DebtService extends Service
 
             // Create a new debt record
             $Debt = Debt::create([
-                'receipt_number' => $data['receipt_number'],
                 'customer_id'    => $data['customer_id'],
                 'remaining_debt' => $data['remaining_debt'],
                 'payment_amount' => $data['payment_amount'],

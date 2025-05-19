@@ -20,13 +20,12 @@ class Debt extends Model
      * @var array<string>
      */
     protected $fillable = [
-        'receipt_number',    // Receipt number associated with the debt
-        'customer_id',       // Customer ID linked to the debt
+        'customer_id',
         'payment_amount',
         'description',
-        'remaining_debt',    // Amount still due
-        'debt_date',         // Date when the debt was recorded
-        'user_id'            // ID of the user who created the record
+        'remaining_debt',
+        'debt_date',
+        'user_id'
     ];
 
     /**
@@ -35,7 +34,7 @@ class Debt extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'receipt_number' => 'integer',
+
         'customer_id'    => 'integer',
         'payment_amount'  => 'integer',
         'remaining_debt' => 'integer',

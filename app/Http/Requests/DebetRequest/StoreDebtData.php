@@ -30,7 +30,7 @@ class StoreDebtData extends FormRequest
     public function rules(): array
     {
         return [
-            'receipt_number' => 'required|integer',
+
             'customer_id' => 'required|exists:customers,id',
             'payment_amount' => 'required|integer',
             'remaining_debt' => 'required|integer',

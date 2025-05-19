@@ -10,7 +10,6 @@ class CustomerDebtResource extends JsonResource
     {
         return [
             'id'              => $this->id,
-            'receipt_number'  => $this->receipt_number,
             'payment_amount'  => $this->payment_amount,
             'remaining_debt'  => $this->remaining_debt,
             'debt_date'       => $this->debt_date,
