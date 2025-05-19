@@ -19,7 +19,7 @@ class ReceiptProductResource extends JsonResource
             'description' => $this->description,
             'product_id' => $this->product_id,
             'product_name' => $this->product->name,
-            'unit_price' => $this->selling_price,
+            'selling_price' => $this->selling_price,
             'quantity' => $this->quantity,
             'pay_cont' => optional($this->installment)->pay_cont,
             'installment' => optional($this->installment)->installment,
