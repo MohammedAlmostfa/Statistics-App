@@ -8,23 +8,40 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * **ActivitiesLogService**
+ *
+ * This service handles operations related to activity logs, including:
+ * - Retrieving logs with optional filtering and pagination.
+ * - Implementing caching for optimized performance.
+ * - Logging errors for debugging and stability.
+ */
 class ActivitiesLogService extends Service
 {
+    /**
+     * **Retrieve all activity logs with filtering and caching**
+     *
+     * This method retrieves logs from the database and caches frequently accessed data.
+     *
+     * @param array|null $filteringData Optional filters (e.g., user, date).
+     * @return array JSON response containing activity logs or an error message.
+     */
     public function getAllActivitiesLog($filteringData)
     {
         try {
             $page = request('page', 1);
 
+            // Generate cache key based on filters and pagination
             $cacheKey = 'activities_logs' . $page . (empty($filteringData) ? '' : md5(json_encode($filteringData)));
-
             $cacheKeys = Cache::get('activities', []);
 
+            // Store cache keys to facilitate cache clearance when needed
             if (!in_array($cacheKey, $cacheKeys)) {
                 $cacheKeys[] = $cacheKey;
                 Cache::put('activities', $cacheKeys, now()->addHours(2));
             }
 
-
+            // Retrieve logs with filtering, caching, and pagination
             $activitiesLog = Cache::remember($cacheKey, now()->addMinutes(120), function () use ($filteringData) {
                 return ActivitiesLog::with('user')
                     ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
@@ -32,14 +49,13 @@ class ActivitiesLogService extends Service
                     ->paginate(10);
             });
 
-            return $this->successResponse('تم جلب سجلات الأنشطة بنجاح.', 200, $activitiesLog);
+            return $this->successResponse('تم استرجاع سجلات الأنشطة بنجاح.', 200, $activitiesLog);
         } catch (QueryException $e) {
-            Log::error('Database query error: ' . $e->getMessage());
-            return $this->errorResponse('فشل في جلب سجلات الأنشطة.');
+            Log::error('خطأ في استعلام قاعدة البيانات عند استرجاع سجلات الأنشطة: ' . $e->getMessage());
+            return $this->errorResponse('فشل في استرجاع سجلات الأنشطة.');
         } catch (Exception $e) {
-            Log::error('General error retrieving activity logs: ' . $e->getMessage());
+            Log::error('حدث خطأ عام أثناء استرجاع سجلات الأنشطة: ' . $e->getMessage());
             return $this->errorResponse('حدث خطأ أثناء جلب سجلات الأنشطة.');
         }
     }
-
 }

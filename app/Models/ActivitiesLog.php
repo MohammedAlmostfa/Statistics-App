@@ -96,9 +96,11 @@ class ActivitiesLog extends Model
         'App\\Models\\Receipt' => 'فواتير',
         'App\\Models\\Payment' => 'صرفيات',
         'App\\Models\\Customer' => 'زبائن',
-        'App\\Models\\InstallmentPayment' => 'اقساط',
+        'App\\Models\\InstallmentPayment' => 'اقساط الفواتير',
         'App\\Models\\Product' => 'منتجات',
         'App\\Models\\ProductCategory' => 'اصناف',
+        'App\\Models\\Debt' => 'ديون',
+        'App\\Models\\DebtPayment' => 'اقساط الدين',
     ];
 
     /**
