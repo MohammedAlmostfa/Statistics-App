@@ -144,7 +144,7 @@ class InstallmentPaymentService extends Service
 
         try {
             // Fetch the receipt along with related products, installments, and payments.
-            $receipt = Receipt::with([
+            $allreceipt = Receipt::with([
                 'receiptProducts' => function ($query) {
                     $query->select('id', 'receipt_id', 'product_id', 'selling_price', 'quantity');
                 },
@@ -154,81 +154,64 @@ class InstallmentPaymentService extends Service
                 'receiptProducts.installment.InstallmentPayments' => function ($query) {
                     $query->select('id', 'installment_id', 'amount');
                 },
-            ])->findOrFail($id);
+            ])->where('customer_id', $id)->get();
 
             $totalRemainingDebt = 0; // Store the total remaining debt for the receipt.
             $totalPaidForReceipt = 0; // Store the total previous payments for the receipt.
+            foreach($allreceipt as $receipt) {
+                // Calculate total payments and remaining balance for each product.
+                foreach ($receipt->receiptProducts as $product) {
+                    $installment = $product->installment;
 
-            // Calculate total payments and remaining balance for each product.
-            foreach ($receipt->receiptProducts as $product) {
-                $installment = $product->installment;
+                    if ($installment) {
+                        // Calculate the total price for the product.
+                        $totalPrice = $product->selling_price * $product->quantity;
 
-                if ($installment) {
-                    // Calculate the total price for the product.
-                    $totalPrice = $product->selling_price * $product->quantity;
+                        // Calculate the total payments made for this installment.
+                        $totalPaidForProductInstallment = $installment->installmentPayments()->sum('amount');
 
-                    // Calculate the total payments made for this installment.
-                    $totalPaidForProductInstallment = $installment->installmentPayments()->sum('amount');
+                        // Calculate the remaining amount for this product.
+                        $remainingPrice = $totalPrice - $totalPaidForProductInstallment;
 
-                    // Calculate the remaining amount for this product.
-                    $remainingPrice = $totalPrice - $totalPaidForProductInstallment;
+                        // Ensure the remaining amount is not negative.
+                        $product->remaining_price = max(0, $remainingPrice);
 
-                    // Ensure the remaining amount is not negative.
-                    $product->remaining_price = max(0, $remainingPrice);
-
-                    // Accumulate total remaining debt for the receipt.
-                    $totalRemainingDebt += $product->remaining_price;
-                    $totalPaidForReceipt += $totalPaidForProductInstallment;
-                }
-            }
-
-            // Validate if there's any pending amount to be paid.
-            if ($totalRemainingDebt <= 0) {
-                return $this->errorResponse('لا يوجد مبلغ مستحق للدفع لهذه الفاتورة.', 400);
-            }
-
-            // Validate the payment amount entered.
-            if ($data['amount'] <= 0) {
-                return $this->errorResponse('يجب أن يكون مبلغ الدفع أكبر من صفر.', 400);
-            }
-
-            $remainingPayment = $data['amount']; // Store the remaining amount for payment.
-
-            // Distribute the payment across remaining products.
-            collect($receipt->receiptProducts)->each(function ($product) use (&$remainingPayment, $totalRemainingDebt) {
-                if ($remainingPayment <= 0) {
-                    return;
-                }
-
-                $installment = $product->installment;
-
-                if ($installment && $product->remaining_price > 0) {
-                    // Calculate the percentage of debt for this product.
-                    $percentage = $product->remaining_price / $totalRemainingDebt;
-
-                    // Calculate the amount to be paid for this product.
-                    $paymentForProduct = round($remainingPayment * $percentage, 2);
-
-                    // Ensure the payment amount does not exceed the remaining balance.
-                    $actualPayment = min($remainingPayment, $product->remaining_price, $paymentForProduct);
-
-                    if ($actualPayment > 0) {
-                        // Record a new installment payment.
-                        $installment->installmentPayments()->create([
-                            'payment_date' => now(),
-                            'amount' => $actualPayment,
-
-                        ]);
-
-                        // Update the remaining payment amount.
-                        $remainingPayment -= $actualPayment;
+                        // Accumulate total remaining debt for the receipt.
+                        $totalRemainingDebt += $product->remaining_price;
+                        $totalPaidForReceipt += $totalPaidForProductInstallment;
                     }
                 }
-            });
 
+                $remainingPayment = $data['amount']; // Store the remaining amount for payment.
+
+                // Distribute the payment across remaining products.
+                $receipt->receiptProducts->each(function ($product) use (&$remainingPayment, $totalRemainingDebt) {
+                    if ($remainingPayment <= 0) {
+                        return;
+                    }
+
+                    $installment = $product->installment;
+                    if ($installment && $product->remaining_price > 0) {
+                        $percentage = $product->remaining_price / $totalRemainingDebt;
+                        $paymentForProduct = round($remainingPayment * $percentage, 2);
+
+                        $actualPayment = min($remainingPayment, $product->remaining_price, $paymentForProduct);
+
+                        if ($actualPayment > 0) {
+                            $installment->installmentPayments()->create([
+                                'payment_date' => now(),
+                                'amount' => $actualPayment,
+                            ]);
+
+                            $remainingPayment -= $actualPayment;
+                        }
+                    }
+                });
+
+            }
             DB::commit(); // Complete the transaction and save changes to the database.
 
-            return $this->successResponse('تم دفع جزء من القسط للفاتورة بنجاح!', 200, $receipt);
+            return $this->successResponse('تم دفع جزء من الاقساط المترتية بنجاح!', 200, $receipt);
 
         } catch (Exception $e) {
             DB::rollBack(); // Roll back all transactions in case of an error.

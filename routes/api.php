@@ -100,7 +100,7 @@ Route::middleware('jwt')->group(function () {
 
     // Installment and payment management
     Route::post('installments/{id}/payments', [InstallmentPaymentController::class, 'store']);
-    Route::post('/installment/receipt/{id}', [InstallmentPaymentController::class, 'installmentPaymentReceipt']);
+    Route::post('/installment/customer/{id}', [InstallmentPaymentController::class, 'installmentPaymentReceipt']);
     Route::apiResource('/installmentPayments', InstallmentPaymentController::class);
 
     Route::apiResource('/payment', PaymentController::class);
