@@ -124,7 +124,8 @@ class ReceiptService extends Service
                 'description'    => $productData['description'] ?? null,
                 'quantity'       => $productData['quantity'],
                 'buying_price'   => $buyingPrice,
-                'selling_price'  => $sellingPrice,
+                'selling_price'  => $productData['selling_price']?? $product->getSellingPriceForReceiptType($type),
+
             ]);
 
             // Update inventory via event
