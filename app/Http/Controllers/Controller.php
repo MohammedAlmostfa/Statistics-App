@@ -29,6 +29,7 @@ class Controller extends BaseController
     }
 
 
+
     /**
   * Return an error JSON response.
      *

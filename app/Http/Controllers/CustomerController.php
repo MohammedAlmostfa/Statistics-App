@@ -5,37 +5,36 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Services\CustomerService;
 use Illuminate\Http\JsonResponse;
-use App\Http\Requests\CustomerRequest\fitrtingData;
-use App\Http\Requests\DebetRequest\fitrtinDebetgData;
+use App\Http\Resources\CustomerResource;
+use App\Http\Resources\CustomerDebtResource;
+use App\Http\Resources\CustomerReceiptResource;
+use App\Http\Requests\CustomerRequest\FilteringCustomerData;
 use App\Http\Requests\CustomerRequest\StoreCustomerData;
 use App\Http\Requests\CustomerRequest\UpdateCustomerData;
-use App\Http\Requests\CustomerRequest\FilteringCustomerData;
-use App\Http\Resources\CustomerResource;
 
 /**
- * CustomerController manages customer-related operations, such as:
- * - Retrieving a list of customers
- * - Showing customer details (including debts)
- * - Creating, updating, and deleting customer records
+ * **CustomerController**
  *
- * @documented
+ * This controller manages customer-related operations, including:
+ * - Retrieving customer lists
+ * - Viewing customer details (including debts)
+ * - Creating, updating, and deleting customer records
  */
 class CustomerController extends Controller
 {
     /**
-     * @var CustomerService $customerService Handles customer business logic
+     * Customer service instance responsible for handling customer-related logic.
      *
-     * @documented
+     * @var CustomerService
      */
     protected CustomerService $customerService;
 
     /**
-     * CustomerController Constructor
-     * Initializes the CustomerService dependency for handling customer-related logic.
+     * **Constructor for CustomerController**
      *
-     * @param CustomerService $customerService Dependency injected service for customer operations
+     * Injects `CustomerService` to handle customer-related operations.
      *
-     * @documented
+     * @param CustomerService $customerService Handles business logic for customers.
      */
     public function __construct(CustomerService $customerService)
     {
@@ -43,31 +42,40 @@ class CustomerController extends Controller
     }
 
     /**
-     * Retrieve and paginate a list of customers.
+     * **Retrieve and paginate a list of customers**
      *
-     * @param FilteringCustomerData $request Validated filtering data
-     * @return JsonResponse Returns paginated list of customers or error response
-     *
-     * @documented
+     * @param FilteringCustomerData $request Validated filtering criteria.
+     * @return JsonResponse Paginated customer list or error message.
      */
     public function index(FilteringCustomerData $request): JsonResponse
     {
         $result = $this->customerService->getAllCustomers($request->validated());
+
         return $result['status'] === 200
-             ? $this->paginated($result['data'], CustomerResource::class, $result['message'], $result['status'])
-             : $this->error($result['data'], $result['message'], $result['status']);
+            ? $this->paginated($result['data'], CustomerResource::class, $result['message'], $result['status'])
+            : $this->error($result['data'], $result['message'], $result['status']);
     }
 
     /**
-     * Store a new customer record in the database.
+     * **Retrieve debts related to a specific customer**
      *
-     * @param StoreCustomerData $request Validated request data containing:
-     *    - name (string, required): Name of the customer
-     *    - phone (string, required): Phone number of the customer
-     *    - notes (string, optional): Additional notes about the customer
-     * @return JsonResponse Returns JSON response with operation result
+     * @param int $id Customer ID.
+     * @return JsonResponse Customer's debts or error message.
+     */
+    public function getCustomerDebts($id): JsonResponse
+    {
+        $result = $this->customerService->getCustomerDebts($id);
+
+        return $result['status'] === 200
+            ? $this->success(CustomerDebtResource::collection($result['data']), $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
+    }
+
+    /**
+     * **Create a new customer record**
      *
-     * @documented
+     * @param StoreCustomerData $request Validated customer data.
+     * @return JsonResponse Operation result.
      */
     public function store(StoreCustomerData $request): JsonResponse
     {
@@ -79,23 +87,15 @@ class CustomerController extends Controller
     }
 
     /**
-     * Update an existing customer record.
+     * **Update an existing customer record**
      *
-     * @param UpdateCustomerData $request Validated request data containing fields to update:
-     *    - name (string, optional): Updated name of the customer
-     *    - phone (string, optional): Updated phone number of the customer
-     *    - notes (string, optional): Updated notes for the customer
-     * @param Customer $customer The customer model instance to be updated
-     * @return JsonResponse Returns JSON response with operation result
-     *
-     * @documented
+     * @param UpdateCustomerData $request Validated update data.
+     * @param Customer $customer The customer to be updated.
+     * @return JsonResponse Operation result.
      */
     public function update(UpdateCustomerData $request, Customer $customer): JsonResponse
     {
-        $result = $this->customerService->updateCustomer(
-            $request->validated(),
-            $customer
-        );
+        $result = $this->customerService->updateCustomer($request->validated(), $customer);
 
         return $result['status'] === 200
             ? $this->success(null, $result['message'], $result['status'])
@@ -103,13 +103,10 @@ class CustomerController extends Controller
     }
 
     /**
-
-     * Delete a customer record from the database.
+     * **Delete a customer record**
      *
-     * @param Customer $customer The customer model instance to be deleted
-     * @return JsonResponse Returns JSON response with operation result
-     *
-     * @documented
+     * @param Customer $customer The customer to be deleted.
+     * @return JsonResponse Operation result.
      */
     public function destroy(Customer $customer): JsonResponse
     {
@@ -119,6 +116,36 @@ class CustomerController extends Controller
 
         return $result['status'] === 200
             ? $this->success(null, $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
+    }
+
+    /**
+     * **Retrieve all receipts related to a customer**
+     *
+     * @param int $id Customer ID.
+     * @return JsonResponse List of receipts or error message.
+     */
+    public function getCustomerReceipt($id): JsonResponse
+    {
+        $result = $this->customerService->getCustomerReceipt($id);
+
+        return $result['status'] === 200
+            ? $this->paginated($result["data"], CustomerReceiptResource::class, $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
+    }
+
+    /**
+     * **Retrieve products associated with customer receipts**
+     *
+     * @param int $id Customer ID.
+     * @return JsonResponse List of products or error message.
+     */
+    public function getCustomerReceiptProducts($id): JsonResponse
+    {
+        $result = $this->customerService->getCustomerReceiptProducts($id);
+
+        return $result['status'] === 200
+            ? $this->success($result['data'], $result['message'], $result['status'])
             : $this->error(null, $result['message'], $result['status']);
     }
 }

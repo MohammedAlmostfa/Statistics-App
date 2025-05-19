@@ -17,17 +17,7 @@ class ReceiptProductController extends Controller
     {
         $this->ReceiptProductService = $ReceiptProductService;
     }
-    /**
-     * Display a listing of the resource.
-     */
-    public function index($id)
-    {
-        $result = $this->ReceiptProductService->getCustomerReceiptProducts($id);
 
-        return $result['status'] === 200
-            ? $this->success($result['data'], $result['message'], $result['status'])
-            : $this->error(null, $result['message'], $result['status']);
-    }
 
     /**
      * Show the form for creating a new resource.

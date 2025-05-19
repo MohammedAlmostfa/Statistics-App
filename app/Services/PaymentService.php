@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
  * Service class to handle payments.
  * Includes methods for creating, updating, deleting, and retrieving payments with caching.
  */
-class PaymentService
+class PaymentService extends Service
 {
     /**
      * Retrieve all payments with pagination, utilizing cache to improve performance.
@@ -169,35 +169,5 @@ class PaymentService
         }
     }
 
-    /**
-     * Return a standardized success response in Arabic.
-     *
-     * @param string $message Response message.
-     * @param int $status HTTP status code (default is 200).
-     * @param mixed|null $data Optional response payload.
-     * @return array
-     */
-    private function successResponse(string $message, int $status = 200, $data = null): array
-    {
-        return [
-            'message' => $message,
-            'status'  => $status,
-            'data'    => $data,
-        ];
-    }
 
-    /**
-     * Return a standardized error response in Arabic.
-     *
-     * @param string $message Response message.
-     * @param int $status HTTP status code (default is 500).
-     * @return array
-     */
-    private function errorResponse(string $message, int $status = 500): array
-    {
-        return [
-            'message' => $message,
-            'status'  => $status,
-        ];
-    }
 }

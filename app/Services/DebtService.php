@@ -12,41 +12,59 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Service class to handle payments and debts.
+ * Class DebtService
+ *
+ * Provides various functionalities for managing debts, including retrieval,
+ * creation, deletion, and caching mechanisms to optimize performance.
  */
-class DebtService
+class DebtService extends Service
 {
     /**
- * Retrieve all debts with pagination.
- */
+     * Retrieve all debts with optional filtering and pagination.
+     *
+     * This method utilizes caching to store frequently accessed debts, reducing
+     * repeated database queries and improving performance.
+     *
+     * @param array $filteringData Optional filtering parameters.
+     * @return array JSON response containing retrieved debts.
+     */
     public function getAllDebts($filteringData)
     {
         try {
             $page = request('page', 1);
             $cacheKey = 'debts_' . $page . '_' . md5(json_encode($filteringData));
 
+            // Store cache keys to facilitate clearing when needed
             $cacheKeys = Cache::get('all_debts_keys', []);
             if (!in_array($cacheKey, $cacheKeys)) {
                 $cacheKeys[] = $cacheKey;
                 Cache::put('all_debts_keys', $cacheKeys, now()->addHours(2));
             }
 
-            $receipts = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($filteringData) {
+            // Retrieve debts with filtering and caching
+            $debts = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($filteringData) {
                 return Debt::with(['user:id,name', 'customer:id,name'])
                     ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
                     ->orderByDesc('debt_date')
                     ->paginate(10);
             });
 
-            return $this->successResponse('تم استرجاع الديون بنجاح.', 200, $receipts);
+            return $this->successResponse('تم استرجاع الديون بنجاح.', 200, $debts);
         } catch (Exception $e) {
             Log::error('Error retrieving debts: ' . $e->getMessage());
             return $this->errorResponse('فشل في استرجاع الديون.');
         }
     }
 
+
     /**
      * Create a new debt record.
+     *
+     * This method initializes a new debt entry, linking it to the associated
+     * customer and user who created it. It also logs the transaction in the system.
+     *
+     * @param array $data Debt data required for creation.
+     * @return array JSON response indicating success or failure.
      */
     public function createDebt(array $data): array
     {
@@ -55,20 +73,23 @@ class DebtService
         try {
             $userId = Auth::id();
 
+            // Create a new debt record
             $Debt = Debt::create([
                 'receipt_number' => $data['receipt_number'],
-                'customer_id' => $data['customer_id'],
+                'customer_id'    => $data['customer_id'],
                 'remaining_debt' => $data['remaining_debt'],
-                'total_debt' => $data['total_debt'],
-                'debt_date' => $data['debt_date'],
-                'user_id' => $userId,
+                'payment_amount' => $data['payment_amount'],
+                'debt_date'      => $data['debt_date'],
+                'description'    => $data['description'] ?? null,
+                'user_id'        => $userId,
             ]);
 
+            // Log the transaction in the activity logs
             ActivitiesLog::create([
-                'user_id' => $userId,
+                'user_id'     => $userId,
                 'description' => 'تم تعديل دفعة دين للزبون ' . $Debt->customer->name,
-                'type_id' => $Debt->id,
-                'type_type' => Debt::class,
+                'type_id'     => $Debt->id,
+                'type_type'   => Debt::class,
             ]);
 
             DB::commit();
@@ -82,7 +103,13 @@ class DebtService
     }
 
     /**
-     * Delete a debt record.
+     * Delete an existing debt record.
+     *
+     * This method removes a debt entry from the database and logs the deletion
+     * event for recordkeeping.
+     *
+     * @param Debt $Debt Debt model instance to be deleted.
+     * @return array JSON response indicating success or failure.
      */
     public function deleteDebt(Debt $Debt): array
     {
@@ -91,13 +118,15 @@ class DebtService
         try {
             $userId = Auth::id();
 
+            // Log deletion in the activity records
             ActivitiesLog::create([
-                'user_id' => $userId,
+                'user_id'     => $userId,
                 'description' => 'تم حذف دفعة دين للزبون ' . $Debt->customer->name,
-                'type_id' => $Debt->id,
-                'type_type' => Debt::class,
+                'type_id'     => $Debt->id,
+                'type_type'   => Debt::class,
             ]);
 
+            // Remove the debt record
             $Debt->delete();
 
             DB::commit();
@@ -108,28 +137,5 @@ class DebtService
             Log::error('Error deleting debt: ' . $e->getMessage());
             return $this->errorResponse('فشل في حذف الدين.');
         }
-    }
-
-    /**
-     * Standardized success response.
-     */
-    private function successResponse(string $message, int $status = 200, $data = null): array
-    {
-        return [
-            'message' => $message,
-            'status' => $status,
-            'data' => $data,
-        ];
-    }
-
-    /**
-     * Standardized error response.
-     */
-    private function errorResponse(string $message, int $status = 500): array
-    {
-        return [
-            'message' => $message,
-            'status' => $status,
-        ];
     }
 }

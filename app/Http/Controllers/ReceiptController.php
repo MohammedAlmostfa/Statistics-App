@@ -29,15 +29,6 @@ class ReceiptController extends Controller
             : $this->error(null, $result['message'], $result['status']);
     }
 
-    public function getCustomerReceipt($id)
-    {
-        $result = $this->receiptService->getCustomerReceipt($id);
-
-        return $result['status'] === 200
-                 ? $this->paginated($result["data"], CustomerReceiptResource::class, $result['message'], $result['status'])
-                 : $this->error(null, $result['message'], $result['status']);
-
-    }
     /**
      * Store a new receipt in the database.
      *

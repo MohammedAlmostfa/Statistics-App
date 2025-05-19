@@ -26,7 +26,7 @@ class AuthService
             if (!$token) {
                 return [
                     'status' => 401,
-                    'message' => 'بيانات الاعتماد غير صحيحة.',
+                    'message' => 'بيانات التسجيل غير صحيحة.',
                 ];
             }
 

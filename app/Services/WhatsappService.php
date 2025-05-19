@@ -6,7 +6,7 @@ use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class WhatsappService
+class WhatsappService extends Service
 {
     /**
      * Fetch messages from the API

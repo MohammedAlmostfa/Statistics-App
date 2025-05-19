@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Cache;
  * Service class for managing products.
  * Includes methods for retrieving, creating, updating, and deleting products.
  */
-class ProductService
+class ProductService extends Service
 {
     /**
      * Retrieve all products, optionally filtered by provided criteria.

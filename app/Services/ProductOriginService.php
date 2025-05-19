@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Cache;
  * ProductOriginService handles retrieval of product origins (e.g., country of origin).
  * It uses caching to reduce database queries and improve performance.
  */
-class ProductOriginService
+class ProductOriginService extends Service
 {
     /**
      * Retrieve all product origins from cache or database.
@@ -36,35 +36,4 @@ class ProductOriginService
         }
     }
 
-    /**
-     * Create a standard success response.
-     *
-     * @param string $message Success message.
-     * @param int $status HTTP status code (default 200).
-     * @param mixed|null $data Optional data to include.
-     * @return array
-     */
-    private function successResponse(string $message, int $status = 200, $data = null): array
-    {
-        return [
-            'message' => $message,
-            'status' => $status,
-            'data' => $data,
-        ];
-    }
-
-    /**
-     * Create a standard error response.
-     *
-     * @param string $message Error message.
-     * @param int $status HTTP status code (default 500).
-     * @return array
-     */
-    private function errorResponse(string $message, int $status = 500): array
-    {
-        return [
-            'message' => $message,
-            'status' => $status,
-        ];
-    }
 }

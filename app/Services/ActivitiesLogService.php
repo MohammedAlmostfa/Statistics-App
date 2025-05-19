@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
 
-class ActivitiesLogService
+class ActivitiesLogService extends Service
 {
     public function getAllActivitiesLog($filteringData)
     {
@@ -42,24 +42,4 @@ class ActivitiesLogService
         }
     }
 
-
-
-
-
-    private function successResponse(string $message, int $status = 200, $data = null): array
-    {
-        return [
-            'message' => $message,
-            'status'  => $status,
-            'data'    => $data,
-        ];
-    }
-
-    private function errorResponse(string $message, int $status = 500): array
-    {
-        return [
-            'message' => $message,
-            'status'  => $status,
-        ];
-    }
 }

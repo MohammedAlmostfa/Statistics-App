@@ -17,7 +17,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * Service class to handle installment payments including create, update, and delete operations.
  * All actions are logged and wrapped in database transactions to ensure consistency.
  */
-class InstallmentPaymentService
+class InstallmentPaymentService extends Service
 {
     /**
      * Create a new installment payment.
@@ -238,35 +238,5 @@ class InstallmentPaymentService
         }
     }
 
-    /**
-     * Return a standardized success response in Arabic.
-     *
-     * @param string $message Response message.
-     * @param int $status HTTP status code (default is 200).
-     * @param mixed|null $data Optional response payload.
-     * @return array
-     */
-    private function successResponse(string $message, int $status = 200, $data = null): array
-    {
-        return [
-            'message' => $message,
-            'status' => $status,
-            'data' => $data,
-        ];
-    }
 
-    /**
-     * Return a standardized error response in Arabic.
-     *
-     * @param string $message Response message.
-     * @param int $status HTTP status code (default is 500).
-     * @return array
-     */
-    private function errorResponse(string $message, int $status = 500): array
-    {
-        return [
-            'message' => $message,
-            'status' => $status,
-        ];
-    }
 }

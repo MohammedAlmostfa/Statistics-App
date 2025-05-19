@@ -3,12 +3,15 @@
 namespace App\Services;
 
 use Exception;
+use App\Models\Debt;
+use App\Models\Receipt;
 use App\Models\Customer;
 use App\Models\ActivitiesLog;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\CustomerReceiptProduct;
 
 /**use Illuminate\Support\Facades\Auth;
 
@@ -18,7 +21,7 @@ use Illuminate\Support\Facades\Auth;
  * including retrieving, creating, updating, and deleting customers.
  * It also supports caching and error logging for optimized performance.
  */
-class CustomerService
+class CustomerService extends Service
 {
     /**
      * Retrieve all customers with optional filtering and caching.
@@ -146,34 +149,105 @@ class CustomerService
     }
 
     /**
-     * Generate a standardized success response.
+     * Retrieve debts for a specific customer.
      *
-     * @param string $message Success message.
-     * @param int $status HTTP status code (default is 200).
-     * @param mixed|null $data Optional data payload.
-     * @return array Structured response.
+     * This method fetches debts associated with a given customer and includes
+     * related payments for enhanced data visualization.
+     *
+     * @param int $id Customer ID.
+     * @return array JSON response containing the customer's debts.
      */
-    private function successResponse(string $message, int $status = 200, $data = null): array
+    public function getCustomerDebts($id)
     {
-        return [
-            'message' => $message,
-            'status' => $status,
-            'data' => $data,
-        ];
+        try {
+            $debts = Debt::with('debtPaymments')
+                         ->where('customer_id', $id)
+                         ->get();
+
+            return $this->successResponse('تم استرجاع الديون بنجاح.', 200, $debts);
+        } catch (Exception $e) {
+            Log::error('Error retrieving debts: ' . $e->getMessage());
+            return $this->errorResponse('فشل في استرجاع الديون.');
+        }
+    }
+    /**
+     * Get receipts for a specific customer.
+     */
+    public function getCustomerReceipt($id)
+    {
+        try {
+            $receipts = Receipt::with(['user:id,name'])
+                ->where('customer_id', $id)
+                ->orderByDesc('receipt_date')
+                ->paginate(10);
+
+            return [
+                'status'  => 200,
+                'message' => 'تم استرجاع جميع فواتير العميل بنجاح',
+                'data'    => $receipts,
+            ];
+        } catch (Exception $e) {
+            Log::error('Error in getCustomerReceipt: ' . $e->getMessage());
+
+            return [
+                'status'  => 500,
+                'message' => 'حدث خطأ أثناء استرجاع فواتير العميل.',
+            ];
+        }
     }
 
     /**
-     * Generate a standardized error response.
+     * Retrieve all receipt products for a specific customer, including installment details.
      *
-     * @param string $message Error message.
-     * @param int $status HTTP status code (default is 500).
-     * @return array Structured response.
+     * This method fetches receipts with products, installment details, and installment payments for a specific customer.
+     * The data is returned in a formatted structure using a resource.
+     *
+     * @param int $id Customer ID to filter the receipts.
+     * @return array Structured response with success or error message in Arabic.
      */
-    private function errorResponse(string $message, int $status = 500): array
+    public function getCustomerReceiptProducts($id)
     {
-        return [
-            'message' => $message,
-            'status' => $status,
-        ];
+        try {
+
+            $receipts = Receipt::with([
+                'receiptProducts' => function ($q) {
+                    $q->select('id', 'receipt_id', 'product_id', 'quantity', 'selling_price');
+                },
+                'receiptProducts.product' => function ($q) {
+                    $q->select('id', 'name');
+                },
+                'receiptProducts.installment' => function ($q) {
+                    $q->select('id', 'receipt_product_id', 'pay_cont', 'first_pay', 'installment_type', 'status', 'installment', 'id');
+                },
+                'receiptProducts.installment.installmentPayments' => function ($q) {
+                    $q->select('id', 'installment_id', 'payment_date', 'amount');
+                },
+            ])
+                ->where('customer_id', $id)  // Filter receipts by the customer ID
+                ->orderByDesc('receipt_date')
+                ->where('type', 'اقساط')     // Filter only installment type receipts
+                ->get();
+
+            // Format the data by flattening it and converting it into the appropriate resource
+            $formattedProducts = $receipts->flatMap(function ($receipt) {
+                return $receipt->receiptProducts->map(function ($receiptProduct) {
+                    return new CustomerReceiptProduct($receiptProduct);  // Transform each receipt product using a resource
+                });
+            });
+
+            // Return the response with formatted data
+            return [
+                'status' => 200,
+                'message' => 'تم جلب جميع المنتجات بنجاح.',
+                'data' => $formattedProducts,
+            ];
+        } catch (\Exception $e) {
+            // Log any errors and return a failure response
+            Log::error('Error in getCustomerReceiptProducts: ' . $e->getMessage());
+            return [
+                'status' => 500,
+                'message' => 'حدث خطأ أثناء جلب المنتجات، يرجى المحاولة مرة أخرى.',
+            ];
+        }
     }
 }

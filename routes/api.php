@@ -9,6 +9,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DebtController;
+use App\Http\Controllers\DebtPaymentController;
 use App\Http\Controllers\FinancialReportController;
 use App\Http\Controllers\WhatsappController;
 use App\Http\Controllers\ProductOriginController;
@@ -91,18 +92,22 @@ Route::middleware('jwt')->group(function () {
 
     // Receipt management
     Route::apiResource('/receipt', ReceiptController::class);
-    Route::get('receipt/customer/{id}', [ReceiptController::class, 'getCustomerReceipt']);
+
 
     // Receipt product management
-    Route::get('receiptProducts/customer/{id}', [ReceiptProductController::class, 'index']);
+
     Route::get('receiptProducts/{id}', [ReceiptProductController::class, 'getreciptProduct']);
 
     // Installment and payment management
     Route::post('installments/{id}/payments', [InstallmentPaymentController::class, 'store']);
-    Route::post('/installment/receipt/{id}', [InstallmentPaymentController::class,'installmentPaymentReceipt']);
+    Route::post('/installment/receipt/{id}', [InstallmentPaymentController::class, 'installmentPaymentReceipt']);
     Route::apiResource('/installmentPayments', InstallmentPaymentController::class);
 
     Route::apiResource('/payment', PaymentController::class);
     Route::apiResource('/debt', DebtController::class);
-
+    Route::apiResource('/debtPayments', DebtPaymentController::class);
+    // في routes/web.php أو routes/api.php
+    Route::get('debts/customer/{id}', [CustomerController::class, 'getCustomerDebts']);
+    Route::get('receiptProducts/customer/{id}', [CustomerController::class, 'getCustomerReceiptProducts']);
+    Route::get('receipt/customer/{id}', [CustomerController::class, 'getCustomerReceipt']);
 });

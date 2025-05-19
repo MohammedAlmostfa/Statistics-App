@@ -12,7 +12,7 @@ use App\Models\InstallmentPayment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class FinancialReportService
+class FinancialReportService extends Service
 {
     /**
      * Generate a financial report for the given date range.
@@ -94,35 +94,4 @@ class FinancialReportService
         }
     }
 
-    /**
-     * Format a successful API response.
-     *
-     * @param string $message The response message.
-     * @param int $status HTTP status code.
-     * @param mixed $data The data to return.
-     * @return array Formatted response array.
-     */
-    private function successResponse(string $message, int $status = 200, $data = null): array
-    {
-        return [
-            'message' => $message,
-            'status' => $status,
-            'data' => $data,
-        ];
-    }
-
-    /**
-     * Format an error API response.
-     *
-     * @param string $message The error message.
-     * @param int $status HTTP status code.
-     * @return array Formatted error response.
-     */
-    private function errorResponse(string $message, int $status = 500): array
-    {
-        return [
-            'message' => $message,
-            'status' => $status,
-        ];
-    }
 }

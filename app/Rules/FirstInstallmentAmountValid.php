@@ -4,7 +4,6 @@ namespace App\Rules;
 
 use App\Models\Product;
 use Illuminate\Contracts\Validation\Rule;
-use Illuminate\Support\Facades\Log; // أضف هذا الاستيراد لتسجيل الخطأ إذا حدث السيناريو غير المتوقع
 
 class FirstInstallmentAmountValid implements Rule
 {

@@ -6,14 +6,11 @@ use Illuminate\Support\Facades\Log;
 use App\Events\InstallmentPaidEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class CheckInstallmentStatusListener implements ShouldQueue
+class CheckInstallmentStatusListener
 {
     public function handle(InstallmentPaidEvent $event)
     {
-
         $installment = $event->installment;
-
-
         $totalAmount = $installment->installmentPayments()->sum('amount');
         $totalPaid = $installment->first_pay + $totalAmount;
 

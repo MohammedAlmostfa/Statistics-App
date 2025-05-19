@@ -8,8 +8,6 @@ use Illuminate\Queue\SerializesModels;
 
 class ReceiptCreated
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
-
     public $productid;
     public $quantity;
 

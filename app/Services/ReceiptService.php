@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
-class ReceiptService
+class ReceiptService extends Service
 {
     /**
      * Get all receipts with related user and customer info.
@@ -50,31 +50,7 @@ class ReceiptService
     }
 
 
-    /**
-     * Get receipts for a specific customer.
-     */
-    public function getCustomerReceipt($id)
-    {
-        try {
-            $receipts = Receipt::with(['user:id,name'])
-                ->where('customer_id', $id)
-                ->orderByDesc('receipt_date')
-                ->paginate(10);
 
-            return [
-                'status'  => 200,
-                'message' => 'تم استرجاع جميع فواتير العميل بنجاح',
-                'data'    => $receipts,
-            ];
-        } catch (Exception $e) {
-            Log::error('Error in getCustomerReceipt: ' . $e->getMessage());
-
-            return [
-                'status'  => 500,
-                'message' => 'حدث خطأ أثناء استرجاع فواتير العميل.',
-            ];
-        }
-    }
 
     /**
      * Create a new receipt and its related products (and installments if needed).
@@ -152,8 +128,8 @@ class ReceiptService
             ]);
 
             // Update inventory via event
-            ReceiptCreated::dispatch($productData['product_id'], $productData['quantity']);
 
+            event(new ReceiptCreated($productData['product_id'], $productData['quantity']));
             // Handle installments if type is "اقساط"
             if ($type === 'اقساط') {
                 if (!isset($productData['pay_cont'], $productData['first_pay'], $productData['installment'], $productData['installment_type'])) {
@@ -201,7 +177,9 @@ class ReceiptService
 
             foreach ($deletedProductIds as $productIdToRemove) {
                 $productToRemove = $existingReceiptProducts->get($productIdToRemove);
-                ReceiptCreated::dispatch($productToRemove->product_id, -$productToRemove->quantity);
+
+                event(new ReceiptCreated($productToRemove->product_id, -$productToRemove->quantity));
+
                 $productToRemove->delete();
             }
 
@@ -224,8 +202,8 @@ class ReceiptService
                         'selling_price' => $sellingPrice,
                     ]);
 
-                    ReceiptCreated::dispatch($productId, (int)$productData['quantity']);
 
+                    event(new ReceiptCreated($productId, (int)$productData['quantity']));
                     if ($receiptType === 'اقساط') {
                         $this->createInstallment($receiptProduct, $productData);
                     }
@@ -243,7 +221,11 @@ class ReceiptService
 
                     $quantityDifference = $newQuantity - $oldQuantity;
                     if ($quantityDifference !== 0) {
-                        ReceiptCreated::dispatch($productId, $quantityDifference);
+
+                        event(new ReceiptCreated($productId, $quantityDifference));
+
+
+
                     }
 
                     if ($receipt->type === 'اقساط') {
@@ -336,7 +318,9 @@ class ReceiptService
 
             if ($receipt->receiptProducts->isNotEmpty()) {
                 foreach ($receipt->receiptProducts as $receiptProduct) {
-                    ReceiptCreated::dispatch($receiptProduct->product_id, -$receiptProduct->quantity);
+
+                    event(new ReceiptCreated($receiptProduct->product_id, -$receiptProduct->quantity));
+
                 }
             }
             $receipt->delete();

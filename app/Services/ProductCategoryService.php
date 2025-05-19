@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Cache;
  * Service class to handle product categories.
  * Includes methods for retrieving, creating, updating, and deleting product categories.
  */
-class ProductCategoryService
+class ProductCategoryService extends Service
 {
     /**
      * Retrieve all product categories from cache or database.
@@ -158,39 +158,5 @@ class ProductCategoryService
         }
     }
 
-    /**
-     * Build a standard success response.
-     *
-     * This method returns a standardized success response.
-     *
-     * @param string $message The success message.
-     * @param int $status The HTTP status code (default is 200).
-     * @param mixed $data Optional data to include in the response.
-     * @return array The response structure.
-     */
-    private function successResponse(string $message, int $status = 200, $data = null): array
-    {
-        return [
-            'message' => $message,
-            'status'  => $status,
-            'data'    => $data,
-        ];
-    }
 
-    /**
-     * Build a standard error response.
-     *
-     * This method returns a standardized error response.
-     *
-     * @param string $message The error message.
-     * @param int $status The HTTP status code (default is 500).
-     * @return array The response structure.
-     */
-    private function errorResponse(string $message, int $status = 500): array
-    {
-        return [
-            'message' => $message,
-            'status'  => $status,
-        ];
-    }
 }

@@ -4,14 +4,13 @@ namespace App\Listeners;
 
 use App\Events\ReceiptCreated;
 use App\Models\Product;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class DecreaseProductQuantity implements ShouldQueue
+class DecreaseProductQuantity
 {
-    use InteractsWithQueue;
+
 
     /**
      * Handle the event.
@@ -33,7 +32,7 @@ class DecreaseProductQuantity implements ShouldQueue
                 Log::info("تم تخفيض كمية المنتج {$product->name} بمقدار {$quantity} بسبب فاتورة.");
             } else {
                 Log::error("لا تتوفر كمية كافية من المنتج {$product->name} لتخفيضها بسبب فاتورة.");
-                // يمكنك هنا اتخاذ إجراء إضافي مثل إعلام المسؤول أو عكس عملية الفاتورة إذا لزم الأمر.
+
                 throw new \Exception("لا تتوفر كمية كافية من المنتج {$product->name} لتخفيضها.");
             }
         });

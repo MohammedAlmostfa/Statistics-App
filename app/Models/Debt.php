@@ -22,7 +22,8 @@ class Debt extends Model
     protected $fillable = [
         'receipt_number',    // Receipt number associated with the debt
         'customer_id',       // Customer ID linked to the debt
-        'total_debt',        // Total amount of the debt
+        'payment_amount',
+        'description',
         'remaining_debt',    // Amount still due
         'debt_date',         // Date when the debt was recorded
         'user_id'            // ID of the user who created the record
@@ -36,9 +37,10 @@ class Debt extends Model
     protected $casts = [
         'receipt_number' => 'integer',
         'customer_id'    => 'integer',
-        'total_debt'     => 'integer',
+        'payment_amount'  => 'integer',
         'remaining_debt' => 'integer',
         'debt_date'      => 'date',
+        'description'=>'string',
     ];
 
     /**
@@ -53,6 +55,17 @@ class Debt extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Defines the relationship between debts and DebtPayments.
+     *
+     * Each debt is associated with many payments .
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function debtPaymments()
+    {
+        return $this->hasMany(DebtPayment::class);
+    }
     /**
      * Defines the relationship between debts and customers.
      *

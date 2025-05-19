@@ -10,13 +10,14 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('installment_debts', function (Blueprint $table) {
+        Schema::create('debt_payments', function (Blueprint $table) {
             $table->id();
             $table->integer('amount');
             $table->foreignId('debt_id')->constrained('debts')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->date('installment_date');
+            $table->date('payment_date');
             $table->timestamps();
+
         });
     }
 
@@ -25,6 +26,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('installment_debts');
+        Schema::dropIfExists('debt_payments');
     }
 };

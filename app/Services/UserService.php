@@ -6,7 +6,7 @@ use Exception;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
-class UserService
+class UserService extends Service
 {
     /**
      * Fetch all users from the database.
