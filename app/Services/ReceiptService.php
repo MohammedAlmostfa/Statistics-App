@@ -77,7 +77,7 @@ class ReceiptService extends Service
 
             return [
                 'status' => 500,
-                'message' => 'حدث خطأ أثناء إنشاء الفاتورة ',
+                'message' => 'حدث خطأ أثناء إنشاء الفاتورة, يرجى المحاولة مرة اخرى ',
             ];
         }
     }
@@ -253,7 +253,7 @@ class ReceiptService extends Service
 
             return [
                 'status' => 500,
-                'message' => 'حدث خطأ أثناء تحديث الفاتورة.',
+                'message' => 'حدث خطأ أثناء تحديث الفاتورة, يرجى المحاولة مرة اخرى.',
             ];
         }
     }

@@ -44,7 +44,7 @@ class PaymentService extends Service
         } catch (Exception $e) {
             // Log the error if the payment retrieval fails
             Log::error('Error retrieving payments: ' . $e->getMessage());
-            return $this->errorResponse('فشل في استرجاع الدفعات.');
+            return $this->errorResponse('حدث خطأ اثناء استرجاع الدفعات بنجاح ,  يرجى المحاولة مرة اخرى');
         }
     }
 
@@ -86,7 +86,7 @@ class PaymentService extends Service
             // Rollback the transaction if an error occurs
             DB::rollBack();
             Log::error('Error creating payment: ' . $e->getMessage());
-            return $this->errorResponse('فشل في إنشاء الدفعة.');
+            return $this->errorResponse('حدث خطا اثناء انشاء الدفعة , يرجى المحاولة مرة اخر ');
         }
     }
 
@@ -128,7 +128,8 @@ class PaymentService extends Service
             // Rollback the transaction if an error occurs
             DB::rollBack();
             Log::error('Error updating payment: ' . $e->getMessage());
-            return $this->errorResponse('فشل في تحديث بيانات الدفعة.');
+            return $this->errorResponse('حدث خطا اثناء تحديث الدفعة , يرجى المحاولة مرة اخر ');
+
         }
     }
 
@@ -165,7 +166,8 @@ class PaymentService extends Service
             // Rollback the transaction if an error occurs
             DB::rollBack();
             Log::error('Error deleting payment: ' . $e->getMessage());
-            return $this->errorResponse('فشل في حذف الدفعة.');
+            return $this->errorResponse('حدث خطا اثناء حذف الدفعة , يرجى المحاولة مرة اخر ');
+
         }
     }
 

@@ -32,7 +32,7 @@ class ProductOriginService extends Service
         } catch (Exception $e) {
             // Log the error for debugging purposes
             Log::error('خطأ أثناء استرجاع الصنف: ' . $e->getMessage());
-            return $this->errorResponse('فشل في استرجاع أصناف المنتجات');
+            return $this->errorResponse("حدث خطأ اثناء استرجاع اصماف المنتجات , يرجى المحاولة مرة اخرى");
         }
     }
 

@@ -39,7 +39,7 @@ class ProductCategoryService extends Service
         } catch (Exception $e) {
             // Log the error and return a failure response
             Log::error('خطأ أثناء استرجاع الأصناف: ' . $e->getMessage());
-            return $this->errorResponse('فشل في استرجاع الأصناف');
+            return $this->errorResponse('حدث خطأ اثناء استرجاع اصناف المنتجات ,  يرجى المحاولة مرة اخرى');
         }
     }
 
@@ -77,7 +77,7 @@ class ProductCategoryService extends Service
             // Rollback the transaction in case of an error
             DB::rollBack();
             Log::error('خطأ أثناء إنشاء الصنف: ' . $e->getMessage());
-            return $this->errorResponse('فشل في إنشاء الصنف');
+            return $this->errorResponse('حدث خطأ اثناء انشاء صنف المنتج ,  يرجى المحاولة مرة اخرى');
         }
     }
 
@@ -116,7 +116,7 @@ class ProductCategoryService extends Service
             // Rollback the transaction in case of an error
             DB::rollBack();
             Log::error('خطأ أثناء تحديث الصنف: ' . $e->getMessage());
-            return $this->errorResponse('فشل في تحديث الصنف');
+            return $this->errorResponse('حدث خطأ اثناء تحديث صنف المنتج , يرجى المحاولة مرة اخرى');
         }
     }
 
@@ -154,7 +154,7 @@ class ProductCategoryService extends Service
             // Rollback the transaction in case of an error
             DB::rollBack();
             Log::error('خطأ أثناء حذف الصنف: ' . $e->getMessage());
-            return $this->errorResponse('فشل في حذف الصنف');
+            return $this->errorResponse('حدث خطأ اثناء حذف صنف المنتج , يرجى المحاولة مرة اخرى');
         }
     }
 

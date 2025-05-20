@@ -56,7 +56,10 @@ class CustomerService extends Service
             return $this->errorResponse('فشل في جلب بيانات العملاء.');
         } catch (Exception $e) {
             Log::error('General error while retrieving customers: ' . $e->getMessage());
-            return $this->errorResponse('حدث خطأ أثناء جلب بيانات العملاء.');
+
+            return $this->errorResponse('حدث خطا اثناءاسترحاع بيانات العملاء , يرجى المحاولة مرة اخر ');
+            ;
+
         }
     }
 
@@ -85,7 +88,10 @@ class CustomerService extends Service
             return $this->successResponse('تم إنشاء العميل بنجاح.', 200);
         } catch (Exception $e) {
             Log::error('Error while creating customer: ' . $e->getMessage());
-            return $this->errorResponse('فشل في إنشاء العميل.');
+
+            return $this->errorResponse('حدث خطا اثناء انشاء  العميل  , يرجى المحاولة مرة اخر ');
+            ;
+
         }
     }
 
@@ -113,7 +119,10 @@ class CustomerService extends Service
             return $this->successResponse('تم تحديث بيانات العميل بنجاح.', 200);
         } catch (Exception $e) {
             Log::error('Error while updating customer: ' . $e->getMessage());
-            return $this->errorResponse('فشل في تحديث بيانات العميل.');
+
+            return $this->errorResponse('حدث خطا اثناء تحديث  العميل  , يرجى المحاولة مرة اخر ');
+            ;
+
         }
     }
 
@@ -144,7 +153,9 @@ class CustomerService extends Service
             return $this->successResponse('تم حذف العميل بنجاح.', 200);
         } catch (Exception $e) {
             Log::error('Error while deleting customer: ' . $e->getMessage());
-            return $this->errorResponse('فشل في حذف العميل.');
+            return $this->errorResponse('حدث خطا اثناء حذف  العميل  , يرجى المحاولة مرة اخر ');
+            ;
+
         }
     }
 
@@ -167,7 +178,8 @@ class CustomerService extends Service
             return $this->successResponse('تم استرجاع الديون بنجاح.', 200, $debts);
         } catch (Exception $e) {
             Log::error('Error retrieving debts: ' . $e->getMessage());
-            return $this->errorResponse('فشل في استرجاع الديون.');
+            return $this->errorResponse('حدث خطا اثناء استرجاع ديون العميل  , يرجى المحاولة مرة اخر ');
+
         }
     }
     /**
@@ -189,10 +201,7 @@ class CustomerService extends Service
         } catch (Exception $e) {
             Log::error('Error in getCustomerReceipt: ' . $e->getMessage());
 
-            return [
-                'status'  => 500,
-                'message' => 'حدث خطأ أثناء استرجاع فواتير العميل.',
-            ];
+            return $this->errorResponse('حدث خطا اثناء استرجاع فواتير العميل  , يرجى المحاولة مرة اخر ');
         }
     }
 
@@ -244,10 +253,8 @@ class CustomerService extends Service
         } catch (\Exception $e) {
             // Log any errors and return a failure response
             Log::error('Error in getCustomerReceiptProducts: ' . $e->getMessage());
-            return [
-                'status' => 500,
-                'message' => 'حدث خطأ أثناء جلب المنتجات، يرجى المحاولة مرة أخرى.',
-            ];
+            return $this->errorResponse('حدث خطا اثناء استرجاع منتجات العميل  , يرجى المحاولة مرة اخر ');
+            ;
         }
     }
 }

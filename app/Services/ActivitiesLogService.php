@@ -52,10 +52,13 @@ class ActivitiesLogService extends Service
             return $this->successResponse('تم استرجاع سجلات الأنشطة بنجاح.', 200, $activitiesLog);
         } catch (QueryException $e) {
             Log::error('خطأ في استعلام قاعدة البيانات عند استرجاع سجلات الأنشطة: ' . $e->getMessage());
-            return $this->errorResponse('فشل في استرجاع سجلات الأنشطة.');
+            return $this->errorResponse('حدث خطا اثناء استرجاع سجلات الانشطة , يرجى المحاولة مرة اخر ');
         } catch (Exception $e) {
             Log::error('حدث خطأ عام أثناء استرجاع سجلات الأنشطة: ' . $e->getMessage());
-            return $this->errorResponse('حدث خطأ أثناء جلب سجلات الأنشطة.');
+
+            return $this->errorResponse('حدث خطا اثناء استرجاع سجلات الانشطة , يرجى المحاولة مرة اخر ');
+            ;
+
         }
     }
 }

@@ -51,7 +51,8 @@ class DebtPaymentService extends Service
         } catch (Exception $e) {
             DB::rollBack();
             Log::error("Error creating debt payment: " . $e->getMessage());
-            return $this->errorResponse("فشل في تسجيل دفعة الدين.", 500);
+            return $this->errorResponse('حدث خطا اثناء انشاء دفعة الدين , يرجى المحاولة مرة اخر ');
+
         }
     }
 
@@ -85,7 +86,7 @@ class DebtPaymentService extends Service
         } catch (Exception $e) {
             DB::rollBack();
             Log::error("Error deleting debt payment: " . $e->getMessage());
-            return $this->errorResponse("فشل في حذف دفعة الدين.", 500);
+            return $this->errorResponse('حدث خطا اثناء حذف دفعة الدين , يرجى المحاولة مرة اخر ');
         }
     }
 }
