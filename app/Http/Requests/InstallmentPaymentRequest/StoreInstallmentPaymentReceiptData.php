@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\InstallmentPaymentRequest;
 
+use App\Models\Customer;
 use App\Models\Receipt;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
@@ -26,7 +27,7 @@ class StoreInstallmentPaymentReceiptData extends FormRequest
     public function rules(): array
     {
         return [
-            'amount' => ['required', 'integer', new StoreValidInstallmentReceiptAmount(Receipt::findOrFail($this->route('id')))],
+            'amount' => ['required', 'integer', new StoreValidInstallmentReceiptAmount(Customer::findOrFail($this->route('id')))],
         ];
     }    /**
     * Handle a failed validation attempt.

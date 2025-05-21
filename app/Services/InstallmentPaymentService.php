@@ -131,6 +131,10 @@ class InstallmentPaymentService extends Service
         }
     }
 
+    private function roundDownTo50($amount)
+    {
+        return floor($amount / 50) * 50;
+    }
 
     /**
      * Process installment payment for a specific receipt.
@@ -220,7 +224,18 @@ class InstallmentPaymentService extends Service
                 $isLast = $index === count($installmentItems) - 1;
 
                 $maxToPay = min($product->remaining_price, $remainingInstallmentPayment);
-                $actualPayment = $isLast ? $remainingInstallmentPayment : $maxToPay;
+
+                if (!$isLast) {
+                    $actualPayment = $this->roundDownTo50($maxToPay);
+
+                    // إذا تقريب 0 وما في مبلغ ندفعه، ننتقل للعنصر التالي
+                    if ($actualPayment == 0) {
+                        continue;
+                    }
+                } else {
+                    // في آخر عنصر، ندفع كل المتبقي مهما كان (حتى لو مش مضاعف 50)
+                    $actualPayment = $remainingInstallmentPayment;
+                }
 
                 if ($actualPayment > 0) {
                     $installment->installmentPayments()->create([
@@ -233,6 +248,7 @@ class InstallmentPaymentService extends Service
                 }
             }
 
+
             // توزيع الديون بدقة
             $remainingDebtPayment = $debtShare;
             usort($debtItems, fn ($a, $b) => $b->calculated_remaining <=> $a->calculated_remaining);
@@ -241,7 +257,16 @@ class InstallmentPaymentService extends Service
                 $isLast = $index === count($debtItems) - 1;
 
                 $maxToPay = min($debt->calculated_remaining, $remainingDebtPayment);
-                $actualPayment = $isLast ? $remainingDebtPayment : $maxToPay;
+
+                if (!$isLast) {
+                    $actualPayment = $this->roundDownTo50($maxToPay);
+
+                    if ($actualPayment == 0) {
+                        continue;
+                    }
+                } else {
+                    $actualPayment = $remainingDebtPayment;
+                }
 
                 if ($actualPayment > 0) {
                     $debt->debtPayments()->create([

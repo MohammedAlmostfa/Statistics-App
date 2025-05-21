@@ -2,39 +2,51 @@
 
 namespace App\Rules;
 
-use App\Models\Receipt;
-use Illuminate\Support\Facades\Log;
+use App\Models\Customer;
 use Illuminate\Contracts\Validation\Rule;
 
 class StoreValidInstallmentReceiptAmount implements Rule
 {
-    protected $receipt;
+    protected $customer;
 
-
-    public function __construct(Receipt $receipt)
+    public function __construct(Customer $customer)
     {
-        $this->receipt = $receipt->load('receiptProducts.installment.installmentPayments');
+        $this->customer = $customer->load([
+            'receipts.receiptProducts.installment.installmentPayments',
+            'debts.debtPayments',
+        ]);
     }
 
     public function passes($attribute, $value): bool
     {
 
-        $totalPrice = $this->receipt->total_price;
+        $installmentReceipts = $this->customer->receipts->where('type', 'اقساط');
 
-        $totalPaidAmount = $this->receipt->receiptProducts->sum(function ($product) {
-            return $product->installment
-                ? $product->installment->installmentPayments->sum('amount') + $product->installment->first_pay
-                : 0;
+        $totalRemainingFromInstallments = 0;
+
+        foreach ($installmentReceipts as $receipt) {
+            foreach ($receipt->receiptProducts as $product) {
+                if ($product->installment) {
+                    $price = $product->selling_price * $product->quantity;
+                    $paid = $product->installment->first_pay + $product->installment->installmentPayments->sum('amount');
+                    $remaining = max(0, $price - $paid);
+                    $totalRemainingFromInstallments += $remaining;
+                }
+            }
+        }
+
+        $totalRemainingFromDebts = $this->customer->debts->sum(function ($debt) {
+            $paid = $debt->debtPayments->sum('amount');
+            return max(0, $debt->remaining_debt - $paid);
         });
 
-        $totalRemainingAmount = max(0, $totalPrice - $totalPaidAmount);
+        $totalRemaining = $totalRemainingFromInstallments + $totalRemainingFromDebts;
 
-        return $value <= $totalRemainingAmount;
+        return $value <= $totalRemaining;
     }
-
 
     public function message(): string
     {
-        return 'المبلغ المدفوع يتجاوز المبلغ المتبقي   لالسعر الإجمالي للفاتورة، يرجى إدخال مبلغ صحيح.';
+        return 'المبلغ المدفوع يتجاوز مجموع المبالغ المتبقية من الأقساط والديون الخاصة بالزبون، يرجى إدخال مبلغ صحيح.';
     }
 }
