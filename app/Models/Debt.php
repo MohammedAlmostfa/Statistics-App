@@ -61,10 +61,11 @@ class Debt extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function debtPaymments()
+    public function debtPayments()
     {
         return $this->hasMany(DebtPayment::class);
     }
+
     /**
      * Defines the relationship between debts and customers.
      *

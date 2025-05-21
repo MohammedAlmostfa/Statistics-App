@@ -33,7 +33,7 @@ class FirstInstallmentAmountValid implements Rule
     public function passes($attribute, $value)
     {
         $first_pay = (int) $value;
-        $product = Product::find($this->productId);
+        $product = Product::findOrFail($this->productId);
         $unitSellingPrice = $product->installment_price;
         $itemTotal = $this->quantity * $unitSellingPrice;
 

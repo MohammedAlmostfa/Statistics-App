@@ -144,6 +144,11 @@ class InstallmentPaymentService extends Service
 
         try {
             // Fetch the receipt along with related products, installments, and payments.
+
+            if (!Receipt::where('customer_id', $id)->where('type', 0)->exists()) {
+                return $this->errorResponse('لا توجد فواتير أقساط لهذا العميل.', 404);
+            }
+
             $allreceipt = Receipt::with([
                 'receiptProducts' => function ($query) {
                     $query->select('id', 'receipt_id', 'product_id', 'selling_price', 'quantity');
@@ -154,7 +159,9 @@ class InstallmentPaymentService extends Service
                 'receiptProducts.installment.InstallmentPayments' => function ($query) {
                     $query->select('id', 'installment_id', 'amount');
                 },
-            ])->where('customer_id', $id)->get();
+            ])->where('customer_id', $id)
+              ->where('type', 0)
+              ->get();
 
             $totalRemainingDebt = 0; // Store the total remaining debt for the receipt.
             $totalPaidForReceipt = 0; // Store the total previous payments for the receipt.

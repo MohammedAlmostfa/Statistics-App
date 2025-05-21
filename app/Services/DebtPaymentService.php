@@ -44,7 +44,7 @@ class DebtPaymentService extends Service
                 'type_id'     => $debtPayment->id,
                 'type_type'   => DebtPayment::class,
             ]);
-            event(new DebtPaymentProcessed($debtPayment));
+
 
             DB::commit();
             return $this->successResponse("تم تسجيل دفعة الدين بنجاح.", 200);
