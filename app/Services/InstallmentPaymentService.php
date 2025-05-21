@@ -146,7 +146,6 @@ class InstallmentPaymentService extends Service
         try {
             $userId = Auth::id();
 
-
             // جلب فواتير الأقساط
             $allreceipt = Receipt::with([
                 'receiptProducts' => function ($query) {
@@ -158,15 +157,18 @@ class InstallmentPaymentService extends Service
                 'receiptProducts.installment.InstallmentPayments' => function ($query) {
                     $query->select('id', 'installment_id', 'amount');
                 },
-            ])->where('customer_id', $id)
-              ->where('type', 'اقساط')
-              ->get();
+            ])
+            ->where('customer_id', $id)
+            ->where('type', 'اقساط')
+            ->get();
 
             // جلب الديون العادية
             $adddebts = Debt::with(['debtPayments'])->where('customer_id', $id)->get();
 
             // حساب المتبقي من الأقساط
+            $installmentItems = [];
             $totalRemainingInstallments = 0;
+
             foreach ($allreceipt as $receipt) {
                 foreach ($receipt->receiptProducts as $product) {
                     $installment = $product->installment;
@@ -174,19 +176,29 @@ class InstallmentPaymentService extends Service
                         $totalPrice = $product->selling_price * $product->quantity;
                         $paid = $installment->installmentPayments->sum('amount');
                         $remaining = max(0, $totalPrice - $paid);
-                        $product->remaining_price = $remaining;
-                        $totalRemainingInstallments += $remaining;
+
+                        if ($remaining > 0) {
+                            $product->remaining_price = $remaining;
+                            $installmentItems[] = $product;
+                            $totalRemainingInstallments += $remaining;
+                        }
                     }
                 }
             }
 
-            // حساب المتبقي من الديون العادية
+            // حساب المتبقي من الديون
+            $debtItems = [];
             $totalRemainingDebt = 0;
+
             foreach ($adddebts as $debt) {
                 $paid = $debt->debtPayments->sum('amount');
                 $remaining = max(0, $debt->payment_amount - $paid);
-                $debt->calculated_remaining = $remaining;
-                $totalRemainingDebt += $remaining;
+
+                if ($remaining > 0) {
+                    $debt->calculated_remaining = $remaining;
+                    $debtItems[] = $debt;
+                    $totalRemainingDebt += $remaining;
+                }
             }
 
             $totalOutstanding = $totalRemainingInstallments + $totalRemainingDebt;
@@ -199,50 +211,46 @@ class InstallmentPaymentService extends Service
             $installmentShare = round(($totalRemainingInstallments / $totalOutstanding) * $amountToDistribute, 2);
             $debtShare = $amountToDistribute - $installmentShare;
 
-            // توزيع على الأقساط
+            // توزيع الأقساط بدقة
             $remainingInstallmentPayment = $installmentShare;
-            foreach ($allreceipt as $receipt) {
-                foreach ($receipt->receiptProducts as $product) {
-                    if ($remainingInstallmentPayment <= 0 || empty($product->remaining_price)) {
-                        continue;
-                    }
+            usort($installmentItems, fn ($a, $b) => $b->remaining_price <=> $a->remaining_price);
 
-                    $installment = $product->installment;
-                    if ($installment && $product->remaining_price > 0) {
-                        $percentage = $product->remaining_price / $totalRemainingInstallments;
-                        $paymentForProduct = round($installmentShare * $percentage, 2);
-                        $actualPayment = min($remainingInstallmentPayment, $product->remaining_price, $paymentForProduct);
+            foreach ($installmentItems as $index => $product) {
+                $installment = $product->installment;
+                $isLast = $index === count($installmentItems) - 1;
 
-                        if ($actualPayment > 0) {
-                            $installment->installmentPayments()->create([
-                                'payment_date' => now(),
-                                'amount' => $actualPayment,
-                                'user_id' =>   $userId ,
-                            ]);
-                            $remainingInstallmentPayment -= $actualPayment;
-                        }
-                    }
+                $maxToPay = min($product->remaining_price, $remainingInstallmentPayment);
+                $actualPayment = $isLast ? $remainingInstallmentPayment : $maxToPay;
+
+                if ($actualPayment > 0) {
+                    $installment->installmentPayments()->create([
+                        'payment_date' => now(),
+                        'amount' => $actualPayment,
+                        'user_id' => $userId,
+                    ]);
+
+                    $remainingInstallmentPayment -= $actualPayment;
                 }
             }
 
-            // توزيع على الديون
+            // توزيع الديون بدقة
             $remainingDebtPayment = $debtShare;
-            foreach ($adddebts as $debt) {
-                if ($remainingDebtPayment <= 0 || $debt->calculated_remaining <= 0) {
-                    continue;
-                }
+            usort($debtItems, fn ($a, $b) => $b->calculated_remaining <=> $a->calculated_remaining);
 
-                $percentage = $debt->calculated_remaining / $totalRemainingDebt;
-                $paymentForDebt = round($debtShare * $percentage, 2);
-                $actualDebtPayment = min($remainingDebtPayment, $debt->calculated_remaining, $paymentForDebt);
+            foreach ($debtItems as $index => $debt) {
+                $isLast = $index === count($debtItems) - 1;
 
-                if ($actualDebtPayment > 0) {
+                $maxToPay = min($debt->calculated_remaining, $remainingDebtPayment);
+                $actualPayment = $isLast ? $remainingDebtPayment : $maxToPay;
+
+                if ($actualPayment > 0) {
                     $debt->debtPayments()->create([
-                        'user_id' =>   $userId ,
+                        'user_id' => $userId,
                         'payment_date' => now(),
-                        'amount' => $actualDebtPayment,
+                        'amount' => $actualPayment,
                     ]);
-                    $remainingDebtPayment -= $actualDebtPayment;
+
+                    $remainingDebtPayment -= $actualPayment;
                 }
             }
 
@@ -255,7 +263,6 @@ class InstallmentPaymentService extends Service
             return $this->errorResponse('حدث خطأ أثناء الدفع، يرجى إعادة المحاولة لاحقاً.', 500);
         }
     }
-
 
 
 }

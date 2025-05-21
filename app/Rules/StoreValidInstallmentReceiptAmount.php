@@ -23,7 +23,7 @@ class StoreValidInstallmentReceiptAmount implements Rule
 
         $totalPaidAmount = $this->receipt->receiptProducts->sum(function ($product) {
             return $product->installment
-                ? $product->installment->installmentPayments->sum('amount') + $product->installment->pay
+                ? $product->installment->installmentPayments->sum('amount') + $product->installment->first_pay
                 : 0;
         });
 

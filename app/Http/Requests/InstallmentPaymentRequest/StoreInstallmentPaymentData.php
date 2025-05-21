@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\InstallmentPaymentRequest;
 
+use App\Models\Customer;
 use App\Models\Installment;
 use Illuminate\Support\Facades\Log;
 use App\Rules\StoreValidInstallmentAmount;
@@ -29,7 +30,7 @@ class StoreInstallmentPaymentData extends FormRequest
     {
         return [
             'payment_date'=>'required|date',
-        'amount' => ['required', 'integer', new StoreValidInstallmentAmount(Installment::findOrFail($this->route('id')))],
+        'amount' => ['required', 'integer', new StoreValidInstallmentAmount(Customer::findOrFail($this->route('id')))],
 
         ];
     }
