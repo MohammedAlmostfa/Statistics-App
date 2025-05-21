@@ -171,7 +171,7 @@ class CustomerService extends Service
     public function getCustomerDebts($id)
     {
         try {
-            $debts = Debt::with('debtPaymments')
+            $debts = Debt::with('debtPayments')
                          ->where('customer_id', $id)
                          ->get();
 
