@@ -204,7 +204,7 @@ class InstallmentPaymentService extends Service
                     foreach ($receipt->receiptProducts as $product) {
                         $installment = $product->installment;
                         if ($installment) {
-                            $totalPrice = $product->selling_price * $product->quantity;
+                            $totalPrice = $product->selling_price * $product->quantity -$installment->first_pay;
                             $paid = $installment->installmentPayments->sum('amount');
                             $remaining = max(0, $totalPrice - $paid);
 
