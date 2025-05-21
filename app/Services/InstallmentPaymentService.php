@@ -193,7 +193,7 @@ class InstallmentPaymentService extends Service
 
             foreach ($adddebts as $debt) {
                 $paid = $debt->debtPayments->sum('amount');
-                $remaining = max(0, $debt->payment_amount - $paid);
+                $remaining = max(0, $debt->remaining_debt - $paid);
 
                 if ($remaining > 0) {
                     $debt->calculated_remaining = $remaining;
@@ -214,49 +214,7 @@ class InstallmentPaymentService extends Service
             $installmentShare = round(($totalRemainingInstallments / $totalOutstanding) * $amountToDistribute, 2);
             $debtShare = $amountToDistribute - $installmentShare;
 
-            // ********** معالجة الأقساط **********
-            $remainingInstallmentPayment = $installmentShare;
-
-            // ترتيب المنتجات من الأكبر للمتبقي (اختياري حسب احتياجك)
-            usort($installmentItems, fn ($a, $b) => $b->remaining_price <=> $a->remaining_price);
-
-            foreach ($installmentItems as $product) {
-                $installment = $product->installment;
-
-                $maxToPay = min($product->remaining_price, $remainingInstallmentPayment);
-
-                // نحدد هل هذا هو آخر مبلغ متبقي لهذا المنتج
-                $isLastPaymentForProduct = ($maxToPay == $product->remaining_price);
-
-                if (!$isLastPaymentForProduct) {
-                    // تقريب المبلغ (مثلاً لأقرب 50)
-                    $actualPayment = $this->roundDownTo50($maxToPay);
-
-                    if ($actualPayment == 0) {
-                        continue;
-                    }
-                } else {
-                    // آخر دفعة للمنتج = المبلغ الدقيق بدون تقريب
-                    $actualPayment = $maxToPay;
-                }
-
-                if ($actualPayment > 0) {
-                    $installment->installmentPayments()->create([
-                        'payment_date' => now(),
-                        'amount' => $actualPayment,
-                        'user_id' => $userId,
-                    ]);
-
-                    $remainingInstallmentPayment -= $actualPayment;
-
-                    // إذا نفد المبلغ المراد دفعه، نخرج من اللوب
-                    if ($remainingInstallmentPayment <= 0) {
-                        break;
-                    }
-                }
-            }
-
-            // ********** معالجة الديون **********
+            // ********** معالجة الديون أولاً **********
             $remainingDebtPayment = $debtShare;
 
             usort($debtItems, fn ($a, $b) => $b->calculated_remaining <=> $a->calculated_remaining);
@@ -291,6 +249,43 @@ class InstallmentPaymentService extends Service
                 }
             }
 
+            // ********** معالجة الأقساط بعد الديون **********
+            $remainingInstallmentPayment = $installmentShare;
+
+            usort($installmentItems, fn ($a, $b) => $b->remaining_price <=> $a->remaining_price);
+
+            foreach ($installmentItems as $product) {
+                $installment = $product->installment;
+
+                $maxToPay = min($product->remaining_price, $remainingInstallmentPayment);
+
+                $isLastPaymentForProduct = ($maxToPay == $product->remaining_price);
+
+                if (!$isLastPaymentForProduct) {
+                    $actualPayment = $this->roundDownTo50($maxToPay);
+
+                    if ($actualPayment == 0) {
+                        continue;
+                    }
+                } else {
+                    $actualPayment = $maxToPay;
+                }
+
+                if ($actualPayment > 0) {
+                    $installment->installmentPayments()->create([
+                        'payment_date' => now(),
+                        'amount' => $actualPayment,
+                        'user_id' => $userId,
+                    ]);
+
+                    $remainingInstallmentPayment -= $actualPayment;
+
+                    if ($remainingInstallmentPayment <= 0) {
+                        break;
+                    }
+                }
+            }
+
             DB::commit();
             return $this->successResponse('تم دفع الأقساط والديون بنجاح!', 200);
 
@@ -300,6 +295,7 @@ class InstallmentPaymentService extends Service
             return $this->errorResponse('حدث خطأ أثناء الدفع، يرجى إعادة المحاولة لاحقاً.', 500);
         }
     }
+
 
 
 }
