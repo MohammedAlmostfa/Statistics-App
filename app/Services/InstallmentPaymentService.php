@@ -166,10 +166,8 @@ class InstallmentPaymentService extends Service
             ->where('type', 'اقساط')
             ->get();
 
-            // جلب الديون العادية
             $adddebts = Debt::with(['debtPayments'])->where('customer_id', $id)->get();
 
-            // حساب المتبقي من الأقساط
             $installmentItems = [];
             $totalRemainingInstallments = 0;
 
@@ -190,7 +188,6 @@ class InstallmentPaymentService extends Service
                 }
             }
 
-            // حساب المتبقي من الديون
             $debtItems = [];
             $totalRemainingDebt = 0;
 
@@ -212,29 +209,35 @@ class InstallmentPaymentService extends Service
             }
 
             $amountToDistribute = $data['amount'];
+
+            // توزيع المبلغ بين الأقساط والديون حسب المتبقي
             $installmentShare = round(($totalRemainingInstallments / $totalOutstanding) * $amountToDistribute, 2);
             $debtShare = $amountToDistribute - $installmentShare;
 
-            // توزيع الأقساط بدقة
+            // ********** معالجة الأقساط **********
             $remainingInstallmentPayment = $installmentShare;
+
+            // ترتيب المنتجات من الأكبر للمتبقي (اختياري حسب احتياجك)
             usort($installmentItems, fn ($a, $b) => $b->remaining_price <=> $a->remaining_price);
 
-            foreach ($installmentItems as $index => $product) {
+            foreach ($installmentItems as $product) {
                 $installment = $product->installment;
-                $isLast = $index === count($installmentItems) - 1;
 
                 $maxToPay = min($product->remaining_price, $remainingInstallmentPayment);
 
-                if (!$isLast) {
+                // نحدد هل هذا هو آخر مبلغ متبقي لهذا المنتج
+                $isLastPaymentForProduct = ($maxToPay == $product->remaining_price);
+
+                if (!$isLastPaymentForProduct) {
+                    // تقريب المبلغ (مثلاً لأقرب 50)
                     $actualPayment = $this->roundDownTo50($maxToPay);
 
-                    // إذا تقريب 0 وما في مبلغ ندفعه، ننتقل للعنصر التالي
                     if ($actualPayment == 0) {
                         continue;
                     }
                 } else {
-                    // في آخر عنصر، ندفع كل المتبقي مهما كان (حتى لو مش مضاعف 50)
-                    $actualPayment = $remainingInstallmentPayment;
+                    // آخر دفعة للمنتج = المبلغ الدقيق بدون تقريب
+                    $actualPayment = $maxToPay;
                 }
 
                 if ($actualPayment > 0) {
@@ -245,27 +248,32 @@ class InstallmentPaymentService extends Service
                     ]);
 
                     $remainingInstallmentPayment -= $actualPayment;
+
+                    // إذا نفد المبلغ المراد دفعه، نخرج من اللوب
+                    if ($remainingInstallmentPayment <= 0) {
+                        break;
+                    }
                 }
             }
 
-
-            // توزيع الديون بدقة
+            // ********** معالجة الديون **********
             $remainingDebtPayment = $debtShare;
+
             usort($debtItems, fn ($a, $b) => $b->calculated_remaining <=> $a->calculated_remaining);
 
-            foreach ($debtItems as $index => $debt) {
-                $isLast = $index === count($debtItems) - 1;
-
+            foreach ($debtItems as $debt) {
                 $maxToPay = min($debt->calculated_remaining, $remainingDebtPayment);
 
-                if (!$isLast) {
+                $isLastPaymentForDebt = ($maxToPay == $debt->calculated_remaining);
+
+                if (!$isLastPaymentForDebt) {
                     $actualPayment = $this->roundDownTo50($maxToPay);
 
                     if ($actualPayment == 0) {
                         continue;
                     }
                 } else {
-                    $actualPayment = $remainingDebtPayment;
+                    $actualPayment = $maxToPay;
                 }
 
                 if ($actualPayment > 0) {
@@ -276,6 +284,10 @@ class InstallmentPaymentService extends Service
                     ]);
 
                     $remainingDebtPayment -= $actualPayment;
+
+                    if ($remainingDebtPayment <= 0) {
+                        break;
+                    }
                 }
             }
 
