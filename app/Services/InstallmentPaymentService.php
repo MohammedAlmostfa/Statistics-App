@@ -205,6 +205,8 @@ class InstallmentPaymentService extends Service
                         $actualPayment = min($remainingPayment, $product->remaining_price, $paymentForProduct);
 
                         if ($actualPayment > 0) {
+
+
                             $installment->installmentPayments()->create([
                                 'payment_date' => now(),
                                 'amount' => $actualPayment,

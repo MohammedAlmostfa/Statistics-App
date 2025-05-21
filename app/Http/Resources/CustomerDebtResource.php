@@ -15,7 +15,7 @@ class CustomerDebtResource extends JsonResource
             'debt_date'       => $this->debt_date,
             'user_id'         => $this->user_id,
             'description'     => $this->description,
-            'debt_payments'   => optional($this->debtPaymments)->map(function ($payment) {
+            'debt_payments'   => optional($this->debtPayments)->map(function ($payment) {
                 return [
                     'id'           => $payment->id,
                     'amount'       => $payment->amount,
