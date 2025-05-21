@@ -39,8 +39,8 @@ class Product extends Model
 
     protected $casts = [
 
-        'selling_price'     => 'float',
-        'dolar_buying_price' => 'float',
+        'selling_price'     => 'numeric',
+        'dolar_buying_price' => 'numeric',
         'dollar_exchange' => 'integer',
         'installment_price' => 'integer',
         'quantity'          => 'integer',
