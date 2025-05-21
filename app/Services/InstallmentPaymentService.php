@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Exception;
+use App\Models\Debt;
 use App\Models\Receipt;
 use App\Models\Installment;
 use App\Models\ActivitiesLog;
@@ -140,15 +141,13 @@ class InstallmentPaymentService extends Service
      */
     public function installmentPaymentReceipt($data, $id)
     {
-        DB::beginTransaction(); // Start transaction to ensure safe execution.
+        DB::beginTransaction();
 
         try {
-            // Fetch the receipt along with related products, installments, and payments.
+            $userId = Auth::id();
 
-            if (!Receipt::where('customer_id', $id)->where('type', 0)->exists()) {
-                return $this->errorResponse('لا توجد فواتير أقساط لهذا العميل.', 404);
-            }
 
+            // جلب فواتير الأقساط
             $allreceipt = Receipt::with([
                 'receiptProducts' => function ($query) {
                     $query->select('id', 'receipt_id', 'product_id', 'selling_price', 'quantity');
@@ -160,75 +159,103 @@ class InstallmentPaymentService extends Service
                     $query->select('id', 'installment_id', 'amount');
                 },
             ])->where('customer_id', $id)
-              ->where('type', 0)
+              ->where('type', 'اقساط')
               ->get();
 
-            $totalRemainingDebt = 0; // Store the total remaining debt for the receipt.
-            $totalPaidForReceipt = 0; // Store the total previous payments for the receipt.
-            foreach($allreceipt as $receipt) {
-                // Calculate total payments and remaining balance for each product.
+            // جلب الديون العادية
+            $adddebts = Debt::with(['debtPayments'])->where('customer_id', $id)->get();
+
+            // حساب المتبقي من الأقساط
+            $totalRemainingInstallments = 0;
+            foreach ($allreceipt as $receipt) {
                 foreach ($receipt->receiptProducts as $product) {
                     $installment = $product->installment;
-
                     if ($installment) {
-                        // Calculate the total price for the product.
                         $totalPrice = $product->selling_price * $product->quantity;
-
-                        // Calculate the total payments made for this installment.
-                        $totalPaidForProductInstallment = $installment->installmentPayments()->sum('amount');
-
-                        // Calculate the remaining amount for this product.
-                        $remainingPrice = $totalPrice - $totalPaidForProductInstallment;
-
-                        // Ensure the remaining amount is not negative.
-                        $product->remaining_price = max(0, $remainingPrice);
-
-                        // Accumulate total remaining debt for the receipt.
-                        $totalRemainingDebt += $product->remaining_price;
-                        $totalPaidForReceipt += $totalPaidForProductInstallment;
+                        $paid = $installment->installmentPayments->sum('amount');
+                        $remaining = max(0, $totalPrice - $paid);
+                        $product->remaining_price = $remaining;
+                        $totalRemainingInstallments += $remaining;
                     }
                 }
+            }
 
-                $remainingPayment = $data['amount']; // Store the remaining amount for payment.
+            // حساب المتبقي من الديون العادية
+            $totalRemainingDebt = 0;
+            foreach ($adddebts as $debt) {
+                $paid = $debt->debtPayments->sum('amount');
+                $remaining = max(0, $debt->payment_amount - $paid);
+                $debt->calculated_remaining = $remaining;
+                $totalRemainingDebt += $remaining;
+            }
 
-                // Distribute the payment across remaining products.
-                $receipt->receiptProducts->each(function ($product) use (&$remainingPayment, $totalRemainingDebt) {
-                    if ($remainingPayment <= 0) {
-                        return;
+            $totalOutstanding = $totalRemainingInstallments + $totalRemainingDebt;
+
+            if ($totalOutstanding == 0) {
+                return $this->errorResponse('لا يوجد دفعات متبقية للتسديد.', 400);
+            }
+
+            $amountToDistribute = $data['amount'];
+            $installmentShare = round(($totalRemainingInstallments / $totalOutstanding) * $amountToDistribute, 2);
+            $debtShare = $amountToDistribute - $installmentShare;
+
+            // توزيع على الأقساط
+            $remainingInstallmentPayment = $installmentShare;
+            foreach ($allreceipt as $receipt) {
+                foreach ($receipt->receiptProducts as $product) {
+                    if ($remainingInstallmentPayment <= 0 || empty($product->remaining_price)) {
+                        continue;
                     }
 
                     $installment = $product->installment;
                     if ($installment && $product->remaining_price > 0) {
-                        $percentage = $product->remaining_price / $totalRemainingDebt;
-                        $paymentForProduct = round($remainingPayment * $percentage, 2);
-
-                        $actualPayment = min($remainingPayment, $product->remaining_price, $paymentForProduct);
+                        $percentage = $product->remaining_price / $totalRemainingInstallments;
+                        $paymentForProduct = round($installmentShare * $percentage, 2);
+                        $actualPayment = min($remainingInstallmentPayment, $product->remaining_price, $paymentForProduct);
 
                         if ($actualPayment > 0) {
-
-
                             $installment->installmentPayments()->create([
                                 'payment_date' => now(),
                                 'amount' => $actualPayment,
+                                'user_id' =>   $userId ,
                             ]);
-
-                            $remainingPayment -= $actualPayment;
+                            $remainingInstallmentPayment -= $actualPayment;
                         }
                     }
-                });
-
+                }
             }
-            DB::commit(); // Complete the transaction and save changes to the database.
 
-            return $this->successResponse('تم دفع جزء من الاقساط المترتية بنجاح!', 200, $receipt);
+            // توزيع على الديون
+            $remainingDebtPayment = $debtShare;
+            foreach ($adddebts as $debt) {
+                if ($remainingDebtPayment <= 0 || $debt->calculated_remaining <= 0) {
+                    continue;
+                }
+
+                $percentage = $debt->calculated_remaining / $totalRemainingDebt;
+                $paymentForDebt = round($debtShare * $percentage, 2);
+                $actualDebtPayment = min($remainingDebtPayment, $debt->calculated_remaining, $paymentForDebt);
+
+                if ($actualDebtPayment > 0) {
+                    $debt->debtPayments()->create([
+                        'user_id' =>   $userId ,
+                        'payment_date' => now(),
+                        'amount' => $actualDebtPayment,
+                    ]);
+                    $remainingDebtPayment -= $actualDebtPayment;
+                }
+            }
+
+            DB::commit();
+            return $this->successResponse('تم دفع الأقساط والديون بنجاح!', 200);
 
         } catch (Exception $e) {
-            DB::rollBack(); // Roll back all transactions in case of an error.
+            DB::rollBack();
             Log::error('خطأ أثناء معالجة دفعة القسط: ' . $e->getMessage());
-
-            return $this->errorResponse('حدث خطأ أثناء معالجة دفعة القسط، يرجى إعادة المحاولة.', 500);
+            return $this->errorResponse('حدث خطأ أثناء الدفع، يرجى إعادة المحاولة لاحقاً.', 500);
         }
     }
+
 
 
 }
