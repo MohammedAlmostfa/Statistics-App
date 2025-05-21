@@ -188,7 +188,7 @@ class InstallmentPaymentService extends Service
                         $query->select('id', 'receipt_id', 'product_id', 'selling_price', 'quantity');
                     },
                     'receiptProducts.installment' => function ($query) {
-                        $query->select('id', 'receipt_product_id');
+                        $query->select('id', 'receipt_product_id', 'first_pay');
                     },
                     'receiptProducts.installment.InstallmentPayments' => function ($query) {
                         $query->select('id', 'installment_id', 'amount');
