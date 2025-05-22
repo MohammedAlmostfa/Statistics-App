@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Http\Requests\CustomerRequest;
+namespace App\Http\Requests\AgentRequest;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Validation\Validator;
 
-class StoreCustomerData extends FormRequest
+class FilteringAgentData extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
-     */
+    * Determine if the user is authorized to make this request.
+    */
     public function authorize(): bool
     {
         return true;
@@ -24,19 +25,13 @@ class StoreCustomerData extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255|unique:customers,name',
-            'phone' => 'required|unique:customers,phone|max:20',
-            'notes' => 'nullable|string|max:1000',
-            "sponsor_name" => 'nullable|string',
-            'sponsor_phone' => 'nullable',
-            'Record_id' => 'nullable|integer',
-            'Page_id' => 'nullable|integer',
-            'status' => 'nullable|in:جديد,قديم',
+            'name' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',
+
 
 
         ];
     }
-
     /**
      * Handle a failed validation attempt.
      * This method is called when validation fails.

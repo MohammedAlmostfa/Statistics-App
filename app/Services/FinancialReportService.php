@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\Debt;
 use Exception;
 use Carbon\Carbon;
 use App\Models\Payment;
 use App\Models\Receipt;
+use App\Models\DebtPayment;
 use App\Models\Installment;
 use App\Models\ReceiptProduct;
 use App\Models\InstallmentPayment;
@@ -29,9 +31,11 @@ class FinancialReportService extends Service
 
             // Sum of all installment payments collected within the date range
             $collectedInstallmentPayments = InstallmentPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
+            $collectedDebtPayments =DebtPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
 
             // Total expenses recorded within the date range
             $totalExpenses = Payment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
+            $totaldebt=Debt::whereBetween('debt_date', [$startDate, $endDate])->sum('remaining_debt');
 
             // Total value of installment-based sales (type 0) in the period
             $totalInstallmentSalesValueInPeriod = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
@@ -79,7 +83,9 @@ class FinancialReportService extends Service
                         'total_revenue_from_sales_in_period' => (int) $totalRevenueFromSalesInPeriod,
                         'total_expenses_in_period' => (int) $totalExpenses,
                         'operating_net_profit_in_period' => (int) $operatingNetProfit,
-                        'adjustedCOGS' => (int) $adjustedCOGS
+                        'adjustedCOGS' => (int) $adjustedCOGS,
+                        'totaldebt' => (int) $totaldebt,
+                        'collectedDebtPayments' => (int) $collectedDebtPayments,
                     ],
                     'cash_flow_summary' => [
                         'cash_inflow_from_collected_installments' => (int) $collectedInstallmentPayments,

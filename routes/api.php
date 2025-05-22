@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ActivitiesLogController;
+use App\Http\Controllers\AgentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductController;
@@ -112,4 +113,10 @@ Route::middleware('jwt')->group(function () {
     Route::get('debts/customer/{id}', [CustomerController::class, 'getCustomerDebts']);  // Retrieve customer debts
     Route::get('receiptProducts/customer/{id}', [CustomerController::class, 'getCustomerReceiptProducts']);  // Retrieve customer receipt products
     Route::get('receipt/customer/{id}', [CustomerController::class, 'getCustomerReceipt']);  // Retrieve customer receipts
+
+
+
+
+    Route::apiResource('/agent', AgentController::class);  // Manage installment payments
+
 });

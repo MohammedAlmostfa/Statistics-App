@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class CustomerResource extends JsonResource
+class AgentResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -18,13 +18,9 @@ class CustomerResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'phone' => $this->phone,
-            'sponsor_name' => $this->sponsor_name,
-            'Record_id' => $this->Record_id,
-            'Page_id' => $this->Page_id,
             'notes' => $this->notes,
-            'status' => $this->status,
             'created_at' => $this->created_at->format('Y-m-d '),
-            'sponsor_phone' => $this->sponsor_phone,
+
         ];
     }
 }
