@@ -27,7 +27,7 @@ class StoreAgentData extends FormRequest
     {
         return [
             'name' => 'required|string|max:255|unique:agents,name',
-            'phone' => 'required|unique:agents,phone|max:20',
+            'phone' => 'nullable|unique:agents,phone|max:20',
             'notes' => 'nullable|string|max:1000',
         ];
     }
