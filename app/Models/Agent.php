@@ -43,6 +43,10 @@ class Agent extends Model
         'details' => 'string',
     ];
 
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'agent_product');
+    }
     /**
      * **Defines the polymorphic relationship for activity logs**
      *

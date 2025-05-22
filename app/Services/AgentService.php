@@ -40,7 +40,7 @@ class AgentService extends Service
             // Retrieve agents from cache or fetch from the database
             $agents = Cache::remember($cacheKey, now()->addMinutes(120), function () use ($filteringData) {
                 return Agent::query()
-                    ->when(!empty($filteringData), fn ($query) => $query->where($filteringData))
+                ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
                     ->orderByDesc('created_at')
                     ->paginate(10);
             });
