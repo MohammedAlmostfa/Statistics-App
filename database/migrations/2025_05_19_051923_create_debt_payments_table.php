@@ -17,6 +17,8 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->date('payment_date');
             $table->timestamps();
+            $table->index(['payment_date']);
+
 
         });
     }

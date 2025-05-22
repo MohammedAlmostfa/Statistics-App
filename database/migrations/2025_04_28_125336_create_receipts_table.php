@@ -20,7 +20,7 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('customer_id')->constrained('customers')->cascadeOnDelete();
             $table->timestamps();
-            $table->index(['customer_id', 'type']);
+            $table->index(['customer_id', 'type','receipt_date']);
 
         });
     }

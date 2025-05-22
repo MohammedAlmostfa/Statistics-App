@@ -14,6 +14,8 @@ return new class extends Migration {
             $table->date('payment_date');
             $table->index('installment_id');
             $table->timestamps();
+            $table->index(['payment_date']);
+
         });
     }
 

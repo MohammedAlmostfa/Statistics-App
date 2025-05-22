@@ -1,27 +1,29 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Models\Payment;
 use Illuminate\Http\Request;
-use App\Http\Controllers\ActivitiesLogController;
-use App\Http\Controllers\AgentController;
+use App\Models\ActivitiesLog;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DebtController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AgentController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\DebtController;
-use App\Http\Controllers\DebtPaymentController;
-use App\Http\Controllers\FinancialReportController;
 use App\Http\Controllers\WhatsappController;
+use App\Http\Controllers\DebtPaymentController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\ActivitiesLogController;
 use App\Http\Controllers\ProductOriginController;
 use App\Http\Controllers\ReceiptProductController;
-use App\Http\Controllers\ProductCategoryController;
-use App\Http\Controllers\InstallmentPaymentController;
-use App\Http\Controllers\PaymentController;
 
 // Import models
-use App\Models\ActivitiesLog;
-use App\Models\Payment;
+use App\Http\Controllers\FinancialReportController;
+use App\Http\Controllers\FinancialTransactionController;
+use App\Http\Controllers\ProductCategoryController;
+use App\Http\Controllers\InstallmentPaymentController;
 
 /**
  * 🔹 **Authentication Routes**
@@ -117,6 +119,8 @@ Route::middleware('jwt')->group(function () {
 
 
 
-    Route::apiResource('/agent', AgentController::class);  // Manage installment payments
+    Route::apiResource('/agent', AgentController::class);
+    Route::apiResource('/financialtransaction', FinancialTransactionController::class);
+
 
 });

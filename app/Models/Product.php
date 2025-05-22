@@ -117,10 +117,6 @@ class Product extends Model
         return $this->belongsTo(ProductCategory::class, 'category_id');
     }
 
-    public function agents()
-    {
-        return $this->belongsToMany(Agent::class, 'agent_product');
-    }
     /**
      * Scope query to filter products by category ID.
      *
