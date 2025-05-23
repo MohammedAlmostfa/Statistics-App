@@ -13,10 +13,11 @@ class FinancialTransactionsProduct extends Model
         'dollar_buying_price',
         'dollar_exchange',
         'quantity',
+        'installment_price'
     ];
 
     protected $casts = [
-
+        'installment_price' => 'integer',
         'selling_price'=> 'float',
         'dollar_buying_price' => 'float',
         'dollar_exchange' => 'integer',

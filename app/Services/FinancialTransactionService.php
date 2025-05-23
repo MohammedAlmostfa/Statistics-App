@@ -28,18 +28,30 @@ class FinancialTransactionService extends Service
 
 
 
+    /**
+ * Retrieve products associated with a financial transaction.
+ *
+ * This method fetches all products linked to a specific financial transaction.
+ * If an error occurs, it logs the issue and returns an appropriate response.
+ *
+ * @param FinancialTransactions $financialTransactions The financial transaction instance.
+ * @return \Illuminate\Http\JsonResponse Response containing products or an error message.
+ */
     public function GetFinancialTransactionsproducts(FinancialTransactions $financialTransactions)
     {
         try {
-            // Retrieve financial transaction products
+            // Retrieve all products associated with the given financial transaction
             $products = $financialTransactions->financialTransactionsProducts;
-            return $this->successResponse('تم استرجاع منتجات  فاتورة الشراء  بنجاح.', 200, $products);
 
+            return $this->successResponse('تم استرجاع منتجات فاتورة الشراء بنجاح.', 200, $products);
         } catch (Exception $e) {
-            Log::error('خطأ أثناء استرجاع المنتجات المرتبطة بفاتورة الشراء : ' . $e->getMessage());
-            return $this->errorResponse('حدث خطأ أثناء جلب المنتجات المرتبطة بفاتورة الشراء  يرجى المحاولة مرة أخرى.');
+            // Log the error details for debugging
+            Log::error('خطأ أثناء استرجاع المنتجات المرتبطة بفاتورة الشراء: ' . $e->getMessage());
+
+            return $this->errorResponse('حدث خطأ أثناء جلب المنتجات المرتبطة بفاتورة الشراء، يرجى المحاولة مرة أخرى.');
         }
     }
+
 
     /**
      * **Create a new financial transaction**

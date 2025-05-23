@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->decimal('selling_price', 10, 2);
             $table->decimal('dollar_buying_price', 10, 2);
             $table->integer('dollar_exchange');
+            $table->integer('installment_price');
             $table->integer('quantity');
             $table->timestamps();
             $table->index(['financial_id', 'product_id'], 'financial_txn_product_idx');
