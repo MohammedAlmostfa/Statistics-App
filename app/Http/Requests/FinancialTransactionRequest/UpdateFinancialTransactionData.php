@@ -2,12 +2,12 @@
 
 namespace App\Http\Requests\FinancialTransactionRequest;
 
-use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Http\FormRequest;
+
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class StoreFinancialTransactionData extends FormRequest
+class UpdateFinancialTransactionData extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,18 +25,18 @@ class StoreFinancialTransactionData extends FormRequest
     public function rules(): array
     {
         return [
-            'transaction_date' => 'required|date',
-            'agent_id' => 'required|integer|exists:agents,id',
-            'total_amount' => 'required|integer',
-            'discount_amount' => 'required|integer',
-            'paid_amount' => 'required|integer',
-            'description' => 'required|integer',
+            'transaction_date' => 'nullable|date',
+            'agent_id' => 'nullable|integer|exists:agents,id',
+            'total_amount' => 'nullable|integer',
+            'discount_amount' => 'nullable|integer',
+            'paid_amount' => 'nullable|integer',
+            'description' => 'nullable|integer',
 
-            'products' => 'required|array',
+            'products' => 'nullable|array',
             'products.*.product_id' => 'required|exists:products,id',
-            'products.*.selling_price' => 'required|integer:',
-            'products.*.dollar_buying_price' => 'required|integer:',
-            'products.*.dollar_exchange' => 'required|integer:',
+            'products.*.selling_price' => 'nullable|integer:',
+            'products.*.dollar_buying_price' => 'nullable|integer:',
+            'products.*.dollar_exchange' => 'nullable|integer:',
             'products.*.quantity' => 'required|integer:',
 
         ];

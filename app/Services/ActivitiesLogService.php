@@ -29,25 +29,14 @@ class ActivitiesLogService extends Service
     public function getAllActivitiesLog($filteringData)
     {
         try {
-            $page = request('page', 1);
 
-            // Generate cache key based on filters and pagination
-            $cacheKey = 'activities_logs' . $page . (empty($filteringData) ? '' : md5(json_encode($filteringData)));
-            $cacheKeys = Cache::get('activities', []);
-
-            // Store cache keys to facilitate cache clearance when needed
-            if (!in_array($cacheKey, $cacheKeys)) {
-                $cacheKeys[] = $cacheKey;
-                Cache::put('activities', $cacheKeys, now()->addHours(2));
-            }
 
             // Retrieve logs with filtering, caching, and pagination
-            $activitiesLog = Cache::remember($cacheKey, now()->addMinutes(120), function () use ($filteringData) {
-                return ActivitiesLog::with('user')
+            $activitiesLog = ActivitiesLog::with('user')
                     ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
                     ->orderByDesc('created_at')
                     ->paginate(10);
-            });
+
 
             return $this->successResponse('تم استرجاع سجلات الأنشطة بنجاح.', 200, $activitiesLog);
         } catch (QueryException $e) {

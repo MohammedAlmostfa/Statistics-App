@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\TransactionService;
 
+use App\Models\FinancialTransactions;
 use App\Services\FinancialTransactionService;
+use App\Http\Requests\FinancialTransactionRequest\UpdateTransactionData;
 use App\Http\Requests\FinancialTransactionRequest\StoreFinancialTransactionData;
+use App\Http\Requests\FinancialTransactionRequest\UpdateFinancialTransactionData;
 
 /**
  * **TransactionController**
@@ -80,9 +83,15 @@ class FinancialTransactionController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse Update result.
      */
-    public function update()
+    public function update(UpdateFinancialTransactionData $request, $id)
     {
+        $validatedData = $request->validated();
+        $financialTransaction=FinancialTransactions::findOrFail($id);
+        $result = $this->financialTransactionService->UpdateFinancialTransaction($validatedData, $financialTransaction);
 
+        return $result['status'] === 200
+            ? $this->success(null, $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
     }
 
     /**
@@ -93,7 +102,14 @@ class FinancialTransactionController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse Deletion result.
      */
-    public function destroy()
+    public function destroy($id)
     {
+        $financialTransaction=FinancialTransactions::findOrFail($id);
+
+        $result = $this->financialTransactionService->deleteFinancialTransaction($financialTransaction);
+
+        return $result['status'] === 200
+            ? $this->success(null, $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
     }
 }

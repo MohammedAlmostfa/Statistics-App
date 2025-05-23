@@ -118,28 +118,6 @@ class ActivitiesLog extends Model
         );
     }
 
-    /**
-     * Boot method to handle model events.
-     *
-     * Automatically clears cache when a new activity log is created.
-     *
-     * @return void
-     */
-    protected static function boot()
-    {
-        parent::boot();
 
-        static::created(function ($activitiesLog) {
-            $cacheKeys = Cache::get('activities', []);
 
-            // Clear cache entries for logged activities
-            foreach ($cacheKeys as $key) {
-                Cache::forget($key);
-            }
-            Cache::forget('activities');
-
-            // Log the creation of a new activity record
-            Log::info("تم إنشاء سجل جديد للأنشطة ({$activitiesLog->id}) وتم حذف كاش السجلات.");
-        });
-    }
 }

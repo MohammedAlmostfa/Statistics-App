@@ -26,7 +26,7 @@ class FinancialTransactions extends Model
 
     public function financialTransactionsProducts()
     {
-        return $this->hasMany(FinancialTransactionsProduct::class);
+        return $this->hasMany(FinancialTransactionsProduct::class, 'financial_id');
     }
 
     const TYPE_MAP = [

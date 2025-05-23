@@ -65,6 +65,11 @@ class Product extends Model
     {
         return $this->morphMany(ActivitiesLog::class, 'type');
     }
+    public function productHistory()
+    {
+        return $this->hasMany(ProductHistory::class);
+
+    }
     /**
      * Relationship: A Product can have many ReceiptProducts.
      *
