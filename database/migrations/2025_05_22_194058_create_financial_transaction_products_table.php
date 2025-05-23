@@ -15,9 +15,9 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('financial_id')->constrained('financial_transactions')->cascadeOnDelete();
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
-            $table->decimal('selling_price', 10, 2);
-            $table->decimal('dollar_buying_price', 10, 2);
             $table->integer('dollar_exchange');
+            $table->float('selling_price', 10, 2);
+            $table->float('dolar_buying_price', 10, 2);
             $table->integer('installment_price');
             $table->integer('quantity');
             $table->timestamps();
