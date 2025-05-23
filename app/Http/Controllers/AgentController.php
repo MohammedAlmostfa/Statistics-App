@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Agent;
+use Illuminate\Http\Request;
+use App\Services\AgentService;
+use App\Http\Resources\AgentResource;
 use App\Http\Requests\AgentRequest\StoreAgentData;
 use App\Http\Requests\AgentRequest\UpdateAgentData;
+use App\Http\Resources\FinancialTransactionResource;
 use App\Http\Requests\AgentRequest\FilteringAgentData;
-use App\Http\Resources\AgentResource;
-use App\Models\Agent;
-use App\Services\AgentService;
-use Illuminate\Http\Request;
 
 /**
  * **AgentController**
@@ -121,7 +122,7 @@ class AgentController extends Controller
         $result = $this->agentService->GetFinancialTransactions($id);
 
         return $result['status'] === 200
-            ? $this->success($result['data'], $result['message'], $result['status'])
+            ? $this->paginated($result['data'], FinancialTransactionResource::class, $result['message'], $result['status'])
             : $this->error(null, $result['message'], $result['status']);
     }
 }
