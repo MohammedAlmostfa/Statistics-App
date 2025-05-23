@@ -30,7 +30,7 @@ class UpdateFinancialTransactionData extends FormRequest
             'total_amount' => 'nullable|integer',
             'discount_amount' => 'nullable|integer',
             'paid_amount' => 'nullable|integer',
-            'description' => 'nullable|integer',
+            'description' => 'nullable|string',
 
             'products' => 'nullable|array',
             'products.*.product_id' => 'required|exists:products,id',

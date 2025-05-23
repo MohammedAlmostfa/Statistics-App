@@ -81,17 +81,17 @@ class FinancialTransactionService extends Service
             // Log activity for financial transaction creation
             ActivitiesLog::create([
                 'user_id' => $userId,
-                'description' => 'تمت إضافة معاملة مالية جديدة للوكيل: ' . $financialTransactions->agent->name,
+                'description' => 'تمت إضافة  فاتورة شراء  جديدة للوكيل: ' . $financialTransactions->agent->name,
                 'type_id' => $financialTransactions->id,
                 'type_type' => FinancialTransactions::class,
             ]);
 
             DB::commit();
-            return $this->successResponse('تم إنشاء المعاملة المالية بنجاح.', 200);
+            return $this->successResponse('تم إنشاء  فاتورة شراء    بنجاح.', 200);
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('خطأ عام أثناء معالجة المعاملة المالية: ' . $e->getMessage());
-            return $this->errorResponse('حدث خطأ أثناء حفظ المعاملة المالية.');
+            Log::error('خطأ عام أثناء معالجة   فاتورة الشراء: ' . $e->getMessage());
+            return $this->errorResponse('حدث خطأ أثناء حفظ  فاتورة الشراء .');
         }
     }
 
@@ -175,18 +175,18 @@ class FinancialTransactionService extends Service
                 // Log activity for financial transaction update
                 ActivitiesLog::create([
                     'user_id' => $userId,
-                    'description' => 'تم تحديث المعاملة المالية للوكيل: ' . $financialTransactions->agent->name,
+                    'description' => 'تم تحديث  فاتورة الشراء  للوكيل: ' . $financialTransactions->agent->name,
                     'type_id' => $financialTransactions->id,
                     'type_type' => FinancialTransactions::class,
                 ]);
             }
 
             DB::commit();
-            return $this->successResponse('تم تحديث المعاملة المالية والمنتجات بنجاح.', 200);
+            return $this->successResponse('تم تحديث   فاتورة الشراء  بنجاح.', 200);
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('خطأ أثناء تحديث المعاملة المالية: ' . $e->getMessage());
-            return $this->errorResponse('حدث خطأ أثناء تحديث المعاملة المالية.');
+            Log::error('خطأ أثناء تحديث  فاتورة الشراء : ' . $e->getMessage());
+            return $this->errorResponse('حدث خطأ أثناء تحديث  فاتورة الشراء .');
         }
     }
 
@@ -215,20 +215,56 @@ class FinancialTransactionService extends Service
             // Log activity for financial transaction deletion
             ActivitiesLog::create([
                 'user_id' => $userId,
-                'description' => 'تم حذف المعاملة المالية للوكيل: ' . $financialTransactions->agent->name,
+                'description' => 'تم حذف المعاملة  فاتورة الشراء للوكيل: ' . $financialTransactions->agent->name,
                 'type_id' => $financialTransactions->id,
                 'type_type' => FinancialTransactions::class,
             ]);
 
             DB::commit();
-            return $this->successResponse('تم حذف المعاملة المالية والمنتجات المرتبطة بها بنجاح.', 200);
+            return $this->successResponse('تم حذف  فاتورة الشراء  والمنتجات المرتبطة بها بنجاح.', 200);
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('خطأ أثناء حذف المعاملة المالية: ' . $e->getMessage());
-            return $this->errorResponse('حدث خطأ أثناء حذف المعاملة المالية.');
+            Log::error('خطأ أثناء حذف  فاتورة الشراء : ' . $e->getMessage());
+            return $this->errorResponse('حدث خطأ أثناء حذف  فاتورة الشراء .');
         }
     }
 
+    public function createPayment($id, array $data)
+    {
+        DB::beginTransaction();
+        try {
+            $userId = Auth::id();
+
+            $lastTransaction = FinancialTransactions::where('agent_id', $data["agent_id"])->latest()->first();
+            $sumamount = optional($lastTransaction)->sum_amount ?? 0;
+            $sumamount -= ($data["paid_amount"] ?? 0);
+
+
+            $financialTransactions = FinancialTransactions::create([
+                'agent_id' => $data["agent_id"],
+                'transaction_date' => $data["transaction_date"] ?? now(),
+                'type' => 'تسديد فاتورة شراء',
+                'paid_amount' => $data["paid_amount"],
+                'description' => $data["description"],
+                'sum_amount' => $sumamount,
+            ]);
+
+
+            ActivitiesLog::create([
+                'user_id' => $userId,
+                'description' => 'تم إضافة عملية دفع للوكيل: ' . $financialTransactions->agent->name,
+                'type_id' => $financialTransactions->id,
+                'type_type' => FinancialTransactions::class,
+            ]);
+
+            DB::commit();
+            return $this->successResponse('تم تسجيل عملية الدفع بنجاح.', 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('خطأ أثناء تسجيل عملية الدفع: ' . $e->getMessage());
+            return $this->errorResponse('حدث خطأ أثناء تسجيل عملية الدفع، يرجى المحاولة مرة أخرى.');
+        }
+    }
 
 
 

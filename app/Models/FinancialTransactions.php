@@ -32,7 +32,7 @@ class FinancialTransactions extends Model
 
     const TYPE_MAP = [
         0 => 'فاتورة شراء',  // Installment payment type
-        1 => 'تسدسد شراء',   // Cash payment type
+        1 => 'تسديد فاتورة شراء',  // Cash payment type
     ];
     public function type(): Attribute
     {

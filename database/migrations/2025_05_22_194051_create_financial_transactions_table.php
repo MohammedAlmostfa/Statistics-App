@@ -15,8 +15,8 @@ return new class extends Migration {
             $table->foreignId('agent_id')->constrained('agents')->cascadeOnDelete();
             $table->date('transaction_date');
             $table->integer('type');
-            $table->integer('total_amount');
-            $table->integer('discount_amount');
+            $table->integer('total_amount')->nullable();
+            $table->integer('discount_amount')->nullable();
             $table->integer('paid_amount');
             $table->integer('sum_amount');
             $table->string('description')->nullable();

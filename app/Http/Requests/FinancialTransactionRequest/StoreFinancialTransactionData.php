@@ -30,7 +30,7 @@ class StoreFinancialTransactionData extends FormRequest
             'total_amount' => 'required|integer',
             'discount_amount' => 'required|integer',
             'paid_amount' => 'required|integer',
-            'description' => 'required|integer',
+            'description' => 'nullable|string',
 
             'products' => 'required|array',
             'products.*.product_id' => 'required|exists:products,id',
