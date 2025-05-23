@@ -51,9 +51,14 @@ class FinancialTransactionController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse List of transactions.
      */
-    public function index()
+    public function show($id)
     {
+        $financialTransaction=FinancialTransactions::findOrFail($id);
 
+        $result = $this->financialTransactionService->GetFinancialTransactionsproducts($financialTransaction);
+        return $result['status'] === 200
+            ? $this->success($result['data'], $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
     }
 
     /**

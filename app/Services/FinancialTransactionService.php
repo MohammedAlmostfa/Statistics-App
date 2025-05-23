@@ -24,6 +24,23 @@ use Illuminate\Database\QueryException;
  */
 class FinancialTransactionService extends Service
 {
+
+
+
+
+    public function GetFinancialTransactionsproducts(FinancialTransactions $financialTransactions)
+    {
+        try {
+            // Retrieve financial transaction products
+            $products = $financialTransactions->financialTransactionsProducts;
+            return $this->successResponse('تم استرجاع منتجلت فاتورة الشراء  بنجاح.', 200, $products);
+
+        } catch (Exception $e) {
+            Log::error('خطأ أثناء استرجاع المنتجات المرتبطة بفاتورة الشراء : ' . $e->getMessage());
+            return $this->errorResponse('حدث خطأ أثناء جلب المنتجات المرتبطة بفاتورة الشرا  يرجى المحاولة مرة أخرى.');
+        }
+    }
+
     /**
      * **Create a new financial transaction**
      *
@@ -82,17 +99,17 @@ class FinancialTransactionService extends Service
             // Log activity for financial transaction creation
             ActivitiesLog::create([
                 'user_id' => $userId,
-                'description' => 'تمت إضافة  فاتورة شراء  جديدة للوكيل: ' . $financialTransactions->agent->name,
+                'description' => 'تمت إضافة  فاتورة شراء جديدة للوكيل: ' . $financialTransactions->agent->name,
                 'type_id' => $financialTransactions->id,
                 'type_type' => FinancialTransactions::class,
             ]);
 
             DB::commit();
-            return $this->successResponse('تم إنشاء  فاتورة شراء    بنجاح.', 200);
+            return $this->successResponse('تم إنشاء  فاتورة شراء بنجاح.', 200);
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('خطأ عام أثناء معالجة   فاتورة الشراء: ' . $e->getMessage());
-            return $this->errorResponse('حدث خطأ أثناء حفظ  فاتورة الشراء .');
+            return $this->errorResponse('حدث خطأ أثناء حفظ  فاتورة الشراء يرجى المحاولة مرة أخرى.');
         }
     }
 
@@ -189,7 +206,7 @@ class FinancialTransactionService extends Service
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('خطأ أثناء تحديث  فاتورة الشراء : ' . $e->getMessage());
-            return $this->errorResponse('حدث خطأ أثناء تحديث  فاتورة الشراء .');
+            return $this->errorResponse('حدث خطأ أثناء تحديث  فاتورة الشراء .يرجى المحاولة مرة أخرى');
         }
     }
 
@@ -228,7 +245,7 @@ class FinancialTransactionService extends Service
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('خطأ أثناء حذف  فاتورة الشراء : ' . $e->getMessage());
-            return $this->errorResponse('حدث خطأ أثناء حذف  فاتورة الشراء .');
+            return $this->errorResponse('حدث خطأ أثناء حذف  فاتورة الشراء .يرجى المحاولة مرة أخرى');
         }
     }
 
