@@ -59,6 +59,7 @@ class FinancialTransactionService extends Service
                 'paid_amount' => $data["paid_amount"],
                 'description' => $data["description"],
                 'sum_amount'=>$sumamount,
+                'user_id' => $userId,
             ]);
 
             // Adding products to the transaction
@@ -122,6 +123,7 @@ class FinancialTransactionService extends Service
                 'discount_amount' => $data["discount_amount"] ?? $financialTransactions->discount_amount,
                 'paid_amount' => $data["paid_amount"] ?? $financialTransactions->paid_amount,
                 'description' => $data["description"] ?? $financialTransactions->description,
+
             ]);
 
             // Process product updates
@@ -169,6 +171,7 @@ class FinancialTransactionService extends Service
                         'dollar_buying_price' => $product['dollar_buying_price'],
                         'dollar_exchange' => $product['dollar_exchange'],
                         'quantity' => $product['quantity'],
+
                     ]);
                 }
 

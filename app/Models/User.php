@@ -104,6 +104,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Product::class);
     }
 
+    public function financialTransactions()
+    {
+        return $this->hasMany(FinancialTransactions::class);
+    }
+
     /**
      * Define a one-to-many relationship where a user can have multiple payments.
      *

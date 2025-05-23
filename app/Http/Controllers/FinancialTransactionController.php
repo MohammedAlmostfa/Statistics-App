@@ -112,4 +112,13 @@ class FinancialTransactionController extends Controller
             ? $this->success(null, $result['message'], $result['status'])
             : $this->error(null, $result['message'], $result['status']);
     }
+
+    public function createPayment($id)
+    {
+        $result = $this->financialTransactionService->createPayment($id);
+
+        return $result['status'] === 200
+            ? $this->success(null, $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
+    }
 }

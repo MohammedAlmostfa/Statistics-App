@@ -168,7 +168,7 @@ class AgentService extends Service
     {
         try {
             // Retrieve paginated financial transactions related to the agent
-            $FinancialTransactions = FinancialTransactions::where('agent_id', $id)->paginate(10);
+            $FinancialTransactions = FinancialTransactions::where('agent_id', $id)->with('user:id,name')->paginate(10);
 
             return $this->successResponse('تم استرجاع المعاملات المالية للوكيل بنجاح', 200, $FinancialTransactions);
         } catch (Exception $e) {

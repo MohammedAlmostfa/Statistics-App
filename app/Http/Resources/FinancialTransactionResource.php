@@ -24,6 +24,8 @@ class FinancialTransactionResource extends JsonResource
             'discount_amount' => $this->discount_amount,
             'paid_amount' => $this->paid_amount,
             'description' => $this->description,
+            'user_id' => $this->user_id,
+            'name' => $this->user->name,
             'created_at' => $this->created_at->format('Y-m-d'),
         ];
     }

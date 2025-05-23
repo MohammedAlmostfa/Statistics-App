@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 use App\Models\FinancialTransactionsProduct;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FinancialTransactions extends Model
 {
@@ -18,8 +19,24 @@ class FinancialTransactions extends Model
         'discount_amount',
         'paid_amount',
         'description',
+        'user_id',
     ];
 
+    protected $casts = [
+        'agent_id'        => 'integer',
+        'sum_amount'      => 'integer',
+        'transaction_date'=> 'date',
+        'total_amount'    => 'integer',
+        'discount_amount' => 'integer',
+        'paid_amount'     => 'integer',
+        'description'     => 'string',
+        'user_id'         => 'integer',
+    ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
     public function agent()
     {
         return $this->belongsTo(Agent::class);
