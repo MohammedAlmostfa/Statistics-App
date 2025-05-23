@@ -48,8 +48,8 @@ class User extends Authenticatable implements JWTSubject
      * @var array<int, string>
      */
     const STATUS_MAP = [
-        0 => 'Active',   // User exists
-        1 => 'Deleted',  // User is removed
+        0 => 'موجود',   // User exists
+        1 => 'محذوف',  // User is removed
     ];
 
     /**

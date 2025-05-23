@@ -49,6 +49,7 @@ class AgentService extends Service
             $agents = Cache::remember($cacheKey, now()->addMinutes(120), function () use ($filteringData) {
                 return Agent::query()
                     ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
+                    ->where("status", 'موجود')->orderByDesc('created_at')
                     ->orderByDesc('created_at')
                     ->paginate(10);
             });
@@ -146,7 +147,7 @@ class AgentService extends Service
                 'type_type' => Agent::class,
             ]);
 
-            $agent->delete();
+            $agent->update(['status'=>"محذوف"]);
 
             return $this->successResponse('تم حذف الوكيل بنجاح.', 200);
         } catch (Exception $e) {

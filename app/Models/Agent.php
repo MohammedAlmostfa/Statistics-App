@@ -42,7 +42,7 @@ class Agent extends Model
      */
     protected $casts = [
         'name' => 'string',
-        'phone'         => 'integer',
+        'phone'=> 'integer',
         'details' => 'string',
     ];
     /**
@@ -51,8 +51,8 @@ class Agent extends Model
          * @var array<int, string>
          */
     const STATUS_MAP = [
-        0 => 'Active',   // User exists
-        1 => 'Deleted',  // User is removed
+        0 => 'موجود',   // User exists
+        1 => 'محذوف',  // User is removed
     ];
 
     /**
