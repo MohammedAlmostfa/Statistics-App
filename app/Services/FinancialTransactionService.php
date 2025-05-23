@@ -42,6 +42,12 @@ class FinancialTransactionService extends Service
 
         try {
             $userId = Auth::id();
+            // Retrieve the last financial transaction for the agent
+            $lastfinancialTransactions = FinancialTransactions::where('agent_id', $data["agent_id"])->latest()->first();
+
+            // Calculate sum_amount safely, ensuring previous transactions exist
+            $sumamount = optional($lastfinancialTransactions)->sum_amount ?? 0;
+            $sumamount += ($data["total_amount"] ?? 0) - ($data["discount_amount"] ?? 0) - ($data["paid_amount"] ?? 0);
 
             // Creating a new financial transaction record
             $financialTransactions = FinancialTransactions::create([
@@ -52,6 +58,7 @@ class FinancialTransactionService extends Service
                 'discount_amount' => $data["discount_amount"],
                 'paid_amount' => $data["paid_amount"],
                 'description' => $data["description"],
+                'sum_amount'=>$sumamount,
             ]);
 
             // Adding products to the transaction
@@ -200,8 +207,6 @@ class FinancialTransactionService extends Service
                 foreach ($products as $product) {
                     event(new ProductEvent(['product_id' => $product->product_id]));
                 }
-
-
             }
 
             // Delete the financial transaction

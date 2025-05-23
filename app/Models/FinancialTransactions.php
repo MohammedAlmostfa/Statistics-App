@@ -11,6 +11,7 @@ class FinancialTransactions extends Model
 {
     protected $fillable = [
         'agent_id',
+        'sum_amount',
         'transaction_date',
         'type',
         'total_amount',

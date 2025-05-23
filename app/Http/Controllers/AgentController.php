@@ -14,26 +14,24 @@ use App\Http\Requests\AgentRequest\FilteringAgentData;
 /**
  * **AgentController**
  *
- * This controller manages CRUD operations for agents,
- * utilizing `AgentService` to handle business logic.
+ * This controller handles all agent-related CRUD operations,
+ * utilizing `AgentService` to process business logic.
  */
 class AgentController extends Controller
 {
     /**
      * **Agent Service Instance**
      *
-     * This service handles agent-related operations.
-     *
-     * @var AgentService
+     * @var AgentService Handles agent-related operations.
      */
     protected AgentService $agentService;
 
     /**
      * **Constructor**
      *
-     * Injects `AgentService` into the controller for managing agent operations.
+     * Initializes the controller with `AgentService` to delegate logic processing.
      *
-     * @param AgentService $agentService Handles business logic for agents.
+     * @param AgentService $agentService Handles agent-related operations.
      */
     public function __construct(AgentService $agentService)
     {
@@ -41,14 +39,14 @@ class AgentController extends Controller
     }
 
     /**
-     * **Retrieve a list of agents**
+     * **Retrieve a paginated list of agents**
      *
-     * Uses `FilteringAgentData` to filter retrieved data.
+     * - Uses `FilteringAgentData` for optional filtering criteria.
      * - Data is retrieved via `AgentService`.
-     * - Results are presented through `AgentResource` in descending order.
+     * - Results are formatted using `AgentResource`.
      *
      * @param FilteringAgentData $request Filtering data parameters.
-     * @return \Illuminate\Http\JsonResponse List of agents.
+     * @return \Illuminate\Http\JsonResponse Paginated list of agents.
      */
     public function index(FilteringAgentData $request)
     {
@@ -61,13 +59,13 @@ class AgentController extends Controller
     }
 
     /**
-     * **Store a new agent**
+     * **Create a new agent**
      *
      * - Validates data using `StoreAgentData`.
-     * - Creates a new agent via `AgentService`.
+     * - Creates an agent via `AgentService`.
      *
-     * @param StoreAgentData $request Data for creating an agent.
-     * @return \Illuminate\Http\JsonResponse Result of the operation.
+     * @param StoreAgentData $request The request containing agent details.
+     * @return \Illuminate\Http\JsonResponse Creation result.
      */
     public function store(StoreAgentData $request)
     {
@@ -85,7 +83,7 @@ class AgentController extends Controller
      * - Validates data using `UpdateAgentData`.
      * - Updates the agent via `AgentService`.
      *
-     * @param UpdateAgentData $request Updated agent details.
+     * @param UpdateAgentData $request Contains updated agent details.
      * @param Agent $agent The agent instance to be updated.
      * @return \Illuminate\Http\JsonResponse Update result.
      */
@@ -100,9 +98,9 @@ class AgentController extends Controller
     }
 
     /**
-     * **Delete an agent from the database**
+     * **Delete an agent**
      *
-     * - Deletes the specified agent via `AgentService`.
+     * - Removes the specified agent via `AgentService`.
      *
      * @param Agent $agent The agent instance to be deleted.
      * @return \Illuminate\Http\JsonResponse Deletion result.
@@ -116,7 +114,15 @@ class AgentController extends Controller
             : $this->error(null, $result['message'], $result['status']);
     }
 
-
+    /**
+     * **Retrieve financial transactions for an agent**
+     *
+     * - Fetches financial transactions associated with an agent.
+     * - Provides paginated results using `FinancialTransactionResource`.
+     *
+     * @param int $id The agent ID.
+     * @return \Illuminate\Http\JsonResponse Paginated list of financial transactions.
+     */
     public function getaAentFinancialTransactions($id)
     {
         $result = $this->agentService->GetFinancialTransactions($id);

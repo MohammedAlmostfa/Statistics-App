@@ -17,6 +17,7 @@ class FinancialTransactionResource extends JsonResource
         return [
             'id' => $this->id,
             'agent_id' => $this->agent_id,
+            'sum_amount' => $this->sum_amount,
             'transaction_date' => $this->transaction_date,
             'type' => $this->type,
             'total_amount' => $this->total_amount,
