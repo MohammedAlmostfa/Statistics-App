@@ -216,7 +216,7 @@ class InstallmentPaymentService extends Service
                     }
                 }
 
-                // ترتيب الأقساط من الأكبر للأصغر حسب المتبقي
+
                 usort($installmentItems, fn ($a, $b) => $b->remaining_price <=> $a->remaining_price);
 
                 foreach ($installmentItems as $product) {
@@ -243,7 +243,7 @@ class InstallmentPaymentService extends Service
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('خطأ أثناء معالجة الدفعة: ' . $e->getMessage());
-            return $this->errorResponse('حدث خطأ أثناء الدفع، يرجى إعادة المحاولة لاحقاً.', 500);
+            return $this->errorResponse('حدث خطأ أثناء الدفع، يرجى  المحاولة مرة اخرى.', 500);
         }
     }
 

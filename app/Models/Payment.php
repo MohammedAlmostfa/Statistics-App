@@ -39,42 +39,14 @@ class Payment extends Model
         return $this->belongsTo(User::class);
     }
     /**
-     * The "booting" method of the model.
-     *
-     * @return void
-     */
-    protected static function boot()
+        * Defines the polymorphic relationship between debts and activity logs.
+        *
+        * This allows a debt record to have multiple logged activities, tracking actions performed on the debt.
+        *
+        * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+        */
+    public function activities()
     {
-        parent::boot();
-
-        static::created(function ($payment) {
-            $cacheKeys = Cache::get('all_payments_keys', []);
-            foreach ($cacheKeys as $key) {
-                Cache::forget($key);
-            }
-            Cache::forget('all_payments_keys');
-
-            Log::info("تم إنشاء دفعة جديدة ({$payment->id}) وتم حذف كاش الدفعات.");
-        });
-
-        static::updated(function ($payment) {
-            $cacheKeys = Cache::get('all_payments_keys', []);
-            foreach ($cacheKeys as $key) {
-                Cache::forget($key);
-            }
-            Cache::forget('all_payments_keys');
-
-            Log::info("تم تحديث الدفعة ({$payment->id}) وتم حذف كاش الدفعات.");
-        });
-
-        static::deleted(function ($payment) {
-            $cacheKeys = Cache::get('all_payments_keys', []);
-            foreach ($cacheKeys as $key) {
-                Cache::forget($key);
-            }
-            Cache::forget('all_payments_keys');
-
-            Log::info("تم حذف الدفعة ({$payment->id}) وتم حذف كاش الدفعات.");
-        });
+        return $this->morphMany(ActivitiesLog::class, 'type');
     }
 }

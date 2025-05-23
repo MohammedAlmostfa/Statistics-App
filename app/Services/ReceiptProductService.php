@@ -3,11 +3,8 @@
 namespace App\Services;
 
 use Exception;
-use App\Models\Receipt;
-use App\Models\Customer;
 use App\Models\ReceiptProduct;
 use Illuminate\Support\Facades\Log;
-use App\Http\Resources\CustomerReceiptProduct;
 
 /**
  * Service class for managing receipt products.

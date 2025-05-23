@@ -97,7 +97,7 @@ class DebtService extends Service
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Error creating debt: ' . $e->getMessage());
-            return $this->errorResponse('حدث خطا اثناء انشاء دين , يرجى المحاولة مرة اخر ');
+            return $this->errorResponse('حدث خطا اثناء انشاء دين , يرجى المحاولة مرة اخرى ');
 
         }
     }
@@ -135,7 +135,7 @@ class DebtService extends Service
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Error deleting debt: ' . $e->getMessage());
-            return $this->errorResponse('حدث خطا اثناء حذف دين , يرجى المحاولة مرة اخر ');
+            return $this->errorResponse('حدث خطا اثناء حذف دين , يرجى المحاولة مرة اخرى ');
         }
     }
 }

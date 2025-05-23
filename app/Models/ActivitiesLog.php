@@ -101,6 +101,7 @@ class ActivitiesLog extends Model
         'App\\Models\\ProductCategory' => 'اصناف',
         'App\\Models\\Debt' => 'ديون',
         'App\\Models\\DebtPayment' => 'اقساط الدين',
+        'App\\Models\\ActivitiesLog' => 'المعاملتت المالية',
     ];
 
     /**

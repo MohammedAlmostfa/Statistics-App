@@ -31,7 +31,7 @@ class UserService extends Service
             Log::error('Error in getAllUsers: ' . $e->getMessage());
             return [
                 'status' => 500,
-                'message' => 'حدث خطأ أثناء جلب المستخدمين. يرجى إعادة المحاولة.',
+                'message' => 'حدث خطأ أثناء جلب المستخدمين. يرجى إعادة المحاولة مرة اخرى.',
             ];
         }
     }
@@ -62,7 +62,7 @@ class UserService extends Service
             Log::error('Error in createUser: ' . $e->getMessage());
             return [
                 'status' => 500,
-                'message' => 'حدث خطأ أثناء إنشاء المستخدم. يرجى إعادة المحاولة.',
+                'message' => 'حدث خطأ أثناء إنشاء المستخدم. يرجى إعادة المحاولة مرة اخرى.',
             ];
         }
     }
@@ -93,7 +93,7 @@ class UserService extends Service
             Log::error('Error in updateUser: ' . $e->getMessage());
             return [
                 'status' => 500,
-                'message' => 'حدث خطأ أثناء تحديث بيانات المستخدم. يرجى إعادة المحاولة.',
+                'message' => 'حدث خطأ أثناء تحديث بيانات المستخدم. يرجى  المحاولة مرة اخرى.',
             ];
         }
     }
@@ -127,7 +127,7 @@ class UserService extends Service
             Log::error('Error in deleteUser: ' . $e->getMessage());
             return [
                 'status' => 500,
-                'message' => 'حدث خطأ أثناء حذف المستخدم. يرجى إعادة المحاولة.',
+                'message' => 'حدث خطأ أثناء حذف المستخدم. يرجى  المحاوبة مرة اخرى.',
             ];
         }
     }

@@ -25,20 +25,10 @@ class PaymentService extends Service
     {
         try {
 
-            $page = request('page', 1);
 
-            $cacheKey = 'payments_page_' . $page;
-
-            $cacheKeys = Cache::get('all_payments_keys', []);
-
-            if (!in_array($cacheKey, $cacheKeys)) {
-                $cacheKeys[] = $cacheKey;
-                Cache::put('all_payments_keys', $cacheKeys, now()->addHours(2));
-            }
             // Attempt to retrieve payments from the cache, if not found, fetch from database
-            $payments = Cache::remember($cacheKey, now()->addHours(2), function () {
-                return Payment::with('user:id,name') ->orderByDesc('payment_date') ->paginate(10);
-            });
+            $payments = Payment::with('user:id,name') ->orderByDesc('payment_date') ->paginate(10);
+
 
             return $this->successResponse('تم استرجاع الدفعات بنجاح.', 200, $payments);
         } catch (Exception $e) {
@@ -86,7 +76,7 @@ class PaymentService extends Service
             // Rollback the transaction if an error occurs
             DB::rollBack();
             Log::error('Error creating payment: ' . $e->getMessage());
-            return $this->errorResponse('حدث خطا اثناء انشاء الدفعة , يرجى المحاولة مرة اخر ');
+            return $this->errorResponse('حدث خطا اثناء انشاء الدفعة , يرجى المحاولة مرة اخرى ');
         }
     }
 
@@ -128,7 +118,7 @@ class PaymentService extends Service
             // Rollback the transaction if an error occurs
             DB::rollBack();
             Log::error('Error updating payment: ' . $e->getMessage());
-            return $this->errorResponse('حدث خطا اثناء تحديث الدفعة , يرجى المحاولة مرة اخر ');
+            return $this->errorResponse('حدث خطا اثناء تحديث الدفعة , يرجى المحاولة مرة اخرى ');
 
         }
     }
@@ -166,7 +156,7 @@ class PaymentService extends Service
             // Rollback the transaction if an error occurs
             DB::rollBack();
             Log::error('Error deleting payment: ' . $e->getMessage());
-            return $this->errorResponse('حدث خطا اثناء حذف الدفعة , يرجى المحاولة مرة اخر ');
+            return $this->errorResponse('حدث خطا اثناء حذف الدفعة , يرجى المحاولة مرة اخرى ');
 
         }
     }

@@ -298,7 +298,7 @@ class FinancialTransactionService extends Service
             ]);
 
             DB::commit();
-            return $this->successResponse('تم حذف فاتورة الشراء والمنتجات المرتبطة بها بنجاح.', 200);
+            return $this->successResponse('تم حذف فاتورة الشراء .', 200);
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('خطأ أثناء حذف فاتورة الشراء: ' . $e->getMessage());

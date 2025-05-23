@@ -60,7 +60,7 @@ class WhatsappService extends Service
 
             return [
                 'status'  => 500,
-                'message' => 'حدث خطأ أثناء جلب الرسائل، يرجى المحاولة لاحقًا.',
+                'message' => 'حدث خطأ أثناء جلب الرسائل، يرجى المحاولة مرة اخرى.',
                 'data'    => null
             ];
         }

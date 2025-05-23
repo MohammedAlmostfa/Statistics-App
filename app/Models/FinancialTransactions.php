@@ -47,6 +47,17 @@ class FinancialTransactions extends Model
         return $this->hasMany(FinancialTransactionsProduct::class, 'financial_id');
     }
 
+    /**
+    * Defines the polymorphic relationship between debts and activity logs.
+    *
+    * This allows a debt record to have multiple logged activities, tracking actions performed on the debt.
+    *
+    * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+    */
+    public function activities()
+    {
+        return $this->morphMany(ActivitiesLog::class, 'type');
+    }
     const TYPE_MAP = [
         0 => 'فاتورة شراء',  // Installment payment type
         1 => 'تسديد فاتورة شراء',  // Cash payment type
