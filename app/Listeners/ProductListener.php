@@ -43,7 +43,7 @@ class ProductListener
                 $product->update([
                     'selling_price' => $previousProduct->selling_price,
                     'installment_price' => $previousProduct->installment_price,
-                    'dolar_buying_price' => $previousProduct->dolar_buying_price,
+                    'dolar_buying_price' => $previousProduct->dollar_buying_price,
                     'dollar_exchange' => $previousProduct->dollar_exchange,
                     'quantity' => $previousProduct->quantity,
                 ]);
@@ -54,7 +54,7 @@ class ProductListener
                 'product_id' => $product->id,
                 'selling_price' => $product->selling_price,
                 'installment_price' => $product->installment_price,
-                'dolar_buying_price' => $product->dolar_buying_price,
+                'dollar_buying_price' => $product->dolar_buying_price,
                 'dollar_exchange' => $product->dollar_exchange,
                 'quantity' => $product->quantity,
             ]);

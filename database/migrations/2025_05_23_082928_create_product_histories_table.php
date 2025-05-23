@@ -14,10 +14,9 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
             $table->float('selling_price', 10, 2);
-            $table->float('dolar_buying_price', 10, 2);
+            $table->float('dollar_buying_price', 10, 2);
             $table->integer('dollar_exchange');
             $table->integer('installment_price');
-
             $table->integer('quantity');
             $table->timestamps();
         });
