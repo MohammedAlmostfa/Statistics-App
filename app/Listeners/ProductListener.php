@@ -42,6 +42,7 @@ class ProductListener
             if ($previousProduct) {
                 $product->update([
                     'selling_price' => $previousProduct->selling_price,
+                    'installment_price' => $previousProduct->installment_price,
                     'dolar_buying_price' => $previousProduct->dolar_buying_price,
                     'dollar_exchange' => $previousProduct->dollar_exchange,
                     'quantity' => $previousProduct->quantity,
@@ -52,6 +53,7 @@ class ProductListener
             ProductHistory::create([
                 'product_id' => $product->id,
                 'selling_price' => $product->selling_price,
+                'installment_price' => $product->installment_price,
                 'dolar_buying_price' => $product->dolar_buying_price,
                 'dollar_exchange' => $product->dollar_exchange,
                 'quantity' => $product->quantity,
@@ -59,6 +61,7 @@ class ProductListener
 
             // Update product details
             $product->update([
+                'installment_price' => $productData["installment_price"] ?? $product->installment_price,
                 'selling_price' => $productData["selling_price"] ?? $product->selling_price,
                 'dolar_buying_price' => $productData["dollar_buying_price"] ?? $product->dolar_buying_price,
                 'dollar_exchange' => $productData["dollar_exchange"] ?? $product->dollar_exchange,

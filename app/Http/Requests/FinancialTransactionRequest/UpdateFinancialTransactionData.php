@@ -36,8 +36,9 @@ class UpdateFinancialTransactionData extends FormRequest
             'products.*.product_id' => 'required|exists:products,id',
             'products.*.selling_price' => 'nullable|integer:',
             'products.*.dollar_buying_price' => 'nullable|integer:',
+            'products.*.installment_price' => 'nullable|integer',
             'products.*.dollar_exchange' => 'nullable|integer:',
-            'products.*.quantity' => 'required|integer:',
+            'products.*.quantity' => 'nullable|integer:',
 
         ];
     }

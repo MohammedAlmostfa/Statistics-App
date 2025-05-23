@@ -60,6 +60,7 @@ class FinancialTransactionService extends Service
                 $financialTransactions->financialTransactionsProducts()->create([
                     'product_id' => $product['product_id'],
                     'selling_price' => $product['selling_price'],
+                    'installment_price' => $product['installment_price'],
                     'dollar_buying_price' => $product['dollar_buying_price'],
                     'dollar_exchange' => $product['dollar_exchange'],
                     'quantity' => $product['quantity'],
@@ -141,6 +142,7 @@ class FinancialTransactionService extends Service
 
                     $product->update([
                         'selling_price' => $updatedProduct['selling_price'] ?? $product->selling_price,
+                        'installment_price' => $updatedProduct['installment_price'] ?? $product->installment_price,
                         'dollar_buying_price' => $updatedProduct['dollar_buying_price'] ?? $product->dollar_buying_price,
                         'dollar_exchange' => $updatedProduct['dollar_exchange'] ?? $product->dollar_exchange,
                         'quantity' => $updatedProduct['quantity'] ?? $product->quantity,
@@ -156,6 +158,7 @@ class FinancialTransactionService extends Service
                     $financialTransactions->financialTransactionsProducts()->create([
                         'product_id' => $product['product_id'],
                         'selling_price' => $product['selling_price'],
+                        'installment_price' => $product['installment_price'],
                         'dollar_buying_price' => $product['dollar_buying_price'],
                         'dollar_exchange' => $product['dollar_exchange'],
                         'quantity' => $product['quantity'],

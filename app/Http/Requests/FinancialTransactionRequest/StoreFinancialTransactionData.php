@@ -34,8 +34,9 @@ class StoreFinancialTransactionData extends FormRequest
 
             'products' => 'required|array',
             'products.*.product_id' => 'required|exists:products,id',
-            'products.*.selling_price' => 'required|integer:',
-            'products.*.dollar_buying_price' => 'required|integer:',
+            'products.*.selling_price' => 'required|numeric',
+            'products.*.dollar_buying_price' => 'required|numeric',
+            'products.*.installment_price' => 'required|integer',
             'products.*.dollar_exchange' => 'required|integer:',
             'products.*.quantity' => 'required|integer:',
 
