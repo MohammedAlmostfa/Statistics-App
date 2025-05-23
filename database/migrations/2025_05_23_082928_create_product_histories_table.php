@@ -19,6 +19,8 @@ return new class extends Migration {
             $table->integer('installment_price');
             $table->integer('quantity');
             $table->timestamps();
+            $table->index([ 'product_id']);
+
         });
 
     }

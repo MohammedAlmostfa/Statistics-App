@@ -243,15 +243,24 @@ class FinancialTransactionService extends Service
 
                     ]);
                 }
+            } else {
+                $existingProducts = $financialTransactions->financialTransactionsProducts->keyBy('product_id');
+                foreach ($existingProducts as $product) {
 
-                // Log activity for financial transaction update
-                ActivitiesLog::create([
-                    'user_id' => $userId,
-                    'description' => 'تم تحديث  فاتورة الشراء  للوكيل: ' . $financialTransactions->agent->name,
-                    'type_id' => $financialTransactions->id,
-                    'type_type' => FinancialTransactions::class,
-                ]);
+                    event(new ProductEvent(['product_id' => $product['product_id']]));
+
+                    $product->delete();
+                }
+
             }
+            // Log activity for financial transaction update
+            ActivitiesLog::create([
+                'user_id' => $userId,
+                'description' => 'تم تحديث  فاتورة الشراء  للوكيل: ' . $financialTransactions->agent->name,
+                'type_id' => $financialTransactions->id,
+                'type_type' => FinancialTransactions::class,
+            ]);
+
 
             DB::commit();
             return $this->successResponse('تم تحديث   فاتورة الشراء  بنجاح.', 200);

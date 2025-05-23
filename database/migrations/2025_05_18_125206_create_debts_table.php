@@ -17,6 +17,8 @@ class CreateDebtsTable extends Migration
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->text("description")->nullable();
             $table->timestamps();
+            $table->index([ 'debt_date']);
+
         });
     }
 

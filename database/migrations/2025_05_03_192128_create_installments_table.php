@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->integer('installment_type');
             $table->integer('status')->default(1);
             $table->timestamps();
-            $table->index('receipt_product_id');
+            $table->index(['receipt_product_id','status']);
 
         });
     }

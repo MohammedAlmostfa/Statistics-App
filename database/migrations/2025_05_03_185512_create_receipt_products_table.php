@@ -19,8 +19,7 @@ return new class extends Migration {
             $table->integer('buying_price');
             $table->string('description')->nullable();
             $table->timestamps();
-            $table->index('receipt_id');
-            $table->index('product_id');
+            $table->index(['receipt_id','product_id']);
 
 
         });

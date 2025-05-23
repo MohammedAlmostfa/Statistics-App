@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * **Agent Model**
@@ -28,6 +30,7 @@ class Agent extends Model
         'name',
         'phone',
         'notes',
+        'status'
     ];
 
     /**
@@ -42,7 +45,28 @@ class Agent extends Model
         'phone'         => 'integer',
         'details' => 'string',
     ];
+    /**
+         * Status constants to enhance readability.
+         *
+         * @var array<int, string>
+         */
+    const STATUS_MAP = [
+        0 => 'Active',   // User exists
+        1 => 'Deleted',  // User is removed
+    ];
 
+    /**
+     * Get and set the user status dynamically using attribute casting.
+     *
+     * @return \Illuminate\Database\Eloquent\Casts\Attribute
+     */
+    public function status(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => self::STATUS_MAP[(int) $value] ?? 'Unknown',
+            set: fn ($value) => array_search($value, self::STATUS_MAP)
+        );
+    }
     /**
      * **Defines the polymorphic relationship for activity logs**
      *

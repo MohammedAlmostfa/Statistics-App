@@ -16,6 +16,8 @@ return new class extends Migration {
             $table->morphs('type');
             $table->string('description');
             $table->timestamps();
+            $table->index([ 'user_id']);
+
         });
     }
 
