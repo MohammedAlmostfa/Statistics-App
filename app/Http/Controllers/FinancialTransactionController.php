@@ -7,6 +7,7 @@ use App\Services\TransactionService;
 
 use App\Models\FinancialTransactions;
 use App\Services\FinancialTransactionService;
+use App\Http\Resources\FinancialTransactionsProductResource;
 use App\Http\Requests\FinancialTransactionRequest\UpdateTransactionData;
 use App\Http\Requests\FinancialTransactionRequest\StoreFinancialTransactionData;
 use App\Http\Requests\FinancialTransactionRequest\UpdateFinancialTransactionData;
@@ -54,11 +55,9 @@ class FinancialTransactionController extends Controller
      */
     public function show($id)
     {
-        $financialTransaction=FinancialTransactions::findOrFail($id);
-
-        $result = $this->financialTransactionService->GetFinancialTransactionsproducts($financialTransaction);
+        $result = $this->financialTransactionService->GetFinancialTransactionsproducts($id);
         return $result['status'] === 200
-            ? $this->success($result['data'], $result['message'], $result['status'])
+            ? $this->success(FinancialTransactionsProductResource::collection($result['data']), $result['message'], $result['status'])
             : $this->error(null, $result['message'], $result['status']);
     }
 

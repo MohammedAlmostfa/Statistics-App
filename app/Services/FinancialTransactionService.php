@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use App\Models\FinancialTransactions;
+use App\Models\FinancialTransactionsProduct;
 use App\Models\Product;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\QueryException;
@@ -29,19 +30,21 @@ class FinancialTransactionService extends Service
 
 
     /**
- * Retrieve products associated with a financial transaction.
- *
- * This method fetches all products linked to a specific financial transaction.
- * If an error occurs, it logs the issue and returns an appropriate response.
- *
- * @param FinancialTransactions $financialTransactions The financial transaction instance.
- * @return \Illuminate\Http\JsonResponse Response containing products or an error message.
- */
-    public function GetFinancialTransactionsproducts(FinancialTransactions $financialTransactions)
+    * Retrieve products associated with a financial transaction.
+    *
+    * This method fetches all products linked to a specific financial transaction.
+    * If an error occurs, it logs the issue and returns an appropriate response.
+    *
+    * @param int $id The financial transaction ID.
+    * @return \Illuminate\Http\JsonResponse Response containing products or an error message.
+    */
+    public function GetFinancialTransactionsproducts($id)
     {
         try {
             // Retrieve all products associated with the given financial transaction
-            $products = $financialTransactions->financialTransactionsProducts;
+            $products = FinancialTransactionsProduct::where('id', $id)
+                ->with('product:id,name')
+                ->get();
 
             return $this->successResponse('تم استرجاع منتجات فاتورة الشراء بنجاح.', 200, $products);
         } catch (Exception $e) {
@@ -51,6 +54,7 @@ class FinancialTransactionService extends Service
             return $this->errorResponse('حدث خطأ أثناء جلب المنتجات المرتبطة بفاتورة الشراء، يرجى المحاولة مرة أخرى.');
         }
     }
+
 
 
     /**
