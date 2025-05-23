@@ -10,6 +10,7 @@ use App\Models\Customer;
 use App\Models\ActivitiesLog;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Models\FinancialTransactions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\QueryException;
 use App\Http\Resources\CustomerReceiptProduct;
@@ -116,4 +117,20 @@ class AgentService extends Service
             return $this->errorResponse('حدث خطأ أثناء حذف الوكيل، يرجى المحاولة مرة أخرى.');
         }
     }
+
+    public function GetFinancialTransactions($id)
+    {
+        try {
+            // Retrieve paginated financial transactions related to the agent
+            $FinancialTransactions = FinancialTransactions::where('agent_id', $id)->paginate(10);
+
+            return $this->successResponse('تم استرجاع المعاملات المالية للوكيل بنجاح', 200, $FinancialTransactions);
+
+        } catch (Exception $e) {
+            Log::error('Error while retrieving financial transactions: ' . $e->getMessage());
+            return $this->errorResponse('حدث خطأ أثناء جلب المعاملات المالية، يرجى المحاولة مرة أخرى.');
+        }
+    }
+
+
 }

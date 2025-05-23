@@ -43,4 +43,7 @@ class FinancialTransactions extends Model
             set: fn ($value) => array_search($value, self::TYPE_MAP)  // Convert string back to its corresponding integer value
         );
     }
+
+
+
 }

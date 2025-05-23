@@ -114,4 +114,14 @@ class AgentController extends Controller
             ? $this->success(null, $result['message'], $result['status'])
             : $this->error(null, $result['message'], $result['status']);
     }
+
+
+    public function getaAentFinancialTransactions($id)
+    {
+        $result = $this->agentService->GetFinancialTransactions($id);
+
+        return $result['status'] === 200
+            ? $this->success($result['data'], $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
+    }
 }
