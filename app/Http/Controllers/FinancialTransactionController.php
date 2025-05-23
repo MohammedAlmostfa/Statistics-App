@@ -10,6 +10,7 @@ use App\Services\FinancialTransactionService;
 use App\Http\Requests\FinancialTransactionRequest\UpdateTransactionData;
 use App\Http\Requests\FinancialTransactionRequest\StoreFinancialTransactionData;
 use App\Http\Requests\FinancialTransactionRequest\UpdateFinancialTransactionData;
+use App\Http\Requests\FinancialTransactionRequest\StorPaymentFinancialTransactionData;
 
 /**
  * **TransactionController**
@@ -118,9 +119,11 @@ class FinancialTransactionController extends Controller
             : $this->error(null, $result['message'], $result['status']);
     }
 
-    public function createPayment($id)
+    public function CreatePaymentFinancialTransaction($id, StorPaymentFinancialTransactionData $request)
     {
-        $result = $this->financialTransactionService->createPayment($id);
+        $validatedData = $request->validated();
+
+        $result = $this->financialTransactionService->CreatePaymentFinancialTransaction($id, $validatedData);
 
         return $result['status'] === 200
             ? $this->success(null, $result['message'], $result['status'])

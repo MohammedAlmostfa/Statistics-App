@@ -33,11 +33,11 @@ class FinancialTransactionService extends Service
         try {
             // Retrieve financial transaction products
             $products = $financialTransactions->financialTransactionsProducts;
-            return $this->successResponse('تم استرجاع منتجلت فاتورة الشراء  بنجاح.', 200, $products);
+            return $this->successResponse('تم استرجاع منتجات  فاتورة الشراء  بنجاح.', 200, $products);
 
         } catch (Exception $e) {
             Log::error('خطأ أثناء استرجاع المنتجات المرتبطة بفاتورة الشراء : ' . $e->getMessage());
-            return $this->errorResponse('حدث خطأ أثناء جلب المنتجات المرتبطة بفاتورة الشرا  يرجى المحاولة مرة أخرى.');
+            return $this->errorResponse('حدث خطأ أثناء جلب المنتجات المرتبطة بفاتورة الشراء  يرجى المحاولة مرة أخرى.');
         }
     }
 
@@ -74,7 +74,7 @@ class FinancialTransactionService extends Service
                 'total_amount' => $data["total_amount"],
                 'discount_amount' => $data["discount_amount"],
                 'paid_amount' => $data["paid_amount"],
-                'description' => $data["description"],
+                'description' => $data["description"]?? null,
                 'sum_amount'=>$sumamount,
                 'user_id' => $userId,
             ]);
@@ -131,17 +131,53 @@ class FinancialTransactionService extends Service
         try {
             $userId = Auth::id();
 
+            // Retrieve the last financial transaction (previous one)
+            $lastFinancialTransactions = FinancialTransactions::where('agent_id', $financialTransactions->agent_id)
+            ->where('id', '<', $financialTransactions->id)
+            ->latest('id')
+            ->first();
+
+
+            // Calculate the updated sum amount
+            $sumAmount = optional($lastFinancialTransactions)->sum_amount ?? 0;
+            $sumAmount += ($data["total_amount"] ?? $financialTransactions->total_amount)
+                        - ($data["discount_amount"] ?? $financialTransactions->discount_amount)
+                        - ($data["paid_amount"] ?? $financialTransactions->paid_amount);
+
             // Update financial transaction details
             $financialTransactions->update([
-                'agent_id' => $data["agent_id"] ?? $financialTransactions->agent_id,
-                'type' => $financialTransactions->type,
-                'transaction_date' => $data["transaction_date"] ?? $financialTransactions->transaction_date,
-                'total_amount' => $data["total_amount"] ?? $financialTransactions->total_amount,
+                'agent_id'        => $data["agent_id"] ?? $financialTransactions->agent_id,
+                'type'            => $financialTransactions->type,
+                'transaction_date'=> $data["transaction_date"] ?? $financialTransactions->transaction_date,
+                'total_amount'    => $data["total_amount"] ?? $financialTransactions->total_amount,
                 'discount_amount' => $data["discount_amount"] ?? $financialTransactions->discount_amount,
-                'paid_amount' => $data["paid_amount"] ?? $financialTransactions->paid_amount,
-                'description' => $data["description"] ?? $financialTransactions->description,
-
+                'paid_amount'     => $data["paid_amount"] ?? $financialTransactions->paid_amount,
+                'description'     => $data["description"] ?? $financialTransactions->description,
+                'sum_amount'      => $sumAmount,
             ]);
+            $LastSumAmount=$sumAmount;
+            $affectedTransactions = FinancialTransactions::where('agent_id', $financialTransactions->agent_id)
+            ->where('id', '>', $financialTransactions->id)
+            ->orderBy('id')
+            ->get();
+
+
+            foreach ($affectedTransactions as $transaction) {
+                if($transaction->type =='تسديد فاتورة شراء') {
+                    $sumAmount= $LastSumAmount - $transaction->paid_amount;
+
+                } else {
+                    $sumAmount = $LastSumAmount
+                                - ($transaction->total_amount)
+                                - ($transaction->discount_amount)
+                                - ($transaction->paid_amount);
+                }
+
+                $transaction->update([
+                    'sum_amount'      => $sumAmount,
+                ]);
+                $LastSumAmount =$sumAmount;
+            }
 
             // Process product updates
             if (!empty($data['products'])) {
@@ -211,7 +247,15 @@ class FinancialTransactionService extends Service
     }
 
 
-
+    /**
+     * Delete a financial transaction and its associated products.
+     *
+     * This method safely removes a financial transaction from the database while ensuring
+     * associated products are processed before deletion. It logs the deletion event for tracking purposes.
+     *
+     * @param FinancialTransactions $financialTransactions The financial transaction instance to delete.
+     * @return \Illuminate\Http\JsonResponse Response indicating success or failure.
+     */
     public function deleteFinancialTransaction(FinancialTransactions $financialTransactions)
     {
         DB::beginTransaction();
@@ -219,62 +263,77 @@ class FinancialTransactionService extends Service
         try {
             $userId = Auth::id();
 
-            // Retrieve associated products
+            // Retrieve associated products for this financial transaction
             $products = $financialTransactions->financialTransactionsProducts;
 
-            // Ensure there are products before processing events
+            // Ensure there are products before triggering related events
             if ($products->isNotEmpty()) {
                 foreach ($products as $product) {
+                    // Dispatch event for each product before deletion
                     event(new ProductEvent(['product_id' => $product->product_id]));
                 }
             }
 
-            // Delete the financial transaction
+            // Delete the financial transaction record from the database
             $financialTransactions->delete();
 
-            // Log activity for financial transaction deletion
+            // Log the deletion action in the system
             ActivitiesLog::create([
-                'user_id' => $userId,
-                'description' => 'تم حذف المعاملة  فاتورة الشراء للوكيل: ' . $financialTransactions->agent->name,
-                'type_id' => $financialTransactions->id,
-                'type_type' => FinancialTransactions::class,
+                'user_id'    => $userId,
+                'description'=> 'تم حذف المعاملة المالية الخاصة بالوكيل: ' . $financialTransactions->agent->name,
+                'type_id'    => $financialTransactions->id,
+                'type_type'  => FinancialTransactions::class,
             ]);
 
             DB::commit();
-            return $this->successResponse('تم حذف  فاتورة الشراء  والمنتجات المرتبطة بها بنجاح.', 200);
+            return $this->successResponse('تم حذف فاتورة الشراء والمنتجات المرتبطة بها بنجاح.', 200);
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('خطأ أثناء حذف  فاتورة الشراء : ' . $e->getMessage());
-            return $this->errorResponse('حدث خطأ أثناء حذف  فاتورة الشراء .يرجى المحاولة مرة أخرى');
+            Log::error('خطأ أثناء حذف فاتورة الشراء: ' . $e->getMessage());
+            return $this->errorResponse('حدث خطأ أثناء حذف فاتورة الشراء، يرجى المحاولة مرة أخرى.');
         }
     }
 
-    public function createPayment($id, array $data)
+    /**
+    * Create a new financial transaction for payment.
+    *
+    * This method registers a payment transaction for an agent and updates the balance.
+    * It logs the transaction in the `ActivitiesLog` and ensures data consistency using `DB::transaction()`.
+    *
+    * @param int $id The agent ID.
+    * @param array $data Payment details (transaction date, paid amount, description).
+    * @return \Illuminate\Http\JsonResponse Response indicating success or failure.
+    */
+    public function CreatePaymentFinancialTransaction($id, array $data)
     {
         DB::beginTransaction();
         try {
             $userId = Auth::id();
 
-            $lastTransaction = FinancialTransactions::where('agent_id', $data["agent_id"])->latest()->first();
+            // Retrieve the latest financial transaction for the agent
+            $lastTransaction = FinancialTransactions::where('agent_id', $id)->latest()->first();
             $sumamount = optional($lastTransaction)->sum_amount ?? 0;
+
+            // Deduct the paid amount from the total sum
             $sumamount -= ($data["paid_amount"] ?? 0);
 
-
+            // Create a new financial transaction for payment
             $financialTransactions = FinancialTransactions::create([
-                'agent_id' => $data["agent_id"],
-                'transaction_date' => $data["transaction_date"] ?? now(),
-                'type' => 'تسديد فاتورة شراء',
-                'paid_amount' => $data["paid_amount"],
-                'description' => $data["description"],
-                'sum_amount' => $sumamount,
+                'agent_id'        => $id,
+                'transaction_date'=> $data["transaction_date"] ?? now(),
+                'type'            => 'تسديد فاتورة شراء',
+                'paid_amount'     => $data["paid_amount"],
+                'description'     => $data["description"] ?? null,
+                'sum_amount'      => $sumamount,
+                'user_id'         => $userId,
             ]);
 
-
+            // Log the payment transaction in ActivitiesLog
             ActivitiesLog::create([
-                'user_id' => $userId,
-                'description' => 'تم إضافة عملية دفع للوكيل: ' . $financialTransactions->agent->name,
-                'type_id' => $financialTransactions->id,
-                'type_type' => FinancialTransactions::class,
+                'user_id'    => $userId,
+                'description'=> 'تم إضافة عملية دفع للوكيل: ' . $financialTransactions->agent->name,
+                'type_id'    => $financialTransactions->id,
+                'type_type'  => FinancialTransactions::class,
             ]);
 
             DB::commit();
@@ -285,6 +344,7 @@ class FinancialTransactionService extends Service
             return $this->errorResponse('حدث خطأ أثناء تسجيل عملية الدفع، يرجى المحاولة مرة أخرى.');
         }
     }
+
 
 
 

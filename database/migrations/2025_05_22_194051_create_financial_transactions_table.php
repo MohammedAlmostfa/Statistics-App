@@ -21,7 +21,6 @@ return new class extends Migration {
             $table->integer('sum_amount');
             $table->string('description')->nullable();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-
             $table->timestamps();
             $table->index('agent_id');
             $table->index('transaction_date');
