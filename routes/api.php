@@ -1,8 +1,6 @@
 <?php
 
-use App\Models\Payment;
 use Illuminate\Http\Request;
-use App\Models\ActivitiesLog;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DebtController;
@@ -14,12 +12,9 @@ use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\WhatsappController;
 use App\Http\Controllers\DebtPaymentController;
-use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ActivitiesLogController;
 use App\Http\Controllers\ProductOriginController;
 use App\Http\Controllers\ReceiptProductController;
-
-// Import models
 use App\Http\Controllers\FinancialReportController;
 use App\Http\Controllers\FinancialTransactionController;
 use App\Http\Controllers\ProductCategoryController;
@@ -128,7 +123,7 @@ Route::middleware('jwt')->group(function () {
         'destroy' => 'agent.delete'
     ]);
 
-    Route::get('financialtransaction/agent/{id}', [AgentController::class, 'getaAentFinancialTransactions']);
+    Route::get('financialtransaction/agent/{id}', [AgentController::class, 'getaAgentFinancialTransactions']);
     Route::post('financialtransaction/agent/{id}', [FinancialTransactionController::class, 'CreatePaymentFinancialTransaction']);
 
     Route::apiResource('/financialtransaction', FinancialTransactionController::class);

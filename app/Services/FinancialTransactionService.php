@@ -40,7 +40,7 @@ class FinancialTransactionService extends Service
     {
         try {
             // Retrieve all products associated with the given financial transaction
-            $products = FinancialTransactionsProduct::where('id', $id)
+            $products = FinancialTransactionsProduct::where('financial_id', $id)
                 ->with('product:id,name')
                 ->get();
 

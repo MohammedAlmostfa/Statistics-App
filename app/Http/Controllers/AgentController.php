@@ -125,7 +125,7 @@ class AgentController extends Controller
      * @param int $id The agent ID.
      * @return \Illuminate\Http\JsonResponse Paginated list of financial transactions.
      */
-    public function getaAentFinancialTransactions($id): JsonResponse
+    public function getaAgentFinancialTransactions($id): JsonResponse
     {
         $result = $this->agentService->GetFinancialTransactions($id);
 
