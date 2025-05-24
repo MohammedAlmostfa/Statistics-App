@@ -6,7 +6,6 @@ use App\Models\ActivitiesLog;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * **ActivitiesLogService**

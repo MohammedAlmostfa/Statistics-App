@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Receipt;
-use App\Models\Customer;
 use App\Services\ReceiptService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\ReceiptResource;
-use App\Http\Resources\CustomerReceiptResource;
 use App\Http\Requests\ReceiptRequest\StoreReceiptData;
 use App\Http\Requests\ReceiptRequest\UpdateReceiptData;
 use App\Http\Requests\ReceiptRequest\FiltterReceiptData;

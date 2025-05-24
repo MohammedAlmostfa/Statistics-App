@@ -83,6 +83,8 @@ class UpdateValidInstallmentAmount implements Rule
      */
     public function message(): string
     {
-        return 'المبلغ المدفوع يتجاوز المبلغ المتبقي.';
+
+        return ' المبلغ المدفوع يتجاوز المبلغ المتبقي للقسط، يرجى إدخال مبلغ صحيح.';
+
     }
 }

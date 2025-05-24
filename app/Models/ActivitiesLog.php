@@ -4,8 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
@@ -101,7 +99,7 @@ class ActivitiesLog extends Model
         'App\\Models\\ProductCategory' => 'اصناف',
         'App\\Models\\Debt' => 'ديون',
         'App\\Models\\DebtPayment' => 'اقساط الدين',
-        'App\\Models\\ActivitiesLog' => 'المعاملتت المالية',
+        'App\\Models\\ActivitiesLog' => 'المعاملات المالية',
     ];
 
     /**

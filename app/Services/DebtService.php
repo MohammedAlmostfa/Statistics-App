@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use Exception;
-use App\Models\Payment;
 use App\Models\ActivitiesLog;
 use App\Models\Debt;
 use Illuminate\Support\Facades\Log;
@@ -52,7 +51,8 @@ class DebtService extends Service
             return $this->successResponse('تم استرجاع الديون بنجاح.', 200, $debts);
         } catch (Exception $e) {
             Log::error('Error retrieving debts: ' . $e->getMessage());
-            return $this->errorResponse('فشل في استرجاع الديون.');
+            return $this->errorResponse('حدث خطا اثناء استرجاع الديون  , يرجى المحاولة مرة اخرى ');
+
         }
     }
 
@@ -86,19 +86,18 @@ class DebtService extends Service
             // Log the transaction in the activity logs
             ActivitiesLog::create([
                 'user_id'     => $userId,
-                'description' => 'تم تعديل دفعة دين للزبون ' . $Debt->customer->name,
+                'description' => 'تم تسجيل دين للعميل ' . $Debt->customer->name,
                 'type_id'     => $Debt->id,
                 'type_type'   => Debt::class,
             ]);
 
             DB::commit();
 
-            return $this->successResponse('تم إنشاء الدين بنجاح.', 201);
+            return $this->successResponse('تم تسجيل الدين بنجاح.', 201);
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Error creating debt: ' . $e->getMessage());
-            return $this->errorResponse('حدث خطا اثناء انشاء دين , يرجى المحاولة مرة اخرى ');
-
+            return $this->errorResponse('حدث خطا اثناء تسجيل دين , يرجى المحاولة مرة اخرى ');
         }
     }
 
@@ -121,7 +120,7 @@ class DebtService extends Service
             // Log deletion in the activity records
             ActivitiesLog::create([
                 'user_id'     => $userId,
-                'description' => 'تم حذف دفعة دين للزبون ' . $Debt->customer->name,
+                'description' => 'تم حذف  دين للعميل ' . $Debt->customer->name,
                 'type_id'     => $Debt->id,
                 'type_type'   => Debt::class,
             ]);

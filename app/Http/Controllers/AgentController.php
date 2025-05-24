@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Agent;
-use Illuminate\Http\Request;
 use App\Services\AgentService;
 use App\Http\Resources\AgentResource;
 use App\Http\Requests\AgentRequest\StoreAgentData;
 use App\Http\Requests\AgentRequest\UpdateAgentData;
 use App\Http\Resources\FinancialTransactionResource;
 use App\Http\Requests\AgentRequest\FilteringAgentData;
+use Illuminate\Http\JsonResponse;
 
 /**
  * **AgentController**
@@ -48,7 +48,7 @@ class AgentController extends Controller
      * @param FilteringAgentData $request Filtering data parameters.
      * @return \Illuminate\Http\JsonResponse Paginated list of agents.
      */
-    public function index(FilteringAgentData $request)
+    public function index(FilteringAgentData $request): JsonResponse
     {
         $validatedData = $request->validated();
         $result = $this->agentService->getAllAgents($validatedData);
@@ -67,7 +67,7 @@ class AgentController extends Controller
      * @param StoreAgentData $request The request containing agent details.
      * @return \Illuminate\Http\JsonResponse Creation result.
      */
-    public function store(StoreAgentData $request)
+    public function store(StoreAgentData $request): JsonResponse
     {
         $validatedData = $request->validated();
         $result = $this->agentService->createAgent($validatedData);
@@ -87,7 +87,7 @@ class AgentController extends Controller
      * @param Agent $agent The agent instance to be updated.
      * @return \Illuminate\Http\JsonResponse Update result.
      */
-    public function update(UpdateAgentData $request, Agent $agent)
+    public function update(UpdateAgentData $request, Agent $agent): JsonResponse
     {
         $validatedData = $request->validated();
         $result = $this->agentService->updateAgent($validatedData, $agent);
@@ -105,8 +105,10 @@ class AgentController extends Controller
      * @param Agent $agent The agent instance to be deleted.
      * @return \Illuminate\Http\JsonResponse Deletion result.
      */
-    public function destroy(Agent $agent)
+    public function destroy(Agent $agent): JsonResponse
     {
+        $this->authorize('deleteAgent', $agent);
+
         $result = $this->agentService->deleteAgent($agent);
 
         return $result['status'] === 200
@@ -123,7 +125,7 @@ class AgentController extends Controller
      * @param int $id The agent ID.
      * @return \Illuminate\Http\JsonResponse Paginated list of financial transactions.
      */
-    public function getaAentFinancialTransactions($id)
+    public function getaAentFinancialTransactions($id): JsonResponse
     {
         $result = $this->agentService->GetFinancialTransactions($id);
 

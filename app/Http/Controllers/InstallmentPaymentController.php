@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Installment;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\InstallmentPayment;
 use App\Services\InstallmentPaymentService;
@@ -41,7 +40,7 @@ class InstallmentPaymentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateInstallmentPaymentData $request, $id)
+    public function update(UpdateInstallmentPaymentData $request, $id): JsonResponse
     {
         $validatedData = $request->validated();
 
@@ -55,7 +54,7 @@ class InstallmentPaymentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(InstallmentPayment $installmentPayment)
+    public function destroy(InstallmentPayment $installmentPayment): JsonResponse
     {
         $result = $this->installmentPaymentService->deleteInstallmentPayment($installmentPayment);
 

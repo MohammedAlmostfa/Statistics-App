@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use Illuminate\Http\Request;
 use App\Services\ProductService;
 use App\Http\Resources\ProductResource;
 use App\Http\Requests\ProductRequest\filtterdata;
 use App\Http\Requests\ProductRequest\StoreProductData;
 use App\Http\Requests\ProductRequest\UpdateProductData;
 use App\Http\Requests\ProductRequest\FiltterProductData;
+use Illuminate\Http\JsonResponse;
 
 class ProductController extends Controller
 {
@@ -36,7 +36,7 @@ class ProductController extends Controller
      * @param filtterdata $request Validated filter data for retrieving products.
      * @return \Illuminate\Http\JsonResponse JSON response with paginated product data.
      */
-    public function index(FiltterProductData $request)
+    public function index(FiltterProductData $request): JsonResponse
     {
         // Fetch products using ProductService with applied filters.
         $result = $this->productService->getAllProducts($request->validated());
@@ -53,7 +53,7 @@ class ProductController extends Controller
      * @param StoreProductData $request Validated product data.
      * @return \Illuminate\Http\JsonResponse JSON response confirming creation success or failure.
      */
-    public function store(StoreProductData $request)
+    public function store(StoreProductData $request): JsonResponse
     {
         // Validate and extract data from request.
         $validatedData = $request->validated();
@@ -74,7 +74,7 @@ class ProductController extends Controller
      * @param Product $product The product instance to be updated.
      * @return \Illuminate\Http\JsonResponse JSON response confirming update success or failure.
      */
-    public function update(UpdateProductData $request, $id)
+    public function update(UpdateProductData $request, $id): JsonResponse
     {
         // Validate and extract data from request.
         $validatedData = $request->validated();
@@ -94,7 +94,7 @@ class ProductController extends Controller
      * @param Product $product The product instance to be deleted.
      * @return \Illuminate\Http\JsonResponse JSON response confirming deletion success or failure.
      */
-    public function destroy(Product $product)
+    public function destroy(Product $product): JsonResponse
     {
         $this->authorize('deleteProduct', Product::class);
 

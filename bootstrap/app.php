@@ -9,9 +9,8 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Illuminate\Support\Facades\Schedule;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Validation\ValidationException;
+
 
 use Illuminate\Database\QueryException;
 

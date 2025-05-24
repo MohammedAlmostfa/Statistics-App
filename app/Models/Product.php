@@ -9,12 +9,20 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * Class Product
+ *
+ * Represents a product entity in the system, including details like pricing, quantity,
+ * origin, and category associations. Supports relationships with receipts, history tracking, and caching.
+ */
 class Product extends Model
 {
     use HasFactory;
 
     /**
      * The attributes that are mass assignable.
+     *
+     * These fields can be updated or created using mass assignment.
      *
      * @var array
      */
@@ -31,50 +39,72 @@ class Product extends Model
     ];
 
     /**
-     * Casts for attributes.
+     * The attributes that should be cast to specific data types.
+     *
+     * Ensures proper handling of values such as currency and identifiers.
      *
      * @var array
-     * @documented
      */
-
     protected $casts = [
-
-        'selling_price'     => 'float',
-        'dolar_buying_price' => 'float',
-        'dollar_exchange' => 'integer',
-        'installment_price' => 'integer',
-        'quantity'          => 'integer',
-        'user_id'           => 'integer',
-        'origin_id'         => 'integer',
-        'category_id'       => 'integer',
+        'selling_price'        => 'float',
+        'dolar_buying_price'   => 'float',
+        'dollar_exchange'      => 'integer',
+        'installment_price'    => 'integer',
+        'quantity'             => 'integer',
+        'user_id'              => 'integer',
+        'origin_id'            => 'integer',
+        'category_id'          => 'integer',
     ];
 
+    /**
+     * Calculate the buying price based on exchange rate.
+     *
+     * @return float
+     */
     public function getCalculatedBuyingPrice()
     {
-
         return $this->dolar_buying_price * $this->dollar_exchange;
     }
 
+    /**
+     * Determine the selling price based on receipt type.
+     *
+     * @param string $type
+     * @return float
+     */
     public function getSellingPriceForReceiptType($type)
     {
-
         return ($type === 'اقساط') ? $this->installment_price : $this->selling_price;
     }
 
+    /**
+     * Relationship: A product can have many activity logs.
+     *
+     * This allows tracking actions performed on the product.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+     */
     public function activities()
     {
         return $this->morphMany(ActivitiesLog::class, 'type');
     }
+
+    /**
+     * Relationship: A product has multiple historical records.
+     *
+     * Tracks changes and events related to the product over time.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function productHistory()
     {
         return $this->hasMany(ProductHistory::class);
-
     }
+
     /**
-     * Relationship: A Product can have many ReceiptProducts.
+     * Relationship: A product can appear in many receipt products.
      *
-     * This function defines the one-to-many relationship between the `Product` model
-     * and the `ReceiptProduct` model. A product can appear in many receipt products.
+     * Links products with receipts for tracking transactions.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
@@ -84,10 +114,9 @@ class Product extends Model
     }
 
     /**
-     * Relationship: A Product belongs to a User.
+     * Relationship: A product belongs to a user.
      *
-     * This function defines the inverse one-to-many relationship between the `Product` model
-     * and the `User` model. Each product is created/owned by a specific user.
+     * Associates a product with the user who created it.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -97,10 +126,9 @@ class Product extends Model
     }
 
     /**
-     * Relationship: A Product belongs to a ProductOrigin.
+     * Relationship: A product belongs to an origin.
      *
-     * This function defines the inverse one-to-many relationship between the `Product` model
-     * and the `ProductOrigin` model. Each product is linked to a specific origin (e.g., country or manufacturer).
+     * Links a product to its origin, such as manufacturer or country.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -110,10 +138,9 @@ class Product extends Model
     }
 
     /**
-     * Relationship: A Product belongs to a ProductCategory.
+     * Relationship: A product belongs to a category.
      *
-     * This function defines the inverse one-to-many relationship between the `Product` model
-     * and the `ProductCategory` model. Each product is associated with a category (e.g., electronics, food).
+     * Associates a product with a category for classification.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -123,14 +150,12 @@ class Product extends Model
     }
 
     /**
-     * Scope query to filter products by category ID.
+     * Scope: Filter products based on certain criteria.
      *
-     * This function allows filtering the products based on the category they belong to.
-     * The filtering is done using an array of filtering criteria, allowing users to specify
-     * the category they want to filter by.
+     * Enables flexible filtering based on attributes like name.
      *
      * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param array $filteringData An associative array containing the filtering criteria
+     * @param array $filteringData Associative array of filtering criteria.
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeFilterBy($query, array $filteringData)
@@ -143,7 +168,9 @@ class Product extends Model
     }
 
     /**
-     * The "booting" method of the model.
+     * Boot method for the Product model.
+     *
+     * Handles caching logic when products are created, updated, or deleted.
      *
      * @return void
      */
@@ -152,34 +179,34 @@ class Product extends Model
         parent::boot();
 
         static::created(function ($product) {
-            $cacheKeys = Cache::get('all_products_keys', []);
-
-            foreach ($cacheKeys as $key) {
-                Cache::forget($key);
-            }
-
-            Cache::forget('all_products_keys');
-
+            static::clearProductCache();
             Log::info("تم إنشاء منتج جديد ({$product->id}) وتم حذف كاش المنتجات.");
         });
 
         static::updated(function ($product) {
-            $cacheKeys = Cache::get('all_products_keys', []);
-
-            foreach ($cacheKeys as $key) {
-                Cache::forget($key);
-            }
-            Cache::forget('all_products_keys');
+            static::clearProductCache();
             Log::info("تم تحديث المنتج ({$product->id}) وتم حذف كاش المنتجات.");
         });
-        static::deleted(function ($product) {
-            $cacheKeys = Cache::get('all_products_keys', []);
-            foreach ($cacheKeys as $key) {
-                Cache::forget($key);
-            }
-            Cache::forget('all_products_keys');
 
+        static::deleted(function ($product) {
+            static::clearProductCache();
             Log::info("تم حذف المنتج ({$product->id}) وتم حذف كاش المنتجات.");
         });
+    }
+
+    /**
+     * Clear product-related cache.
+     *
+     * Ensures updated data is retrieved instead of cached versions.
+     *
+     * @return void
+     */
+    protected static function clearProductCache()
+    {
+        $cacheKeys = Cache::get('all_products_keys', []);
+        foreach ($cacheKeys as $key) {
+            Cache::forget($key);
+        }
+        Cache::forget('all_products_keys');
     }
 }

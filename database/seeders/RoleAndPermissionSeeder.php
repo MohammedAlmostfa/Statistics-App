@@ -20,6 +20,7 @@ class RoleAndPermissionSeeder extends Seeder
             'user.create',
             'user.update',
             'user.delete',
+            'agent.delete',
             'customer.delete',
             'product.delete',
             'productCategory.delete',

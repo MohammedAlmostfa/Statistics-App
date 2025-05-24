@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\FinancialTransactionRequest;
 
-use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;

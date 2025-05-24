@@ -119,7 +119,15 @@ Route::middleware('jwt')->group(function () {
 
 
 
-    Route::apiResource('/agent', AgentController::class);
+
+    Route::apiResource('agent', AgentController::class)->names([
+        'index' => 'agent.list',
+        'store' => 'agent.create',
+        'show' => 'agent.details',
+        'update' => 'agent.update',
+        'destroy' => 'agent.delete'
+    ]);
+
     Route::get('financialtransaction/agent/{id}', [AgentController::class, 'getaAentFinancialTransactions']);
     Route::post('financialtransaction/agent/{id}', [FinancialTransactionController::class, 'CreatePaymentFinancialTransaction']);
 

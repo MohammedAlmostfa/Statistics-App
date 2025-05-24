@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
+use Exception;
+
 use App\Models\ActivitiesLog;
 use App\Models\ProductCategory;
-use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -63,7 +64,7 @@ class ProductCategoryService extends Service
             // Log the activity of adding a new product category
             ActivitiesLog::create([
                 'user_id'     => $userId,
-                'description' => 'تم إضافة فئة المنتج: ' . $productcategory->name,
+                'description' => 'تم إضافة صنف المنتج: ' . $productcategory->name,
                 'type_id'     => $productcategory->id,
                 'type_type'   => ProductCategory::class,
             ]);
@@ -102,7 +103,7 @@ class ProductCategoryService extends Service
             // Log the activity of updating the product category
             ActivitiesLog::create([
                 'user_id'     => $userId,
-                'description' => 'تم تعديل فئة المنتج: ' . $productcategory->name,
+                'description' => 'تم تعديل صنف المنتج: ' . $productcategory->name,
                 'type_id'     => $productcategory->id,
                 'type_type'   => ProductCategory::class,
             ]);
@@ -140,7 +141,7 @@ class ProductCategoryService extends Service
             // Log the activity of deleting the product category
             ActivitiesLog::create([
                 'user_id'     => $userId,
-                'description' => 'تم حذف فئة المنتج: ' . $productcategory->name,
+                'description' => 'تم حذف صنف المنتج: ' . $productcategory->name,
                 'type_id'     => $productcategory->id,
                 'type_type'   => ProductCategory::class,
             ]);

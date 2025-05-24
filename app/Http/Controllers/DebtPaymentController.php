@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\DebtPayment;
-use Illuminate\Http\Request;
+
 use App\Services\DebtPaymentService;
-use App\Http\Requests\DebetRequest\StoreDebtData;
 use App\Http\Requests\DebtPaymentRequest\StoreDebtPaymentData;
+use Illuminate\Http\JsonResponse;
 
 class DebtPaymentController extends Controller
 { /**
@@ -30,7 +30,7 @@ class DebtPaymentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreDebtPaymentData $request)
+    public function store(StoreDebtPaymentData $request): JsonResponse
     {
         $validatedData = $request->validated();
 
@@ -47,7 +47,7 @@ class DebtPaymentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(DebtPayment $debtPayment)
+    public function destroy(DebtPayment $debtPayment): JsonResponse
     { // Retrieve the report from the service
         $result = $this->DebtPaymentService->deleteDebtPayment($debtPayment);
 

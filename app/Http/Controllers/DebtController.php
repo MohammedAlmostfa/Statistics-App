@@ -3,13 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Debt;
-use Illuminate\Http\Request;
 use App\Services\DebtService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\DebtResource;
-
 use App\Http\Requests\DebetRequest\StoreDebtData;
-use App\Http\Requests\DebetRequest\UpdateDebtData;
 use App\Http\Requests\DebetRequest\FitterinDebetgData;
 
 class DebtController extends Controller

@@ -244,12 +244,9 @@ class CustomerService extends Service
                 });
             });
 
-            // Return the response with formatted data
-            return [
-                'status' => 200,
-                'message' => 'تم جلب جميع المنتجات بنجاح.',
-                'data' => $formattedProducts,
-            ];
+
+            return $this->successResponse('تم جلب جميع منتجات العميل بنجاح.', 200, $formattedProducts);
+
         } catch (\Exception $e) {
             // Log any errors and return a failure response
             Log::error('Error in getCustomerReceiptProducts: ' . $e->getMessage());

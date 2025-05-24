@@ -2,18 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use GuzzleHttp\Psr7\Request;
 use App\Services\Auth\AuthService;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\UserResource;
-use App\Http\Requests\StorProfileRequest;
-use App\Http\Requests\AuthRequest\ResendCode;
 use App\Http\Requests\AuthRequest\LoginRequest;
-use App\Http\Requests\AuthRequest\RegisterRequest;
-use App\Http\Requests\AuthRequest\GoogelloginRequest;
-use App\Http\Requests\AuthRequest\SetLocationData;
-use App\Http\Requests\AuthRequest\VerficationRequest;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Class AuthController
@@ -54,7 +46,7 @@ class AuthController extends Controller
      *
      * @documented
      */
-    public function login(LoginRequest $request)
+    public function login(LoginRequest $request): JsonResponse
     {
         $credentials = $request->validated();
 
@@ -74,7 +66,7 @@ class AuthController extends Controller
      *
      * @documented
      */
-    public function logout()
+    public function logout(): JsonResponse
     {
         $result = $this->authService->logout();
 
@@ -92,7 +84,7 @@ class AuthController extends Controller
      *
      * @documented
      */
-    public function refresh()
+    public function refresh(): JsonResponse
     {
         $result = $this->authService->refresh();
 

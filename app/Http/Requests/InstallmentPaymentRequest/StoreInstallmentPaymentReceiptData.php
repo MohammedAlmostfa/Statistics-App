@@ -3,7 +3,6 @@
 namespace App\Http\Requests\InstallmentPaymentRequest;
 
 use App\Models\Customer;
-use App\Models\Receipt;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use App\Rules\StoreValidInstallmentReceiptAmount;

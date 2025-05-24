@@ -4,7 +4,6 @@ namespace App\Http\Requests\AgentRequest;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Validation\Validator;
 
 class FilteringAgentData extends FormRequest
@@ -27,9 +26,6 @@ class FilteringAgentData extends FormRequest
         return [
             'name' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
-
-
-
         ];
     }
     /**

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\FilterFinancialReportData;
 use App\Services\FinancialReportService;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Controller for handling financial report-related operations.
@@ -42,7 +42,7 @@ class FinancialReportController extends Controller
      * @param FilterFinancialReportData $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(FilterFinancialReportData $request)
+    public function index(FilterFinancialReportData $request): JsonResponse
     {
         $this->authorize('GetFinacialReport');
 

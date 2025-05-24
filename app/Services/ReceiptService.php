@@ -225,8 +225,6 @@ class ReceiptService extends Service
 
                         event(new ReceiptCreated($productId, $quantityDifference));
 
-
-
                     }
 
                     if ($receipt->type === 'اقساط') {

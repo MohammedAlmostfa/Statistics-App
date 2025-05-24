@@ -96,7 +96,7 @@ class FinancialReportService extends Service
         } catch (Exception $e) {
             // Log the error for debugging
             Log::error("Unexpected error in GetFinancialReport: " . $e->getMessage());
-            return $this->errorResponse('حدث خطأ أثناء توليد التقرير المالي، يرجى المحاولة مرة اخرى.');
+            return $this->errorResponse('حدث خطأ أثناء استرجاع التقرير المالي، يرجى المحاولة مرة اخرى.');
         }
     }
 

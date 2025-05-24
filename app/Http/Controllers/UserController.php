@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Http\Request;
+
 use App\Services\UserService;
+use Illuminate\Http\JsonResponse;
 use App\Http\Requests\UserRequest\StoreUserData;
-use App\Http\Requests\UserRequest\UpdateStatus;
 use App\Http\Requests\UserRequest\UpdateUserData;
 
 class UserController extends Controller
@@ -28,7 +28,7 @@ class UserController extends Controller
         $this->userService = $userService;
     }
 
-    public function index()
+    public function index(): JsonResponse
     {
         $this->authorize('getUser', User::class);
 
@@ -46,7 +46,7 @@ class UserController extends Controller
      * @param StoreUserData $request Validated user data.
      * @return \Illuminate\Http\JsonResponse JSON response with status and message.
      */
-    public function store(StoreUserData $request)
+    public function store(StoreUserData $request): JsonResponse
     {
         $this->authorize('createUser', User::class);
 
@@ -58,7 +58,7 @@ class UserController extends Controller
             ? self::success(null, $result['message'], $result['status'])
             : self::error(null, $result['message'], $result['status']);
     }
-    public function update(UpdateUserData $request, User $user)
+    public function update(UpdateUserData $request, User $user): JsonResponse
     {
         $this->authorize('updateUser', User::class);
 
@@ -73,7 +73,7 @@ class UserController extends Controller
             ? self::success(null, $result['message'], $result['status'])
             : self::error(null, $result['message'], $result['status']);
     }
-    public function destroy(User $user)
+    public function destroy(User $user): JsonResponse
     {
         $this->authorize('deleteUser', User::class);
         // Create the user using UserService

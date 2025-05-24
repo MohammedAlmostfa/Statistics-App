@@ -3,17 +3,12 @@
 namespace App\Services;
 
 use Exception;
-use App\Models\Debt;
 use App\Models\Agent;
-use App\Models\Receipt;
-use App\Models\Customer;
 use App\Models\ActivitiesLog;
 use Illuminate\Support\Facades\Log;
+use App\Models\FinancialTransaction;
 use Illuminate\Support\Facades\Auth;
-use App\Models\FinancialTransactions;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Database\QueryException;
-use App\Http\Resources\CustomerReceiptProduct;
 
 /**
  * **AgentService**
@@ -54,10 +49,7 @@ class AgentService extends Service
                     ->paginate(10);
             });
 
-            return $this->successResponse('تم جلب بيانات الوكلاء بنجاح.', 200, $agents);
-        } catch (QueryException $e) {
-            Log::error('Database query error while retrieving agents: ' . $e->getMessage());
-            return $this->errorResponse('فشل في جلب بيانات الوكلاء.');
+            return $this->successResponse('تم استرجاع بيانات الوكلاء بنجاح.', 200, $agents);
         } catch (Exception $e) {
             Log::error('General error while retrieving agents: ' . $e->getMessage());
             return $this->errorResponse('حدث خطأ أثناء استرجاع بيانات الوكلاء، يرجى المحاولة مرة أخرى.');
@@ -169,7 +161,7 @@ class AgentService extends Service
     {
         try {
             // Retrieve paginated financial transactions related to the agent
-            $FinancialTransactions = FinancialTransactions::where('agent_id', $id)->with('user:id,name')->paginate(10);
+            $FinancialTransactions = FinancialTransaction::where('agent_id', $id)->with('user:id,name')->paginate(10);
 
             return $this->successResponse('تم استرجاع المعاملات المالية للوكيل بنجاح', 200, $FinancialTransactions);
         } catch (Exception $e) {

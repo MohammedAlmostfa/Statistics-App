@@ -5,6 +5,7 @@ namespace App\Services;
 use Exception;
 use App\Models\Debt;
 use App\Models\Receipt;
+use App\Models\DebtPayment;
 use App\Models\Installment;
 use App\Models\ActivitiesLog;
 use App\Models\InstallmentPayment;
@@ -12,7 +13,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Events\InstallmentPaidEvent;
 use Illuminate\Support\Facades\Auth;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Service class to handle installment payments including create, update, and delete operations.
@@ -172,12 +172,17 @@ class InstallmentPaymentService extends Service
 
                 $toPay = min($debt->calculated_remaining, $amountToDistribute);
 
-                $debt->debtPayments()->create([
+                $debtPayment =  $debt->debtPayments()->create([
                     'user_id' => $userId,
                     'payment_date' => now(),
                     'amount' => $toPay,
                 ]);
-
+                ActivitiesLog::create([
+                    'user_id'     => $userId,
+                    'description' => 'تم تحصيل مبلغ قدره ' . $toPay . ' من العميل ' . $debt->customer->name,
+                    'type_id'     => $debtPayment->id,
+                    'type_type'   => DebtPayment::class,
+                ]);
                 $amountToDistribute -= $toPay;
             }
 
@@ -194,9 +199,9 @@ class InstallmentPaymentService extends Service
                         $query->select('id', 'installment_id', 'amount');
                     },
                 ])
-                ->where('customer_id', $id)
-                ->where('type', 'اقساط')
-                ->get();
+                    ->where('customer_id', $id)
+                    ->where('type', 'اقساط')
+                    ->get();
 
                 $installmentItems = [];
 
@@ -227,11 +232,18 @@ class InstallmentPaymentService extends Service
                     $installment = $product->installment;
                     $toPay = min($product->remaining_price, $amountToDistribute);
 
-                    $installment->installmentPayments()->create([
+                    $installmentPayment  =   $installment->installmentPayments()->create([
                         'payment_date' => now(),
                         'amount' => $toPay,
                         'user_id' => $userId,
                     ]);
+                    ActivitiesLog::create([
+                        'user_id'     => Auth::id(),
+                        'description' => 'تم تحصيل مبلغ قدره ' . $toPay . ' من العميل ' . $installment->receiptProduct->receipt->customer->name,
+                        'type_id'     => $installmentPayment->id,
+                        'type_type'   => InstallmentPayment::class,
+                    ]);
+
 
                     $amountToDistribute -= $toPay;
                 }
@@ -239,14 +251,10 @@ class InstallmentPaymentService extends Service
 
             DB::commit();
             return $this->successResponse('تم تسديد الديون والأقساط ', 200);
-
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('خطأ أثناء معالجة الدفعة: ' . $e->getMessage());
             return $this->errorResponse('حدث خطأ أثناء الدفع، يرجى  المحاولة مرة اخرى.', 500);
         }
     }
-
-
-
 }

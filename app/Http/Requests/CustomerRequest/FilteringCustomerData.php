@@ -27,8 +27,6 @@ class FilteringCustomerData extends FormRequest
             'name' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
             'status' => 'nullable|in:جديد,قديم',
-
-
         ];
     }
     /**

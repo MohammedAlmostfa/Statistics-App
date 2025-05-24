@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
-use Illuminate\Http\Request;
-use App\Models\ReceiptProduct;
 use App\Services\ReceiptProductService;
-use App\Http\Resources\CustomerReceiptProductResource;
 use App\Http\Resources\ReceiptProductResource;
+use Illuminate\Http\JsonResponse;
 
 class ReceiptProductController extends Controller
 {
@@ -22,7 +19,7 @@ class ReceiptProductController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function getreciptProduct($id)
+    public function getreciptProduct($id): JsonResponse
     {
         $result = $this->ReceiptProductService->getreciptProduct($id);
 

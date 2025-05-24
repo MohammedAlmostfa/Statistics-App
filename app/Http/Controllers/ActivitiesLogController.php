@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\ActivitiesLog;
+use Illuminate\Http\JsonResponse;
 use App\Services\ActivitiesLogService;
 use App\Http\Resources\ActivityLogResource;
 use App\Http\Requests\FiltteringActivtiesLogData;
@@ -18,7 +19,7 @@ class ActivitiesLogController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(FiltteringActivtiesLogData $request)
+    public function index(FiltteringActivtiesLogData $request): JsonResponse
     {
         $this->authorize('GetActivitesLog', ActivitiesLog::class);
 

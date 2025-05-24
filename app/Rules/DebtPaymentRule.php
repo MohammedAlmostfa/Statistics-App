@@ -25,6 +25,8 @@ class DebtPaymentRule implements Rule
 
     public function message()
     {
-        return "المبلغ المسدد يجب أن يكون أقل أو يساوي القيمة المتبقية وهي {$this->currentOutstandingAmount} دينار.";
+
+        return ' المبلغ المدفوع يتجاوز المبلغ المتبقي للقسط، يرجى إدخال مبلغ صحيح.';
+
     }
 }

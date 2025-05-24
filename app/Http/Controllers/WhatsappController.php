@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ActivitiesLog;
 use App\Services\WhatsappService;
 use App\Http\Resources\WhatsappResource;
 use App\Http\Requests\WhatsAppRequest\FiltterData;

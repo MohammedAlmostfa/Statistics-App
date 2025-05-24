@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\FinancialTransaction;
 use App\Services\TransactionService;
-
-use App\Models\FinancialTransactions;
 use App\Services\FinancialTransactionService;
 use App\Http\Resources\FinancialTransactionsProductResource;
-use App\Http\Requests\FinancialTransactionRequest\UpdateTransactionData;
 use App\Http\Requests\FinancialTransactionRequest\StoreFinancialTransactionData;
 use App\Http\Requests\FinancialTransactionRequest\UpdateFinancialTransactionData;
-use App\Http\Requests\FinancialTransactionRequest\StorPaymentFinancialTransactionData;
+use App\Http\Requests\FinancialTransactionRequest\StorePaymentFinancialTransactionData;
+use Illuminate\Http\JsonResponse;
 
 /**
  * **TransactionController**
@@ -53,7 +51,7 @@ class FinancialTransactionController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse List of transactions.
      */
-    public function show($id)
+    public function show($id): JsonResponse
     {
         $result = $this->financialTransactionService->GetFinancialTransactionsproducts($id);
         return $result['status'] === 200
@@ -70,7 +68,7 @@ class FinancialTransactionController extends Controller
      * @param StoreTransactionData $request Data for transaction creation.
      * @return \Illuminate\Http\JsonResponse Result of the operation.
      */
-    public function store(StoreFinancialTransactionData $request)
+    public function store(StoreFinancialTransactionData $request): JsonResponse
     {
         $validatedData = $request->validated();
         $result = $this->financialTransactionService->StoreFinancialTransaction($validatedData);
@@ -88,10 +86,10 @@ class FinancialTransactionController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse Update result.
      */
-    public function update(UpdateFinancialTransactionData $request, $id)
+    public function update(UpdateFinancialTransactionData $request, $id): JsonResponse
     {
         $validatedData = $request->validated();
-        $financialTransaction=FinancialTransactions::findOrFail($id);
+        $financialTransaction=FinancialTransaction::findOrFail($id);
         $result = $this->financialTransactionService->UpdateFinancialTransaction($validatedData, $financialTransaction);
 
         return $result['status'] === 200
@@ -107,9 +105,9 @@ class FinancialTransactionController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse Deletion result.
      */
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
-        $financialTransaction=FinancialTransactions::findOrFail($id);
+        $financialTransaction=FinancialTransaction::findOrFail($id);
 
         $result = $this->financialTransactionService->deleteFinancialTransaction($financialTransaction);
 
@@ -118,7 +116,7 @@ class FinancialTransactionController extends Controller
             : $this->error(null, $result['message'], $result['status']);
     }
 
-    public function CreatePaymentFinancialTransaction($id, StorPaymentFinancialTransactionData $request)
+    public function CreatePaymentFinancialTransaction($id, StorePaymentFinancialTransactionData $request): JsonResponse
     {
         $validatedData = $request->validated();
 

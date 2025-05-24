@@ -7,7 +7,6 @@ use App\Models\DebtPayment;
 use App\Models\ActivitiesLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Events\DebtPaymentProcessed;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -40,11 +39,10 @@ class DebtPaymentService extends Service
             // Log the activity
             ActivitiesLog::create([
                 'user_id'     => $userId,
-                'description' => "تم تسجيل دفعة جديدة بقيمة {$data['amount']} لصاحب الدين {$debtPayment->debt->customer->name}",
+                'description' => 'تم تحصيل مبلغ قدره ' . $data['amount'] . ' من العميل ' .$debtPayment->debt->customer->name,
                 'type_id'     => $debtPayment->id,
                 'type_type'   => DebtPayment::class,
             ]);
-
 
             DB::commit();
             return $this->successResponse("تم تسجيل دفعة الدين بنجاح.", 200);
@@ -73,8 +71,7 @@ class DebtPaymentService extends Service
             // Log the activity
             ActivitiesLog::create([
                 'user_id'     => $userId,
-                'description' => "تم حذف دفعة  بقيمة {$debtPayment->amount} لصاحب الدين {$debtPayment->debt->customer->name}",
-
+                'description' => 'تم حذف دفعة قسط بمبلغ ' . $debtPayment->amount . ' من العميل ' . $debtPayment->debt->customer->name,
                 'type_id'     => $debtPayment->id,
                 'type_type'   => DebtPayment::class,
             ]);
