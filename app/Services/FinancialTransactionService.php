@@ -338,7 +338,7 @@ class FinancialTransactionService extends Service
      * @param array $data Payment details (transaction date, paid amount, description).
      * @return \Illuminate\Http\JsonResponse Response indicating success or failure.
      */
-    public function CreatePaymentFinancialTransaction($id, array $data)
+    public function StorePaymentFinancialTransaction($id, array $data)
     {
         DB::beginTransaction();
         try {
@@ -371,11 +371,55 @@ class FinancialTransactionService extends Service
             ]);
 
             DB::commit();
-            return $this->successResponse('تم تسجيل عملية الدفع بنجاح.', 200);
+            return $this->successResponse('تم تسجيل تسديد فاتورة شراء  بنجاح.', 200);
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('خطأ أثناء تسجيل عملية الدفع: ' . $e->getMessage());
-            return $this->errorResponse('حدث خطأ أثناء تسجيل عملية الدفع، يرجى المحاولة مرة أخرى.');
+            Log::error('خطأ أثناء تسجيل تسديد فاتورة شراء  : ' . $e->getMessage());
+            return $this->errorResponse('حدث خطأ أثناء تسجيل تسديد فاتورة شرا، يرجى المحاولة مرة أخرى.');
         }
     }
+    public function UpdatePaymentFinancialTransaction($id, array $data)
+    {
+        DB::beginTransaction();
+        try {
+            $userId = Auth::id();
+
+            // Retrieve the financial transaction
+            $financialTransaction = FinancialTransaction::findOrFail($id);
+
+            // Retrieve the latest transaction for the agent that is newer than the current one
+            $lastTransaction = FinancialTransaction::where('agent_id', $financialTransaction->agent_id)
+                ->where('id', ">", $id)
+                ->latest()
+                ->first();
+
+            // Calculate the sum amount after deducting the new paid amount
+            $sumamount = optional($lastTransaction)->sum_amount ?? 0;
+            $sumamount -= ($financialTransaction->paid_amount - ($data["paid_amount"] ?? 0));
+
+            // Update the financial transaction details
+            $financialTransaction->update([
+                'transaction_date' => $data["transaction_date"] ??$financialTransaction->transaction_date,
+                'paid_amount'      => $data["paid_amount"] ??$financialTransaction->paid_amount,
+                'description'      => $data["description"] ??$financialTransaction->description,
+                'sum_amount'       => $sumamount,
+            ]);
+
+            // Log the payment transaction in ActivitiesLog
+            ActivitiesLog::create([
+                'user_id'    => $userId,
+                'description' => 'تم تحديث تسديد فاتورة شراء للوكيل: ' . $financialTransaction->agent->name,
+                'type_id'    => $financialTransaction->id,
+                'type_type'  => FinancialTransaction::class,
+            ]);
+
+            DB::commit();
+            return $this->successResponse('تم تحديث تسديد فاتورة شراء بنجاح.', 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('خطأ أثناء تحديث  تسديد فاتورة شرا : ' . $e->getMessage());
+            return $this->errorResponse('حدث خطأ أثناء تحديث  تسديد فاتورة شرا  يرجى المحاولة مرة أخرى.');
+        }
+    }
+
 }

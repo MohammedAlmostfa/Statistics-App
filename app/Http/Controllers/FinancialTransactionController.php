@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
+
 use App\Models\FinancialTransaction;
 use App\Services\TransactionService;
 use App\Services\FinancialTransactionService;
@@ -11,6 +11,7 @@ use App\Http\Resources\FinancialTransactionsProductResource;
 use App\Http\Requests\FinancialTransactionRequest\StoreFinancialTransactionData;
 use App\Http\Requests\FinancialTransactionRequest\UpdateFinancialTransactionData;
 use App\Http\Requests\FinancialTransactionRequest\StorePaymentFinancialTransactionData;
+use App\Http\Requests\FinancialTransactionRequest\UpdatePaymentFinancialTransactionData;
 
 /**
  * **TransactionController**
@@ -72,18 +73,8 @@ class FinancialTransactionController extends Controller
     public function store(StoreFinancialTransactionData $request): JsonResponse
     {
 
-
-        Log::info('creat Financial Transaction: Data received BEFORE validation.', [
-            'request_data' => $request->all(),
-
-        ]);
-
         $validatedData = $request->validated();
 
-        Log::info('creat Financial Transaction: Data AFTER validation.', [
-            'validated_data' => $validatedData,
-
-        ]);
         $result = $this->financialTransactionService->StoreFinancialTransaction($validatedData);
 
         return $result['status'] === 200
@@ -102,17 +93,7 @@ class FinancialTransactionController extends Controller
     public function update(UpdateFinancialTransactionData $request, $id): JsonResponse
     {
 
-        Log::info('update Financial Transaction: Data received BEFORE validation.', [
-            'request_data' => $request->all(),
-
-        ]);
-
         $validatedData = $request->validated();
-
-        Log::info('update Financial Transaction: Data AFTER validation.', [
-            'validated_data' => $validatedData,
-
-        ]);
 
         $financialTransaction=FinancialTransaction::findOrFail($id);
         $result = $this->financialTransactionService->UpdateFinancialTransaction($validatedData, $financialTransaction);
@@ -141,11 +122,21 @@ class FinancialTransactionController extends Controller
             : $this->error(null, $result['message'], $result['status']);
     }
 
-    public function CreatePaymentFinancialTransaction($id, StorePaymentFinancialTransactionData $request): JsonResponse
+    public function StorePaymentFinancialTransaction($id, StorePaymentFinancialTransactionData $request): JsonResponse
     {
         $validatedData = $request->validated();
 
-        $result = $this->financialTransactionService->CreatePaymentFinancialTransaction($id, $validatedData);
+        $result = $this->financialTransactionService->StorePaymentFinancialTransaction($id, $validatedData);
+
+        return $result['status'] === 200
+            ? $this->success(null, $result['message'], $result['status'])
+            : $this->error(null, $result['message'], $result['status']);
+    }
+    public function UpdatePaymentFinancialTransaction($id, UpdatePaymentFinancialTransactionData $request): JsonResponse
+    {
+        $validatedData = $request->validated();
+
+        $result = $this->financialTransactionService->UpdatePaymentFinancialTransaction($id, $validatedData);
 
         return $result['status'] === 200
             ? $this->success(null, $result['message'], $result['status'])

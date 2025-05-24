@@ -6,8 +6,9 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class StorePaymentFinancialTransactionData extends FormRequest
+class UpdatePaymentFinancialTransactionData extends FormRequest
 {
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -25,7 +26,7 @@ class StorePaymentFinancialTransactionData extends FormRequest
     {
         return [
             'paid_amount' => 'required|integer',
-            'transaction_date' => 'required|date',
+            'transaction_date' => 'nullable|date',
             'description' => 'nullable|string',
 
         ];
