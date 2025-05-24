@@ -109,6 +109,7 @@ class FinancialTransaction extends Model
     const TYPE_MAP = [
         0 => 'فاتورة شراء',  // Purchase Invoice
         1 => 'تسديد فاتورة شراء',  // Purchase Payment
+        3=>'دين فاتورة شراء',
     ];
 
     /**

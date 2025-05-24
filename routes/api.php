@@ -21,100 +21,101 @@ use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\InstallmentPaymentController;
 
 /**
- * 🔹 **Authentication Routes**
- * Includes login, logout, and JWT token refresh functionality.
+ *  Authentication Routes
+ * -------------------------
+ * Routes for handling user login/logout and token refresh using JWT.
  */
-Route::post('/login', [AuthController::class, 'login']);      // Login route
-Route::post('/logout', [AuthController::class, 'logout']);    // Logout route
-Route::post('/refresh', [AuthController::class, 'refresh']);  // JWT token refresh route
+Route::post('/login', [AuthController::class, 'login']);      //  Authenticate user and generate token
+Route::post('/logout', [AuthController::class, 'logout']);    //  Logout user and invalidate token
+Route::post('/refresh', [AuthController::class, 'refresh']);  //  Refresh JWT token
 
 /**
- * 🔹 **Get authenticated user details**
- * Requires Sanctum authentication to retrieve the authenticated user's information.
+ *  Get authenticated user info
+ * -------------------------------
+ * Return authenticated user's data using Sanctum middleware.
  */
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
 /**
- * 🔹 **Public Routes (No Authentication Required)**
- * Allows retrieving product origins and categories without authentication.
+ *  Public API Routes
+ * --------------------
+ * Routes that can be accessed without authentication.
  */
-Route::get('productOrigin', [ProductOriginController::class, 'index']);  // Get product origins
-Route::get('productCategory', [ProductCategoryController::class, 'index']);  // Get product categories
+Route::get('productOrigin', [ProductOriginController::class, 'index']);          //  Get product origins
+Route::get('productCategory', [ProductCategoryController::class, 'index']);      //  Get product categories
 
 /**
- * 🔹 **Routes requiring JWT authentication**
- * These routes are grouped inside `Route::middleware('jwt')` to ensure secure access.
+ *  Protected Routes (Requires JWT Authentication)
+ * -------------------------------------------------
+ * Grouped routes secured by `jwt` middleware.
  */
 Route::middleware('jwt')->group(function () {
 
-    /** ✅ **User Management** */
+    //  User Management (CRUD)
     Route::apiResource('user', UserController::class)->names([
-        'index' => 'user.list',      // Retrieve user list
-        'store' => 'user.create',    // Create new user
-        'show' => 'user.details',    // Get user details
-        'update' => 'user.update',   // Update user information
-        'destroy' => 'user.delete'   // Delete user
+        'index' => 'user.list',
+        'store' => 'user.create',
+        'show' => 'user.details',
+        'update' => 'user.update',
+        'destroy' => 'user.delete'
     ]);
 
-    /** ✅ **Customer Management** */
+    //  Customer Management (CRUD)
     Route::apiResource('customer', CustomerController::class)->names([
-        'index' => 'customer.list',      // Retrieve customer list
-        'store' => 'customer.create',    // Add new customer
-        'show' => 'customer.details',    // Get customer details
-        'update' => 'customer.update',   // Update customer information
-        'destroy' => 'customer.delete'   // Delete customer
+        'index' => 'customer.list',
+        'store' => 'customer.create',
+        'show' => 'customer.details',
+        'update' => 'customer.update',
+        'destroy' => 'customer.delete'
     ]);
 
-    /** ✅ **Product Management** */
+    //  Product Management (CRUD)
     Route::apiResource('product', ProductController::class)->names([
-        'index' => 'product.list',      // Retrieve product list
-        'store' => 'product.create',    // Add new product
-        'show' => 'product.details',    // Get product details
-        'update' => 'product.update',   // Update product information
-        'destroy' => 'product.delete'   // Delete product
+        'index' => 'product.list',
+        'store' => 'product.create',
+        'show' => 'product.details',
+        'update' => 'product.update',
+        'destroy' => 'product.delete'
     ]);
 
-    /** ✅ **Product Categories Management** */
-    Route::post('productCategory', [ProductCategoryController::class, 'store']);       // Create new category
-    Route::put('productCategory/{productCategory}', [ProductCategoryController::class, 'update']);  // Update category
-    Route::delete('productCategory/{productCategory}', [ProductCategoryController::class, 'destroy'])->name("productCategory.delete");  // Delete category
+    //  Product Categories Management (Create/Update/Delete)
+    Route::post('productCategory', [ProductCategoryController::class, 'store']);            //  Add category
+    Route::put('productCategory/{productCategory}', [ProductCategoryController::class, 'update']);  //  Edit category
+    Route::delete('productCategory/{productCategory}', [ProductCategoryController::class, 'destroy'])->name("productCategory.delete");  //  Delete category
 
-    /** ✅ **WhatsApp Messaging Routes** */
-    Route::get('getmessage', [WhatsappController::class, 'index'])->name('whatsappMessage.list');  // Retrieve WhatsApp messages
+    //  WhatsApp Messaging
+    Route::get('getmessage', [WhatsappController::class, 'index'])->name('whatsappMessage.list');  //  Fetch WhatsApp messages
 
-    /** ✅ **Financial Reports & Activity Logs** */
-    Route::get('/financialReport', [FinancialReportController::class, 'index'])->name('financialReport.list');  // Retrieve financial reports
-    Route::get('/activiteLog', [ActivitiesLogController::class, 'index'])->name('activiteLog.list');  // Retrieve activity logs
+    //  Financial Reports & Activity Logs
+    Route::get('/financialReport', [FinancialReportController::class, 'index'])->name('financialReport.list');  //  View financial reports
+    Route::get('/activiteLog', [ActivitiesLogController::class, 'index'])->name('activiteLog.list');            //  View activity logs
 
-    /** ✅ **Receipt Management** */
-    Route::apiResource('/receipt', ReceiptController::class);  // Manage receipts
+    //  Receipt Management
+    Route::apiResource('/receipt', ReceiptController::class);  // Manage receipts (CRUD)
 
-    /** ✅ **Receipt Product Management** */
-    Route::get('receiptProducts/{id}', [ReceiptProductController::class, 'getreciptProduct']);  // Retrieve receipt products
+    //  Receipt Product Management
+    Route::get('receiptProducts/{id}', [ReceiptProductController::class, 'getreciptProduct']);  //  View receipt products by receipt ID
 
-    /** ✅ **Installments and Payment Management** */
-    Route::post('installments/{id}/payments', [InstallmentPaymentController::class, 'store']);  // Make installment payment
-    Route::post('installment/customer/{id}', [InstallmentPaymentController::class, 'installmentPaymentReceipt']);  // Pay installment for a customer
-    Route::apiResource('/installmentPayments', InstallmentPaymentController::class);  // Manage installment payments
+    //  Installment & Payment Management
+    Route::post('installments/{id}/payments', [InstallmentPaymentController::class, 'store']);         //  Pay specific installment
+    Route::post('installment/customer/{id}', [InstallmentPaymentController::class, 'installmentPaymentReceipt']);  //  General installment payment for customer
+    Route::apiResource('/installmentPayments', InstallmentPaymentController::class);  //  Manage installment payments
 
-    /** ✅ **Payment Management** */
-    Route::apiResource('/payment', PaymentController::class);  // Manage payments
+    //  Payment Management
+    Route::apiResource('/payment', PaymentController::class);  // Full payment control (CRUD)
 
-    /** ✅ **Debt Management** */
-    Route::apiResource('/debt', DebtController::class);  // Manage debts
-    Route::apiResource('/debtPayments', DebtPaymentController::class);  // Manage debt payments
+    //  Debt Management
+    Route::apiResource('/debt', DebtController::class);                // Manage debts
+    Route::apiResource('/debtPayments', DebtPaymentController::class); // Handle payments toward debts
 
-    /** ✅ **Customer-Specific Routes** */
-    Route::get('debts/customer/{id}', [CustomerController::class, 'getCustomerDebts']);  // Retrieve customer debts
-    Route::get('receiptProducts/customer/{id}', [CustomerController::class, 'getCustomerReceiptProducts']);  // Retrieve customer receipt products
-    Route::get('receipt/customer/{id}', [CustomerController::class, 'getCustomerReceipt']);  // Retrieve customer receipts
+    //  Customer-Specific Details
+    Route::get('debts/customer/{id}', [CustomerController::class, 'getCustomerDebts']);  //  Fetch customer debts
+    Route::get('receiptProducts/customer/{id}', [CustomerController::class, 'getCustomerReceiptProducts']);  //  Fetch products per customer
+    Route::get('receipt/customer/{id}', [CustomerController::class, 'getCustomerReceipt']);  //  View all receipts by customer
 
-
-
-
-
+    //  Agent Management
     Route::apiResource('agent', AgentController::class)->names([
         'index' => 'agent.list',
         'store' => 'agent.create',
@@ -123,11 +124,14 @@ Route::middleware('jwt')->group(function () {
         'destroy' => 'agent.delete'
     ]);
 
-    Route::get('financialtransaction/agent/{id}', [AgentController::class, 'getaAgentFinancialTransactions']);
-    Route::post('financialtransaction/payment/agent/{id}', [FinancialTransactionController::class, 'StorePaymentFinancialTransaction']);
-    Route::put('financialtransaction/payment/{id}', [FinancialTransactionController::class, 'UpdatePaymentFinancialTransaction']);
-    Route::apiResource('/financialtransaction', FinancialTransactionController::class);
+    //  Agent Financial Transactions
+    Route::get('financialtransaction/agent/{id}', [AgentController::class, 'getaAgentFinancialTransactions']);  //  Agent transactions
+    Route::post('financialtransaction/payment/agent/{id}', [FinancialTransactionController::class, 'StorePaymentFinancialTransaction']);  //  Payment to agent
+    Route::put('financialtransaction/payment/{id}', [FinancialTransactionController::class, 'UpdatePaymentFinancialTransaction']);  //  Update agent payment
+    Route::post('financialtransaction/debt/agent/{id}', [FinancialTransactionController::class, 'StoreDebtFinancialTransaction']);
+    Route::put('financialtransaction/debt/{id}', [FinancialTransactionController::class, 'UpdateDebtFinancialTransaction']);
 
 
+    Route::apiResource('/financialtransaction', FinancialTransactionController::class);  //  Manage financial transactions
 
 });
