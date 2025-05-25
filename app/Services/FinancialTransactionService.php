@@ -9,8 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\FinancialTransaction;
 use Illuminate\Support\Facades\Auth;
-use App\Events\FinancialTransactionDeleted;
-use App\Events\FinancialTransactionUpdated;
+use App\Events\FinancialTransactionEdit;
 use App\Models\FinancialTransactionsProduct;
 
 /**
@@ -133,7 +132,7 @@ class FinancialTransactionService extends Service
                     'sum_amount' => $sumAmount,
                 ]);
 
-                event(new FinancialTransactionUpdated($financialTransaction));
+
 
                 // Process products
                 $existing = $financialTransaction->financialTransactionsProducts->keyBy('product_id');
@@ -167,6 +166,7 @@ class FinancialTransactionService extends Service
                 foreach ($toAdd as $product) {
                     $financialTransaction->financialTransactionsProducts()->create($product);
                 }
+                event(new FinancialTransactionEdit($financialTransaction));
 
                 ActivitiesLog::create([
                     'user_id' => $userId,
@@ -220,13 +220,8 @@ class FinancialTransactionService extends Service
                 'type_type' => FinancialTransaction::class,
             ]);
 
-
+            event(new FinancialTransactionEdit($financialTransaction));
             $financialTransaction->delete();
-
-            if ($financialTransaction->type != 'تسديد فاتورة شراء') {
-                event(new FinancialTransactionDeleted($financialTransaction));
-            }
-
             DB::commit();
             return $this->successResponse('تم حذف الفاتورة بنجاح.', 200);
         } catch (Exception $e) {
@@ -310,7 +305,8 @@ class FinancialTransactionService extends Service
                     'sum_amount' => $sumAmount,
                 ]);
 
-                event(new FinancialTransactionUpdated($financialTransaction));
+                event(new FinancialTransactionEdit($financialTransaction));
+
 
                 ActivitiesLog::create([
                     'user_id' => $userId,
@@ -319,7 +315,8 @@ class FinancialTransactionService extends Service
                     'type_type' => FinancialTransaction::class,
                 ]);
             } else {
-                return $this->successResponse('تم تحديث تسديد فاتورة شراء بنجاح.', 200);
+                return $this->errorResponse('حدث خطأ أثناء تحديث تسديد فاتورة شراء، يرجى المحاولة مرة أخرى.');
+
             }
             DB::commit();
             return $this->successResponse('تم تحديث تسديد فاتورة شراء بنجاح.', 200);
@@ -350,13 +347,13 @@ class FinancialTransactionService extends Service
 
             $lastTransaction = FinancialTransaction::where('agent_id', $id)->latest()->first();
             $sumAmount = optional($lastTransaction)->sum_amount ?? 0;
-            $sumAmount += ($data["paid_amount"] ?? 0);
+            $sumAmount += ($data["total_amount"] ?? 0);
 
             $financialTransaction = FinancialTransaction::create([
                 'agent_id' => $id,
                 'transaction_date' => $data["transaction_date"] ?? now(),
                 'type' => 'دين فاتورة شراء',
-                'paid_amount' => $data["paid_amount"],
+                'total_amount' => $data["total_amount"],
                 'description' => $data["description"] ?? null,
                 'sum_amount' => $sumAmount,
                 'user_id' => $userId,
@@ -399,19 +396,20 @@ class FinancialTransactionService extends Service
                     ->first();
 
                 $sumAmount = optional($nextTransaction)->sum_amount ?? 0;
-                $paidAmountBefore = $financialTransaction->paid_amount;
-                $paidAmountNew = $data["paid_amount"] ?? $paidAmountBefore;
+                $totalAamountBefore = $financialTransaction->total_amount;
+                $totalAamount = $data["total_amount"] ?? $totalAamountBefore;
 
-                $sumAmount += ($paidAmountNew - $paidAmountBefore);
+                $sumAmount += ($totalAamount - $totalAamountBefore);
 
                 $financialTransaction->update([
                     'transaction_date' => $data["transaction_date"] ?? $financialTransaction->transaction_date,
-                    'paid_amount' => $paidAmountNew,
+                    'total_amount' => $totalAamount,
                     'description' => $data["description"] ?? $financialTransaction->description,
                     'sum_amount' => $sumAmount,
                 ]);
 
-                event(new FinancialTransactionUpdated($financialTransaction));
+                event(new FinancialTransactionEdit($financialTransaction));
+
 
                 ActivitiesLog::create([
                     'user_id' => $userId,

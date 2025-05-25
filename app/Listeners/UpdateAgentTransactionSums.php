@@ -1,12 +1,12 @@
 <?php
 namespace App\Listeners;
 
-use App\Events\FinancialTransactionUpdated;
 use App\Models\FinancialTransaction;
+use App\Events\FinancialTransactionEdit;
 
 class UpdateAgentTransactionSums
 {
-    public function handle(FinancialTransactionUpdated $event)
+    public function handle(FinancialTransactionEdit $event)
     {
         $transaction = $event->transaction;
         $agentId = $transaction->agent_id;
@@ -22,7 +22,7 @@ class UpdateAgentTransactionSums
             if ($trans->type == 'تسديد فاتورة شراء') {
                 $LastSumAmount -= $trans->paid_amount;
             } elseif($trans->type == 'دين فاتورة شراء') {
-                $LastSumAmount += ($trans->paid_amount);
+                $LastSumAmount += ($trans->total_amount);
             } else {
                 $LastSumAmount += ($trans->total_amount - $trans->discount_amount - $trans->paid_amount);
 

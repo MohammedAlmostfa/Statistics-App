@@ -26,7 +26,7 @@ class StoreDebtFinancialTransactionData extends FormRequest
     public function rules(): array
     {
         return [
-            'paid_amount' => 'required|integer',
+            'total_amount' => 'required|integer',
             'transaction_date' => 'required|date',
             'description' => 'nullable|string',
 

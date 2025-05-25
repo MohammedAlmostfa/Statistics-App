@@ -107,9 +107,9 @@ class FinancialTransaction extends Model
      * This allows storing numeric values while displaying meaningful descriptions.
      */
     const TYPE_MAP = [
-        0 => 'فاتورة شراء',  // Purchase Invoice
-        1 => 'تسديد فاتورة شراء',  // Purchase Payment
-        3=>'دين فاتورة شراء',
+        0 => 'فاتورة شراء',
+        1 => 'تسديد فاتورة شراء',
+        3 =>'دين فاتورة شراء',
     ];
 
     /**

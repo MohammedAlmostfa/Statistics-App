@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->integer('type');
             $table->integer('total_amount')->nullable();
             $table->integer('discount_amount')->nullable();
-            $table->integer('paid_amount');
+            $table->integer('paid_amount')->nullable();
             $table->integer('sum_amount');
             $table->string('description')->nullable();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
