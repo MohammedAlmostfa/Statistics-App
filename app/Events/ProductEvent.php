@@ -10,9 +10,11 @@ class ProductEvent
 {
     use Dispatchable, SerializesModels;
     public $product;
-
-    public function __construct(array $product)
+    public $type;
+    public function __construct(array $product, string $type)
     {
         $this->product = $product;
+        $this->type = $type;
+
     }
 }

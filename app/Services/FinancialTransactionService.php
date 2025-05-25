@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Exception;
+use App\Models\Product;
 use App\Events\ProductEvent;
 use App\Models\ActivitiesLog;
 use Illuminate\Support\Facades\DB;
@@ -77,7 +78,8 @@ class FinancialTransactionService extends Service
                     'dollar_exchange' => $product['dollar_exchange'],
                     'quantity' => $product['quantity'],
                 ]);
-                event(new ProductEvent($product));
+                event(new ProductEvent($product, 'store'));
+
             }
 
             ActivitiesLog::create([
@@ -141,30 +143,37 @@ class FinancialTransactionService extends Service
                 // Deletion
                 $toDelete = $existing->diffKeys($new);
                 foreach ($toDelete as $product) {
-                    event(new ProductEvent(['product_id' => $product['product_id']]));
+                    event(new ProductEvent(['product_id' => $product['product_id']], 'delete'));
                     $product->delete();
                 }
 
                 // Update
                 $toUpdate = $existing->intersectByKeys($new);
-                foreach ($toUpdate as $product) {
-                    $updated = $new[$product->product_id];
-                    $quantity = $updated['quantity'] - $product->quantity;
-                    $product->update([
-                        'selling_price' => $updated['selling_price'] ?? $product->selling_price,
-                        'installment_price' => $updated['installment_price'] ?? $product->installment_price,
-                        'dollar_buying_price' => $updated['dollar_buying_price'] ?? $product->dollar_buying_price,
-                        'dollar_exchange' => $updated['dollar_exchange'] ?? $product->dollar_exchange,
-                        'quantity' => $updated['quantity'] ?? $product->quantity,
-                    ]);
-                    $product->quantity = $quantity;
-                    event(new ProductEvent($product->toArray()));
-                }
+                foreach ($toUpdate as $productTransaction) {
+                    $updated = $new[$productTransaction->product_id];
 
-                // Add new
-                $toAdd = $new->diffKeys($existing);
-                foreach ($toAdd as $product) {
+                    $quantityDifference = $updated['quantity'] - $productTransaction->quantity;
+
+
+                    $productTransaction->update([
+                        'selling_price' => $updated['selling_price'] ?? $productTransaction->selling_price,
+                        'installment_price' => $updated['installment_price'] ?? $productTransaction->installment_price,
+                        'dollar_buying_price' => $updated['dollar_buying_price'] ?? $productTransaction->dollar_buying_price,
+                        'dollar_exchange' => $updated['dollar_exchange'] ?? $productTransaction->dollar_exchange,
+                        'quantity' => $updated['quantity'] ?? $productTransaction->quantity,
+                    ]);
+
+                    $updated['quantityDifference'] = $quantityDifference;
+
+                    event(new ProductEvent($updated, 'update'));
+
+                }
+                // store
+                $toStore = $new->diffKeys($existing);
+                foreach ($toStore as $product) {
                     $financialTransaction->financialTransactionsProducts()->create($product);
+                    event(new ProductEvent($product, 'store'));
+
                 }
                 event(new FinancialTransactionEdit($financialTransaction));
 
@@ -200,7 +209,7 @@ class FinancialTransactionService extends Service
 
             $products = $financialTransaction->financialTransactionsProducts;
             foreach ($products as $product) {
-                event(new ProductEvent(['product_id' => $product->product_id]));
+                event(new ProductEvent(['product_id' => $product->product_id], 'delete'));
             }
 
 

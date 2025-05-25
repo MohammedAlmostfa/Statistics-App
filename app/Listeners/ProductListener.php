@@ -28,13 +28,13 @@ class ProductListener
     public function handle(ProductEvent $event)
     {
         $productData = $event->product;
-
+        $type=$event->type;
 
         // Retrieve the product from the database
         $product = Product::findOrFail($productData['product_id']);
 
         // If only `product_id` is provided, restore from `ProductHistory`
-        if (count($productData) === 1) {
+        if ($type=='delete') {
             $previousProduct = ProductHistory::where('product_id', $productData['product_id'])->latest()->first();
 
             if ($previousProduct) {
@@ -46,7 +46,7 @@ class ProductListener
                     'quantity' => $previousProduct->quantity,
                 ]);
             }
-        } else {
+        } elseif($type=='store') {
             // Save the current product state into `ProductHistory` before updating
             ProductHistory::create([
                 'product_id' => $product->id,
@@ -64,6 +64,16 @@ class ProductListener
                 'dolar_buying_price' => $productData["dollar_buying_price"] ?? $product->dolar_buying_price,
                 'dollar_exchange' => $productData["dollar_exchange"] ?? $product->dollar_exchange,
                 'quantity' => isset($productData["quantity"]) ? $productData["quantity"] + $product->quantity : $product->quantity,
+            ]);
+        } elseif ($type == 'update') {
+
+            $product->update([
+                'installment_price' => $productData["installment_price"] ?? $product->installment_price,
+                'selling_price' => $productData["selling_price"] ?? $product->selling_price,
+                'dolar_buying_price' => $productData["dollar_buying_price"] ?? $product->dolar_buying_price,
+                'dollar_exchange' => $productData["dollar_exchange"] ?? $product->dollar_exchange,
+               'quantity' => $product->quantity + ($productData["quantityDifference"] ?? 0),
+
             ]);
         }
     }
