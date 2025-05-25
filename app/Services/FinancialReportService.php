@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Debt;
 use Exception;
 use Carbon\Carbon;
+use App\Models\Debt;
 use App\Models\Payment;
 use App\Models\Receipt;
 use App\Models\DebtPayment;
@@ -13,6 +13,7 @@ use App\Models\ReceiptProduct;
 use App\Models\InstallmentPayment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Models\FinancialTransaction;
 
 class FinancialReportService extends Service
 {
@@ -32,8 +33,11 @@ class FinancialReportService extends Service
             // Sum of all installment payments collected within the date range
             $collectedInstallmentPayments = InstallmentPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
             $collectedDebtPayments =DebtPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
-            // $collecteFinancialTransactionPayments=FinancialTransaction::whereBetween('payment_date', [$startDate, $endDate])->where()->sum('amount');
-
+            $collecteFinancialTransactionPayments=FinancialTransaction::whereBetween('payment_date', [$startDate, $endDate])->where('type', 'تسديد فاتورة شراء')->sum('paid_amount');
+            $collecteFinancialTransactionDebts=FinancialTransaction::whereBetween('payment_date', [$startDate, $endDate])->where('type', 'دين فاتورة شراء')->sum('total_amount');
+            // 0 => 'فاتورة شراء',
+            // 1 => 'تسديد فاتورة شراء',
+            // 3 =>'دين فاتورة شراء',
             // Total expenses recorded within the date range
             $totalExpenses = Payment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
             $totaldebt=Debt::whereBetween('debt_date', [$startDate, $endDate])->sum('remaining_debt');
@@ -89,6 +93,8 @@ class FinancialReportService extends Service
                         'adjustedCOGS' => (int) $adjustedCOGS,
                         'totaldebt' => (int) $totaldebt,
                         'collectedDebtPayments' => (int) $collectedDebtPayments,
+                        'collecteFinancialTransactionPayments' => (int) $collecteFinancialTransactionPayments,
+                        'collecteFinancialTransactionDebts' => (int) $collecteFinancialTransactionDebts,
                     ],
                     'cash_flow_summary' => [
                         'cash_inflow_from_collected_installments' => (int) $collectedInstallmentPayments,

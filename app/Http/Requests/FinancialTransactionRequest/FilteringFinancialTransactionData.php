@@ -16,6 +16,19 @@ class FilteringFinancialTransactionData extends FormRequest
     {
         return true;
     }
+    public function prepareForValidation()
+    {
+        if (!empty($this->transaction_date)) {
+            // If only the year is provided, append "-01-01"
+            if (preg_match('/^\d{4}$/', $this->transaction_date)) {
+                $this->merge(['transaction_date' => $this->transaction_date . '-01-01']);
+            }
+            // If year and month are provided, append "-01"
+            elseif (preg_match('/^\d{4}-\d{2}$/', $this->transaction_date)) {
+                $this->merge(['transaction_date' => $this->transaction_date . '-01']);
+            }
+        }
+    }
 
     /**
      * Get the validation rules that apply to the request.
