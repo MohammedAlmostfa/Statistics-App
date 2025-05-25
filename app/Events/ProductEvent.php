@@ -9,8 +9,6 @@ use Illuminate\Foundation\Events\Dispatchable;
 class ProductEvent
 {
     use Dispatchable, SerializesModels;
-
-
     public $product;
 
     public function __construct(array $product)

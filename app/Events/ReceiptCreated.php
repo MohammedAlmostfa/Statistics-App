@@ -11,13 +11,6 @@ class ReceiptCreated
     public $productid;
     public $quantity;
 
-    /**
-     * Create a new event instance.
-     *
-     * @param  \App\Models\Product  $product
-     * @param  int  $quantity
-     * @return void
-     */
     public function __construct($productid, int $quantity)
     {
         $this->productid = $productid;

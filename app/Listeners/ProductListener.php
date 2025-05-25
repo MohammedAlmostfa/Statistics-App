@@ -5,8 +5,6 @@ namespace App\Listeners;
 use App\Models\Product;
 use App\Events\ProductEvent;
 use App\Models\ProductHistory;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * **ProductListener**

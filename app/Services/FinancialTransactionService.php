@@ -220,7 +220,7 @@ class FinancialTransactionService extends Service
                 'type_type' => FinancialTransaction::class,
             ]);
 
-            event(new FinancialTransactionEdit($financialTransaction));
+            event(new FinancialTransactionEdit($financialTransaction, 'delete'));
             $financialTransaction->delete();
             DB::commit();
             return $this->successResponse('تم حذف الفاتورة بنجاح.', 200);
@@ -244,8 +244,8 @@ class FinancialTransactionService extends Service
         try {
             $userId = Auth::id();
 
-            $lastTransaction = FinancialTransaction::where('agent_id', $id)->latest()->first();
-            $sumamount = optional($lastTransaction)->sum_amount ?? 0;
+            $LastFinancialTransaction = FinancialTransaction::where('agent_id', $id)->latest()->first();
+            $sumamount = optional($LastFinancialTransaction)->sum_amount ?? 0;
             $sumamount -= ($data["paid_amount"] ?? 0);
 
             $financialTransaction = FinancialTransaction::create([
@@ -290,13 +290,13 @@ class FinancialTransactionService extends Service
             if ($financialTransaction->type == 'تسديد فاتورة شراء') {
                 $userId = Auth::id();
 
-                $nextTransaction = FinancialTransaction::where('agent_id', $financialTransaction->agent_id)
-                    ->where('id', '>', $id)
+                $LastFinancialTransaction = FinancialTransaction::where('agent_id', $financialTransaction->agent_id)
+                    ->where('id', '<', $id)
                     ->latest()
                     ->first();
 
-                $sumAmount = optional($nextTransaction)->sum_amount ?? 0;
-                $sumAmount -= ($financialTransaction->paid_amount - ($data["paid_amount"] ?? 0));
+                $sumAmount = optional($LastFinancialTransaction)->sum_amount ?? 0;
+                $sumAmount -= (($data["paid_amount"] ?? 0));
 
                 $financialTransaction->update([
                     'transaction_date' => $data["transaction_date"] ?? $financialTransaction->transaction_date,
@@ -316,7 +316,6 @@ class FinancialTransactionService extends Service
                 ]);
             } else {
                 return $this->errorResponse('حدث خطأ أثناء تحديث تسديد فاتورة شراء، يرجى المحاولة مرة أخرى.');
-
             }
             DB::commit();
             return $this->successResponse('تم تحديث تسديد فاتورة شراء بنجاح.', 200);
@@ -345,8 +344,8 @@ class FinancialTransactionService extends Service
         try {
             $userId = Auth::id();
 
-            $lastTransaction = FinancialTransaction::where('agent_id', $id)->latest()->first();
-            $sumAmount = optional($lastTransaction)->sum_amount ?? 0;
+            $LastFinancialTransaction = FinancialTransaction::where('agent_id', $id)->latest()->first();
+            $sumAmount = optional($LastFinancialTransaction)->sum_amount ?? 0;
             $sumAmount += ($data["total_amount"] ?? 0);
 
             $financialTransaction = FinancialTransaction::create([
@@ -390,12 +389,12 @@ class FinancialTransactionService extends Service
             $financialTransaction = FinancialTransaction::findOrFail($id);
             if ($financialTransaction->type == 'دين فاتورة شراء') {
                 // Calculate new sum_amount for future transactions
-                $nextTransaction = FinancialTransaction::where('agent_id', $financialTransaction->agent_id)
-                    ->where('id', '>', $id)
+                $LastFinancialTransaction = FinancialTransaction::where('agent_id', $financialTransaction->agent_id)
+                    ->where('id', '<', $id)
                     ->latest()
                     ->first();
 
-                $sumAmount = optional($nextTransaction)->sum_amount ?? 0;
+                $sumAmount = optional($LastFinancialTransaction)->sum_amount ?? 0;
                 $totalAamountBefore = $financialTransaction->total_amount;
                 $totalAamount = $data["total_amount"] ?? $totalAamountBefore;
 

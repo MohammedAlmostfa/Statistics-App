@@ -1,25 +1,20 @@
 <?php
-
 namespace App\Events;
 
+use Illuminate\Support\Facades\Log;
 use App\Models\FinancialTransaction;
-use Illuminate\Broadcasting\Channel;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
 class FinancialTransactionEdit
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+
+    public $financialTransaction;
+    public $type;
 
 
-    public $transaction;
-
-    public function __construct(FinancialTransaction $transaction)
+    public function __construct(FinancialTransaction $financialTransaction, string $type='update')
     {
-        $this->transaction = $transaction;
+        Log::info("تم تشغيل الحدث لتعديل المعاملة المالية.");
+        $this->type = $type;
+        $this->financialTransaction = $financialTransaction;
     }
 }

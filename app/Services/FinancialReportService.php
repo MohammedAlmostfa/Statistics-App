@@ -32,6 +32,7 @@ class FinancialReportService extends Service
             // Sum of all installment payments collected within the date range
             $collectedInstallmentPayments = InstallmentPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
             $collectedDebtPayments =DebtPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
+            // $collecteFinancialTransactionPayments=FinancialTransaction::whereBetween('payment_date', [$startDate, $endDate])->where()->sum('amount');
 
             // Total expenses recorded within the date range
             $totalExpenses = Payment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
@@ -68,6 +69,8 @@ class FinancialReportService extends Service
 
             // Operating net profit = Gross profit - Expenses
             $operatingNetProfit = $grossProfitFromSalesInPeriod - $totalExpenses;
+
+
 
             // Return a successful structured financial report
             return $this->successResponse(
