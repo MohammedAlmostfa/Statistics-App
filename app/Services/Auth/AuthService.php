@@ -52,6 +52,7 @@ class AuthService
                 'data' => [
                     'token' => $token,
                     'type' => 'bearer',
+                    'name'=>$credentials['name'],
                     'role' => $user->getRoleNames()->first(),
                 ],
             ];
