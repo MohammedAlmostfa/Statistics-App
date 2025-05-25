@@ -33,8 +33,8 @@ class FinancialReportService extends Service
             // Sum of all installment payments collected within the date range
             $collectedInstallmentPayments = InstallmentPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
             $collectedDebtPayments =DebtPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
-            $collecteFinancialTransactionPayments=FinancialTransaction::whereBetween('payment_date', [$startDate, $endDate])->where('type', 'تسديد فاتورة شراء')->sum('paid_amount');
-            $collecteFinancialTransactionDebts=FinancialTransaction::whereBetween('payment_date', [$startDate, $endDate])->where('type', 'دين فاتورة شراء')->sum('total_amount');
+            $collecteFinancialTransactionPayments=FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])->where('type', 'تسديد فاتورة شراء')->sum('paid_amount');
+            $collecteFinancialTransactionDebts=FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])->where('type', 'دين فاتورة شراء')->sum('total_amount');
             // 0 => 'فاتورة شراء',
             // 1 => 'تسديد فاتورة شراء',
             // 3 =>'دين فاتورة شراء',
