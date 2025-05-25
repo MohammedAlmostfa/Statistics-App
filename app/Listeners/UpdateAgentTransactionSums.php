@@ -50,12 +50,10 @@ class UpdateAgentTransactionSums
          */
         foreach ($affectedTransactions as $trans) {
             $SumAmount = match ($trans->type) {
-                'Purchase Invoice Payment' => $SumAmount - $trans->paid_amount, // Deduct paid amount
-                'Purchase Invoice Debt'    => $SumAmount + $trans->total_amount, // Add debt amount
-                default                    => $SumAmount + ($trans->total_amount - $trans->discount_amount - $trans->paid_amount) // Adjust total sum
+                'تسديد فاتورة شراء' => $SumAmount - $trans->paid_amount,
+                'دين فاتورة شراء' => $SumAmount + $trans->total_amount,
+                default => $SumAmount + ($trans->total_amount - $trans->discount_amount - $trans->paid_amount)
             };
-
-            // Update transaction with new `sum_amount`
             $trans->update(['sum_amount' => $SumAmount]);
         }
     }
