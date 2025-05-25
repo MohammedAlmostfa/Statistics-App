@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Http\Requests\DebetRequest;
+namespace App\Http\Requests\FinancialTransactionRequest;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
-class FitterinDebetgData extends FormRequest
+class FilteringFinancialTransactionData extends FormRequest
 {
     /**
+
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
@@ -24,8 +25,9 @@ class FitterinDebetgData extends FormRequest
     public function rules(): array
     {
         return [
-           'name'=>'nullabl|string',
-           'receipt_number' => 'nullabl|integer',
+     'transaction_date' => 'nullable|date',
+
+
         ];
     }
     /**
@@ -36,13 +38,12 @@ class FitterinDebetgData extends FormRequest
      * @return void
      *
      */
-
     protected function failedValidation(Validator $validator): void
     {
         throw new HttpResponseException(response()->json([
-            'status' => 'error',
-            'message' => 'فشل التحقق من صحة البيانات',
-            'errors' => $validator->errors(),
+            'status'  => 'error',
+            'message' => 'Validation failed.',
+            'errors'  => $validator->errors(),
         ], 422));
     }
 }

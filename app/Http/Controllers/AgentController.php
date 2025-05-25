@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Agent;
 use App\Services\AgentService;
+use Illuminate\Http\JsonResponse;
 use App\Http\Resources\AgentResource;
 use App\Http\Requests\AgentRequest\StoreAgentData;
 use App\Http\Requests\AgentRequest\UpdateAgentData;
 use App\Http\Resources\FinancialTransactionResource;
 use App\Http\Requests\AgentRequest\FilteringAgentData;
-use Illuminate\Http\JsonResponse;
+use App\Http\Requests\FinancialTransactionRequest\FilteringFinancialTransactionData;
 
 /**
  * **AgentController**
@@ -125,10 +126,10 @@ class AgentController extends Controller
      * @param int $id The agent ID.
      * @return \Illuminate\Http\JsonResponse Paginated list of financial transactions.
      */
-    public function getaAgentFinancialTransactions($id): JsonResponse
+    public function getaAgentFinancialTransactions($id, FilteringFinancialTransactionData $request): JsonResponse
     {
-        $result = $this->agentService->GetFinancialTransactions($id);
-
+        $validatedData = $request->validated();
+        $result = $this->agentService->GetFinancialTransactions($id, $validatedData);
         return $result['status'] === 200
             ? $this->paginated($result['data'], FinancialTransactionResource::class, $result['message'], $result['status'])
             : $this->error(null, $result['message'], $result['status']);

@@ -7,7 +7,8 @@ use App\Services\DebtService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\DebtResource;
 use App\Http\Requests\DebetRequest\StoreDebtData;
-use App\Http\Requests\DebetRequest\FitterinDebetgData;
+
+use App\Http\Requests\DebetRequest\FitteringDebetgData;
 
 class DebtController extends Controller
 {
@@ -33,7 +34,7 @@ class DebtController extends Controller
      *
      * @return JsonResponse
      */
-    public function index(FitterinDebetgData $request): JsonResponse
+    public function index(FitteringDebetgData $request): JsonResponse
     {
         $result = $this->DebtService->getAllDebts($request->validated());
 

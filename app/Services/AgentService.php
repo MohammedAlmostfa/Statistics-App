@@ -157,11 +157,16 @@ class AgentService extends Service
      * @param int $id The agent ID.
      * @return array Response containing financial transaction data.
      */
-    public function GetFinancialTransactions($id)
+    public function GetFinancialTransactions($id, $data)
     {
         try {
             // Retrieve paginated financial transactions related to the agent
-            $FinancialTransactions = FinancialTransaction::where('agent_id', $id)->with('user:id,name')->paginate(10);
+            $FinancialTransactions = FinancialTransaction::where('agent_id', $id)
+            ->with('user:id,name')
+            ->when(isset($data['transaction_date']), function ($query) use ($data) {
+                return $query->where('transaction_date', '>=', $data['transaction_date']);
+            })
+            ->paginate(10);
 
             return $this->successResponse('تم استرجاع المعاملات المالية للوكيل بنجاح', 200, $FinancialTransactions);
         } catch (Exception $e) {
