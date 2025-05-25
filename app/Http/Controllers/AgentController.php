@@ -131,7 +131,7 @@ class AgentController extends Controller
         $validatedData = $request->validated();
         $result = $this->agentService->GetFinancialTransactions($id, $validatedData);
         return $result['status'] === 200
-            ? $this->paginated($result['data'], FinancialTransactionResource::class, $result['message'], $result['status'])
+            ? $this->success(FinancialTransactionResource::collection($result['data']), $result['message'], $result['status'])
             : $this->error(null, $result['message'], $result['status']);
     }
 }

@@ -166,7 +166,7 @@ class AgentService extends Service
             ->when(isset($data['transaction_date']), function ($query) use ($data) {
                 return $query->where('transaction_date', '>=', $data['transaction_date']);
             })
-            ->paginate(10);
+->get();
 
             return $this->successResponse('تم استرجاع المعاملات المالية للوكيل بنجاح', 200, $FinancialTransactions);
         } catch (Exception $e) {
