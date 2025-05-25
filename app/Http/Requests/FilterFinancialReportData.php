@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 class FilterFinancialReportData extends FormRequest
 {
     /**
-     *
+     * Determine if the user is authorized to make this request.
      *
      * @return bool
      */
@@ -20,7 +20,7 @@ class FilterFinancialReportData extends FormRequest
     }
 
     /**
-     *
+     * Get the validation rules that apply to the request.
      *
      * @return array<string, mixed>
      */
@@ -28,20 +28,37 @@ class FilterFinancialReportData extends FormRequest
     {
         return [
             'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after:startDate',
+            'end_date' => 'nullable|date|after:start_date',
         ];
     }
 
+    /**
+     * Prepare input before validation.
+     * Automatically completes missing date parts (year-only, year-month).
+     */
+    public function prepareForValidation()
+    {
+        foreach (['start_date', 'end_date'] as $dateField) {
+            if (!empty($this->$dateField)) {
+                // If only the year is provided, append "-01-01"
+                if (preg_match('/^\d{4}$/', $this->$dateField)) {
+                    $this->merge([$dateField => $this->$dateField . '-01-01']);
+                }
+                // If year and month are provided, append "-01"
+                elseif (preg_match('/^\d{4}-\d{2}$/', $this->$dateField)) {
+                    $this->merge([$dateField => $this->$dateField . '-01']);
+                }
+            }
+        }
+    }
 
     /**
      * Handle a failed validation attempt.
-     * This method is called when validation fails.
-     * Logs failed attempts and throws validation exception.
+     * Logs failed attempts and throws a validation exception.
+     *
      * @param \Illuminate\Validation\Validator $validator
      * @return void
-     *
      */
-
     protected function failedValidation(Validator $validator): void
     {
         throw new HttpResponseException(response()->json([
