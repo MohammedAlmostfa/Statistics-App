@@ -296,7 +296,7 @@ class FinancialTransactionService extends Service
                     ->first();
 
                 $sumAmount = optional($LastFinancialTransaction)->sum_amount ?? 0;
-                $sumAmount -= (($data["paid_amount"] ?? 0));
+                $sumAmount -= ($data["paid_amount"] ?? 0);
 
                 $financialTransaction->update([
                     'transaction_date' => $data["transaction_date"] ?? $financialTransaction->transaction_date,
@@ -398,7 +398,7 @@ class FinancialTransactionService extends Service
                 $totalAamountBefore = $financialTransaction->total_amount;
                 $totalAamount = $data["total_amount"] ?? $totalAamountBefore;
 
-                $sumAmount += ($totalAamount - $totalAamountBefore);
+                $sumAmount += $totalAamount ?? 0;
 
                 $financialTransaction->update([
                     'transaction_date' => $data["transaction_date"] ?? $financialTransaction->transaction_date,
