@@ -29,8 +29,8 @@ class UpdateCustomerData extends FormRequest
             'notes' => 'nullable|string|max:1000',
             "sponsor_name" => 'nullable|string',
             'sponsor_phone' => 'nullable',
-            'Record_id' => 'nullable|integer',
-            'Page_id' => 'nullable|integer',
+            'Record_id' => 'nullable|string',
+            'Page_id' => 'nullable|string',
             'status' => 'nullable|in:جديد,قديم',
 
 
