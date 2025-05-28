@@ -19,6 +19,7 @@ class AgentResource extends JsonResource
             'name' => $this->name,
             'phone' => $this->phone,
             'notes' => $this->notes,
+            'total_debt'=>$this->lastfinancialTransaction->sum_amount??null,
             'created_at' => $this->created_at->format('Y-m-d '),
 
         ];

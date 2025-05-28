@@ -46,6 +46,7 @@ class AgentService extends Service
                     ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
                     ->where("status", 'موجود')->orderByDesc('created_at')
                     ->orderByDesc('created_at')
+                    ->with("lastfinancialTransaction")
                     ->paginate(10);
             });
 

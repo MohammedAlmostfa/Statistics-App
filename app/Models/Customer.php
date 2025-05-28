@@ -48,8 +48,8 @@ class Customer extends Model
         'notes'         => 'string',
         'sponsor_name'  => 'string',
         'sponsor_phone' => 'integer',
-        'Record_id'     => 'integer',
-        'Page_id'       => 'integer',
+        'Record_id'     => 'string',
+        'Page_id'       => 'string',
     ];
 
     /**

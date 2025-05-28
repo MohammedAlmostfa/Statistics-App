@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Facades\Log;
+use App\Models\FinancialTransaction;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * **Agent Model**
@@ -103,6 +105,15 @@ class Agent extends Model
             Log::info("Agent deleted ({$agent->id}). Cache cleared.");
         });
     }
+    public function financialTransactions()
+    {
+        return $this->hasMany(FinancialTransaction::class);
+    }
+    public function lastfinancialTransaction(): HasOne
+    {
+        return $this->hasOne(FinancialTransaction::class)->latestOfMany('id');
+    }
+
 
     /**
      * **Clear relevant cache for agents**

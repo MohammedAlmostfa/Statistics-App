@@ -16,8 +16,8 @@ return new class extends Migration {
             $table->string('phone')->unique();
             $table->string('sponsor_name')->nullable();
             $table->string('sponsor_phone')->nullable();
-            $table->integer('Record_id')->nullable();
-            $table->integer('Page_id')->nullable();
+            $table->string('Record_id')->nullable();
+            $table->string('Page_id')->nullable();
             $table->integer('status')->default(1);
             $table->text('notes')->nullable();
             $table->timestamps();
