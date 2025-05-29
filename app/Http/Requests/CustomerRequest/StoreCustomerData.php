@@ -25,7 +25,7 @@ class StoreCustomerData extends FormRequest
     {
         return [
             'name' => 'required|string|max:255|unique:customers,name',
-            'phone' => 'required|unique:customers,phone|max:20',
+            'phone' => 'nullable|unique:customers,phone|max:20',
             'notes' => 'nullable|string|max:1000',
             "sponsor_name" => 'nullable|string',
             'sponsor_phone' => 'nullable',
