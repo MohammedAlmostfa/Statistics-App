@@ -26,17 +26,17 @@ class StoreFinancialTransactionData extends FormRequest
         return [
             'transaction_date' => 'required|date',
             'agent_id' => 'required|integer|exists:agents,id',
-            'total_amount' => 'required|integer',
-            'discount_amount' => 'required|integer',
-            'paid_amount' => 'required|integer',
+            'total_amount' => 'required|numeric',
+            'discount_amount' => 'required|numeric',
+            'paid_amount' => 'required|float',
             'description' => 'nullable|string',
 
             'products' => 'required|array',
             'products.*.product_id' => 'required|exists:products,id',
             'products.*.selling_price' => 'required|numeric',
             'products.*.dollar_buying_price' => 'required|numeric',
-            'products.*.installment_price' => 'required|integer',
-            'products.*.dollar_exchange' => 'required|integer:',
+            'products.*.installment_price' => 'required|numeric',
+            'products.*.dollar_exchange' => 'required|numeric:',
             'products.*.quantity' => 'required|integer:',
 
         ];

@@ -15,10 +15,10 @@ return new class extends Migration {
             $table->foreignId('agent_id')->constrained('agents')->cascadeOnDelete();
             $table->date('transaction_date');
             $table->integer('type');
-            $table->integer('total_amount')->nullable();
-            $table->integer('discount_amount')->nullable();
-            $table->integer('paid_amount')->nullable();
-            $table->integer('sum_amount');
+            $table->float('total_amount')->nullable();
+            $table->float('discount_amount')->nullable();
+            $table->float('paid_amount')->nullable();
+            $table->float('sum_amount');
             $table->string('description')->nullable();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();

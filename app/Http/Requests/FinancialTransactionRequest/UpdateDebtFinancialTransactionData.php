@@ -25,7 +25,7 @@ class UpdateDebtFinancialTransactionData extends FormRequest
     public function rules(): array
     {
         return [
-            'total_amount' => 'required|integer',
+            'total_amount' => 'required|numeric',
             'transaction_date' => 'nullable|date',
             'description' => 'nullable|string',
 

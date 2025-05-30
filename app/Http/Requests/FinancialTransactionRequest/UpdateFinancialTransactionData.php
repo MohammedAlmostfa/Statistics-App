@@ -27,17 +27,17 @@ class UpdateFinancialTransactionData extends FormRequest
         return [
             'transaction_date' => 'nullable|date',
             'agent_id' => 'nullable|integer|exists:agents,id',
-            'total_amount' => 'nullable|integer',
-            'discount_amount' => 'nullable|integer',
-            'paid_amount' => 'nullable|integer',
+            'total_amount' => 'nullable|numeric',
+            'discount_amount' => 'nullable|numeric',
+            'paid_amount' => 'nullable|numeric',
             'description' => 'nullable|string',
 
             'products' => 'nullable|array',
             'products.*.product_id' => 'required|exists:products,id',
-            'products.*.selling_price' => 'nullable|integer:',
-            'products.*.dollar_buying_price' => 'nullable|integer:',
-            'products.*.installment_price' => 'nullable|integer',
-            'products.*.dollar_exchange' => 'nullable|integer:',
+            'products.*.selling_price' => 'nullable|numeric:',
+            'products.*.dollar_buying_price' => 'nullable|numeric:',
+            'products.*.installment_price' => 'nullable|numeric',
+            'products.*.dollar_exchange' => 'nullable|numeric:',
             'products.*.quantity' => 'nullable|integer:',
 
         ];

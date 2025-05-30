@@ -10,7 +10,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class StoreDebtFinancialTransactionData extends FormRequest
 {
     /**
-     /**
+
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
@@ -26,7 +26,7 @@ class StoreDebtFinancialTransactionData extends FormRequest
     public function rules(): array
     {
         return [
-            'total_amount' => 'required|integer',
+            'total_amount' => 'required|numeric',
             'transaction_date' => 'required|date',
             'description' => 'nullable|string',
 

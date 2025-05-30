@@ -46,11 +46,11 @@ class FinancialTransaction extends Model
      */
     protected $casts = [
         'agent_id'        => 'integer',
-        'sum_amount'      => 'integer',
+        'sum_amount'      => 'float',
         'transaction_date'=> 'date',
-        'total_amount'    => 'integer',
-        'discount_amount' => 'integer',
-        'paid_amount'     => 'integer',
+        'total_amount'    => 'float',
+        'discount_amount' => 'float',
+        'paid_amount'     => 'float',
         'description'     => 'string',
         'user_id'         => 'integer',
     ];
