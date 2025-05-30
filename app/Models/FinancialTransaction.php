@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\FinancialTransactionsProduct;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Log;
+
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Class FinancialTransaction
@@ -129,4 +132,51 @@ class FinancialTransaction extends Model
             set: fn ($value) => array_search($value, self::TYPE_MAP)  // Convert string back to its corresponding integer value
         );
     }
+
+
+    /**
+ * **Boot method for model event handling**
+ *
+ * This method listens to `created`, `updated`, and `deleted` events
+ * and clears relevant caches while logging changes.
+ */
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($transaction) {
+            self::clearCache();
+            Log::info("تم مسح كاش الوكلاء");
+        });
+
+        static::updated(function ($transaction) {
+            self::clearCache();
+            Log::info("تم مسح كاش الوكلاء");
+        });
+
+
+        static::deleted(function ($transaction) {
+            self::clearCache();
+            Log::info("تم مسح كاش الوكلاء");
+        });
+    }
+
+
+    /**
+     * **Clear relevant cache for agents**
+     *
+     * Ensures the cache keys related to agents are removed when model events occur.
+     */
+    protected static function clearCache()
+    {
+        $cacheKeys = Cache::get('all_agents_keys', []);
+        foreach ($cacheKeys as $key) {
+            Cache::forget($key);
+        }
+        Cache::forget('all_agents_keys');
+    }
+
+
+
 }

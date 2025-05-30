@@ -43,14 +43,14 @@ class Agent extends Model
      */
     protected $casts = [
         'name' => 'string',
-        'phone'=> 'integer',
+        'phone' => 'integer',
         'details' => 'string',
     ];
     /**
-         * Status constants to enhance readability.
-         *
-         * @var array<int, string>
-         */
+     * Status constants to enhance readability.
+     *
+     * @var array<int, string>
+     */
     const STATUS_MAP = [
         0 => 'موجود',   // User exists
         1 => 'محذوف',  // User is removed
@@ -80,31 +80,8 @@ class Agent extends Model
         return $this->morphMany(ActivitiesLog::class, 'type');
     }
 
-    /**
-     * **Boot method for model event handling**
-     *
-     * This method listens to `created`, `updated`, and `deleted` events
-     * and clears relevant caches while logging changes.
-     */
-    protected static function boot()
-    {
-        parent::boot();
 
-        static::created(function ($agent) {
-            self::clearCache();
-            Log::info("New agent created ({$agent->id}). Cache cleared.");
-        });
 
-        static::updated(function ($agent) {
-            self::clearCache();
-            Log::info("Agent data updated ({$agent->id}). Cache cleared.");
-        });
-
-        static::deleted(function ($agent) {
-            self::clearCache();
-            Log::info("Agent deleted ({$agent->id}). Cache cleared.");
-        });
-    }
     public function financialTransactions()
     {
         return $this->hasMany(FinancialTransaction::class);
@@ -113,7 +90,35 @@ class Agent extends Model
     {
         return $this->hasOne(FinancialTransaction::class)->latestOfMany('id');
     }
+    /**
+     * **Boot method for model event handling**
+     *
+     * This method listens to `created`, `updated`, and `deleted` events
+     * and clears relevant caches while logging changes.
+     */
 
+
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($agent) {
+            self::clearCache();
+            Log::info("تم إنشاء وكيل جديد ({$agent->id}). تم مسح الكاش.الوكلاء");
+        });
+
+        static::updated(function ($agent) {
+            self::clearCache();
+            Log::info("تم تحديث بيانات الوكيل ({$agent->id}). تم مسح الكاش الوكلاء");
+        });
+
+
+        static::deleted(function ($agent) {
+            self::clearCache();
+            Log::info("تم حذف الوكيل ({$agent->id}). تم مسح الكاش.الوكلاء");
+        });
+    }
 
     /**
      * **Clear relevant cache for agents**
