@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('agents', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('phone')->unique()->nullable();
+            $table->string('phone')->nullable();
             $table->text('notes')->nullable();
             $table->tinyInteger('status')->default(0);
 

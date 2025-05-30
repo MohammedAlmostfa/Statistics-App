@@ -4,8 +4,9 @@ namespace App\Http\Requests\UserRequest;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Support\Facades\Log;
+
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Validation\Rule;
 
 class StoreUserData extends FormRequest
 {
@@ -22,16 +23,18 @@ class StoreUserData extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+
     public function rules(): array
     {
-
         return [
-           'name' => 'required|unique:users,name',
-           'password' => 'required|min:4',
-       ];
-
-
+            'name' => [
+                'required',
+                Rule::unique('users')->where(fn ($query) => $query->where('status', '!=', 1)),
+            ],
+            'password' => 'required|min:4',
+        ];
     }
+
     /**
     * Handle a failed validation attempt.
     * This method is called when validation fails.

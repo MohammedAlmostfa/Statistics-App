@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Validation\Rule;
 
 class UpdateUserData extends FormRequest
 {
@@ -22,14 +23,17 @@ class UpdateUserData extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+
+
     public function rules(): array
     {
         return [
-            'name' => 'nullable|unique:users,name',
-            'password' => 'nullable|min:4',
+            'name' => [
+                'nullable',
+                Rule::unique('users')->where(fn ($query) => $query->where('status', '!=', 1)),
+            ],
+            'nullable' => 'required|min:4',
         ];
-
-
     }
     /**
      * Handle a failed validation attempt.

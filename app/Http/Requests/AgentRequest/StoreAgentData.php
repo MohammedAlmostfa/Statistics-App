@@ -4,6 +4,7 @@ namespace App\Http\Requests\AgentRequest;
 
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Validation\Rule;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -22,14 +23,26 @@ class StoreAgentData extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+
+
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255|unique:agents,name',
-            'phone' => 'nullable|unique:agents,phone|max:20',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('agents')->where(fn ($query) => $query->where('status', '!=', 1)),
+            ],
+            'phone' => [
+                'nullable',
+                'max:20',
+                Rule::unique('agents')->where(fn ($query) => $query->where('status', '!=', 1)),
+            ],
             'notes' => 'nullable|string|max:1000',
         ];
     }
+
     /**
      * Handle a failed validation attempt.
      * This method is called when validation fails.
