@@ -3,62 +3,79 @@
 namespace App\Console\Commands;
 
 use Carbon\Carbon;
-use App\Models\Receipt;
+use App\Models\Debt;
+use App\Models\Customer;
+use App\Models\DebtPayment;
 use Illuminate\Console\Command;
+use App\Models\InstallmentPayment;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\SendWhatsAppNotification;
 
 class CheckLatePayments extends Command
 {
     protected $signature = 'check:late-payments';
-    protected $description = 'Check invoices for late installment payments and send reminders to customers if overdue.';
+    protected $description = 'Send WhatsApp reminders for overdue installment and debt payments.';
 
     public function handle(): int
     {
-        $now = Carbon::now();
+        $oneMonthAgo = Carbon::now()->subMonth();
+        $customers = Customer::all();
 
-
-        $receipts = Receipt::where('type', 'اقساط')
-            ->with(['receiptProducts.installment.InstallmentPayments', 'receiptProducts.product', 'customer'])
-            ->get();
-
-        foreach ($receipts as $receipt) {
-            foreach ($receipt->receiptProducts as $product) {
-                $installment = $product->installment;
-
-                if (!$installment || $installment->status !== 'قيد التسديد') {
-                    continue;
-                }
-
-                $latestPayment = $installment->InstallmentPayments->sortByDesc('payment_date')->first();
-
-                if ($latestPayment) {
-                    $lastPaymentDate = Carbon::parse($latestPayment->payment_date)->format('Y-m-d');
-                    $paymentMessage = " آخر دفعة كانت بتاريخ {$lastPaymentDate}.";
-                } else {
-                    $paymentMessage = " لم يتم سداد أي دفعة حتى الآن.";
-                }
-
-                $productName = $product->product->name ?? 'منتج غير محدد';
-                $customerName = $receipt->customer->name;
-                $receiptNumber = $receipt->receipt_number;
-                $receiptDate = $receipt->receipt_date->format('Y-m-d');
-                $installmentAmount = $installment->installment;
-
-
-                $message = "مرحبًا {$customerName}، نود تذكيرك بأن القسط الخاص بالمنتج '{$productName}' في الفاتورة رقم {$receiptNumber} (بتاريخ: {$receiptDate}) قد تجاوز موعد السداد.";
-                $message .= "\n{$paymentMessage} مبلغ القسط المترتب عليك الآن هو {$installmentAmount} دينار.";
-                $message .= "\nنرجو منك تسديد القسط في أقرب وقت ممكن لتجنب أي تأخير إضافي والحفاظ على التزامك.";
-                $message .= "\nإذا كنت بحاجة إلى أي مساعدة أو لديك استفسارات، لا تتردد في التواصل معنا، فنحن هنا لخدمتك.";
-                $message .= "\n📌 **معرض محمد حمدان **";
-
-                if ($receipt->customer) {
-                    Notification::send($receipt->customer, new SendWhatsAppNotification($message));
-                    $this->info("✅ تم إرسال تذكير بالسداد إلى العميل {$customerName} بخصوص المنتج '{$productName}'.");
-                }
-            }
+        foreach ($customers as $customer) {
+            $this->checkInstallments($customer, $oneMonthAgo);
+            $this->checkDebts($customer, $oneMonthAgo);
         }
 
         return Command::SUCCESS;
+    }
+
+    protected function checkInstallments($customer, $oneMonthAgo)
+    {
+        $latestInstallmentPayment = InstallmentPayment::whereHas('installment.receiptProduct.receipt', function ($query) use ($customer) {
+            $query->where('customer_id', $customer->id);
+        })
+        ->whereHas('installment', function ($query) {
+            $query->where('status', 1);
+        })
+        ->latest('id')
+        ->first();
+
+        if ($latestInstallmentPayment && $latestInstallmentPayment->payment_date) {
+            $paymentDate = Carbon::parse($latestInstallmentPayment->payment_date);
+            $daysDiff = $paymentDate->diffInDays(Carbon::today());
+
+            if ($daysDiff ==30) {
+                $lastDate = $paymentDate->format('Y-m-d');
+                $msg = "السلام عليكم {$customer->name}، لم نقم بتسجيل أي دفعة أقساط منذ {$lastDate}. نذكرك بضرورة السداد لتفادي التأخير، وذلك لصالح محمد حمدان للإلكترونيات.";
+
+                Notification::send($customer, new SendWhatsAppNotification($msg));
+
+            }
+        }
+    }
+
+    protected function checkDebts($customer, $oneMonthAgo)
+    {
+        $debts = Debt::where('customer_id', $customer->id)
+                    ->where('remaining_debt', '>', 0)
+                    ->get();
+
+        foreach ($debts as $debt) {
+            $latestDebtPayment = $debt->debtPayments()->latest('id')->first();
+            $lastPaymentDate = $latestDebtPayment?->payment_date ?? $debt->debt_date;
+
+            if ($lastPaymentDate) {
+                $date = Carbon::parse($lastPaymentDate);
+                $daysDiff = $date->diffInDays(Carbon::today());
+                if ($daysDiff == 30) {
+                    $formattedDate = $date->format('Y-m-d');
+                    $msg = "مرحبًا {$customer->name}، لديك دين لم يتم سداده منذ {$formattedDate}. نرجو السداد في أقرب وقت، وذلك لصالح محمد حمدان للإلكترونيات.";
+
+                    Notification::send($customer, new SendWhatsAppNotification($msg));
+
+                }
+            }
+        }
     }
 }
