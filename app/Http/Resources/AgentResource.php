@@ -19,10 +19,11 @@ class AgentResource extends JsonResource
             'name' => $this->name,
             'phone' => $this->phone,
             'notes' => $this->notes,
-            'total_debt'=>$this->lastfinancialTransaction->sum_amount??null,
-            'last-paid_date'=>$this->lastfinancialTransactionPaid->transaction_date->format('Y-m-d')??null,
-            'created_at' => $this->created_at->format('Y-m-d '),
+            'total_debt' => optional($this->lastfinancialTransaction)->sum_amount ?? null,
+'last_paid_date' => $this->lastfinancialTransactionPaid ?
+    $this->lastfinancialTransactionPaid->transaction_date->format('Y-m-d') : null,
 
+            'created_at' => $this->created_at->format('Y-m-d'),
         ];
     }
 }
