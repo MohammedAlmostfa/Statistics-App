@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->date('transaction_date');
             $table->integer('type');
             $table->float('total_amount')->nullable();
+            $table->integer('financial_transactions_number')->nullable();
             $table->float('discount_amount')->nullable();
             $table->float('paid_amount')->nullable();
             $table->float('sum_amount');

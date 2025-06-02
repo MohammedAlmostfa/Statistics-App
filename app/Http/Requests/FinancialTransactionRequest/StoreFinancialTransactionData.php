@@ -30,6 +30,7 @@ class StoreFinancialTransactionData extends FormRequest
             'discount_amount' => 'required|numeric',
             'paid_amount' => 'required|numeric',
             'description' => 'nullable|string',
+            "financial_transactions_number"=>'nullable|integer',
 
             'products' => 'required|array',
             'products.*.product_id' => 'required|exists:products,id',

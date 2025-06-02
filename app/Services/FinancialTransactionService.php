@@ -64,6 +64,7 @@ class FinancialTransactionService extends Service
                 'total_amount' => $data["total_amount"],
                 'discount_amount' => $data["discount_amount"],
                 'paid_amount' => $data["paid_amount"],
+                'financial_transactions_number' => $data["financial_transactions_number"],
                 'description' => $data["description"] ?? null,
                 'sum_amount' => $sumamount,
                 'user_id' => $userId,
@@ -131,6 +132,7 @@ class FinancialTransactionService extends Service
                     'discount_amount' => $data["discount_amount"] ?? $financialTransaction->discount_amount,
                     'paid_amount' => $data["paid_amount"] ?? $financialTransaction->paid_amount,
                     'description' => $data["description"] ?? $financialTransaction->description,
+                    'financial_transactions_number' => $data["financial_transactions_number"]?? $financialTransaction->financial_transactions_number,
                     'sum_amount' => $sumAmount,
                 ]);
 

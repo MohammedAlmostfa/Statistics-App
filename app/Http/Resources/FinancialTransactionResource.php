@@ -16,6 +16,7 @@ class FinancialTransactionResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'financial_transactions_number'=>$this->financial_transactions_number,
             'agent_id' => $this->agent_id,
             'sum_amount' => $this->sum_amount,
             'transaction_date' => $this->transaction_date->format('Y-m-d'),

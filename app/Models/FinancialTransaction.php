@@ -35,6 +35,7 @@ class FinancialTransaction extends Model
         'paid_amount',
         'description',
         'user_id',
+        'financial_transactions_number'
     ];
 
     /**
@@ -53,6 +54,7 @@ class FinancialTransaction extends Model
         'paid_amount'     => 'float',
         'description'     => 'string',
         'user_id'         => 'integer',
+        'financial_transactions_number'=>'integer',
     ];
 
     /**
