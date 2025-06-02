@@ -46,7 +46,7 @@ class AgentService extends Service
                     ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
                     ->where("status", 'موجود')->orderByDesc('created_at')
                     ->orderByDesc('created_at')
-                    ->with("lastfinancialTransaction")
+                    ->with(["lastfinancialTransaction",'lastfinancialTransactionPaid'])
                     ->paginate(10);
             });
 
@@ -140,7 +140,7 @@ class AgentService extends Service
                 'type_type' => Agent::class,
             ]);
 
-            $agent->update(['status'=>"محذوف"]);
+            $agent->update(['status' => "محذوف"]);
 
             return $this->successResponse('تم حذف الوكيل بنجاح.', 200);
         } catch (Exception $e) {
@@ -163,11 +163,11 @@ class AgentService extends Service
         try {
             // Retrieve paginated financial transactions related to the agent
             $FinancialTransactions = FinancialTransaction::where('agent_id', $id)
-            ->with('user:id,name')
-            ->when(isset($data['transaction_date']), function ($query) use ($data) {
-                return $query->where('transaction_date', '>=', $data['transaction_date']);
-            })
-->get();
+                ->with('user:id,name')
+                ->when(isset($data['transaction_date']), function ($query) use ($data) {
+                    return $query->where('transaction_date', '>=', $data['transaction_date']);
+                })
+                ->get();
 
             return $this->successResponse('تم استرجاع المعاملات المالية للوكيل بنجاح', 200, $FinancialTransactions);
         } catch (Exception $e) {

@@ -90,6 +90,16 @@ class Agent extends Model
     {
         return $this->hasOne(FinancialTransaction::class)->latestOfMany('id');
     }
+
+    public function lastfinancialTransactionPaid(): HasOne
+    {
+        return $this->hasOne(FinancialTransaction::class)
+            ->where('type', 1)
+            ->latestOfMany('id');
+    }
+
+
+
     /**
      * **Boot method for model event handling**
      *
