@@ -26,16 +26,16 @@ class InstallmentPayment extends Model
         'amount',
     ];
     /**
- * Casts for attributes.
- *
- * @var array
- * @documented
- */
+     * Casts for attributes.
+     *
+     * @var array
+     * @documented
+     */
     protected $casts = [
-         'installment_id' => 'integer',
-         'payment_date' => 'date',
-         'amount' => 'integer',
-         'user_id'=>'integer',
+        'installment_id' => 'integer',
+        'payment_date' => 'date',
+        'amount' => 'integer',
+        'user_id' => 'integer',
 
     ];
     public function activities()
@@ -62,19 +62,16 @@ class InstallmentPayment extends Model
         static::created(function ($installmentPayment) {
             self::clearCustomerCache();
             Log::info("وتم حذف كاش الزبائن.");
-
         });
 
         static::updated(function ($installmentPayment) {
             self::clearCustomerCache();
             Log::info("وتم حذف كاش الزبائن.");
-
         });
 
         static::deleted(function ($installmentPayment) {
             self::clearCustomerCache();
             Log::info("وتم حذف كاش الزبائن.");
-
         });
     }
 

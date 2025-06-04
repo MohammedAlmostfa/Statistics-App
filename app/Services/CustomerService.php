@@ -96,10 +96,11 @@ class CustomerService extends Service
                     if ($latestDebtPaymentDate && $latestInstallmentPaymentDate) {
                         $debtDate = new DateTime($latestDebtPaymentDate);
                         $installmentDate = new DateTime($latestInstallmentPaymentDate);
-                        $lastestPaymentDate = ($debtDate < $installmentDate) ? $debtDate->format('Y-m-d') : $installmentDate->format('Y-m-d');
+                        $lastestPaymentDate = ($debtDate > $installmentDate) ? $debtDate->format('Y-m-d') : $installmentDate->format('Y-m-d');
                     } else {
                         $lastestPaymentDate = $latestDebtPaymentDate ?? $latestInstallmentPaymentDate;
                     }
+
 
                     $customer->total_remaining = $totalRemaining;
                     $customer->lastest_payment_date = $lastestPaymentDate;
