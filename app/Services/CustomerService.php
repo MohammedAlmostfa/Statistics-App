@@ -92,21 +92,19 @@ class CustomerService extends Service
                     ->latest('payment_date')
                     ->value('payment_date');
 
-                    // مقارنة التواريخ لاختيار الأقدم
-                    $oldestPaymentDate = null;
+                    $lastestPaymentDate = null;
                     if ($latestDebtPaymentDate && $latestInstallmentPaymentDate) {
                         $debtDate = new DateTime($latestDebtPaymentDate);
                         $installmentDate = new DateTime($latestInstallmentPaymentDate);
-                        $oldestPaymentDate = ($debtDate < $installmentDate) ? $debtDate->format('Y-m-d') : $installmentDate->format('Y-m-d');
+                        $lastestPaymentDate = ($debtDate < $installmentDate) ? $debtDate->format('Y-m-d') : $installmentDate->format('Y-m-d');
                     } else {
-                        $oldestPaymentDate = $latestDebtPaymentDate ?? $latestInstallmentPaymentDate;
+                        $lastestPaymentDate = $latestDebtPaymentDate ?? $latestInstallmentPaymentDate;
                     }
-                    // ✅ إضافة البيانات الإضافية مباشرة للكائن
+
                     $customer->total_remaining = $totalRemaining;
-                    $customer->oldest_payment_date = $oldestPaymentDate;
+                    $customer->lastest_payment_date = $lastestPaymentDate;
 
                     return $customer;
-
                 });
 
                 return $this->successResponse('تم جلب بيانات العملاء بنجاح.', 200, $customers);
