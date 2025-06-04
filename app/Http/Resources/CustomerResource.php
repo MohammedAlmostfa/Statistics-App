@@ -25,6 +25,7 @@ class CustomerResource extends JsonResource
             'status' => $this->status,
             'created_at' => $this->created_at->format('Y-m-d '),
             'sponsor_phone' => $this->sponsor_phone,
+            'oldest_payment_date' => $this->oldest_payment_date,
             'total_remaining' => $this->total_remaining,
         ];
     }

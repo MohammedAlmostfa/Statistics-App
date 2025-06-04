@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Class DebtPayment
@@ -72,5 +74,40 @@ class DebtPayment extends Model
     public function activities()
     {
         return $this->morphMany(ActivitiesLog::class, 'type');
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($debtPayment) {
+            self::clearCustomerCache();
+            Log::info("وتم حذف كاش الزبائن.");
+
+        });
+
+        static::updated(function ($debtPayment) {
+            self::clearCustomerCache();
+            Log::info("وتم حذف كاش الزبائن.");
+
+        });
+
+        static::deleted(function ($debtPayment) {
+            self::clearCustomerCache();
+            Log::info("وتم حذف كاش الزبائن.");
+
+        });
+    }
+
+    /**
+     * Clears cache for installment payments.
+     */
+    protected static function clearCustomerCache()
+    {
+        $cacheKeys = Cache::get('all_customers_keys', []);
+        foreach ($cacheKeys as $key) {
+            Cache::forget($key);
+        }
+        Cache::forget('all_customers_keys');
     }
 }

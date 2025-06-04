@@ -60,19 +60,19 @@ class InstallmentPayment extends Model
         parent::boot();
 
         static::created(function ($installmentPayment) {
-            self::clearCache();
+            self::clearCustomerCache();
             Log::info("وتم حذف كاش الزبائن.");
 
         });
 
         static::updated(function ($installmentPayment) {
-            self::clearCache();
+            self::clearCustomerCache();
             Log::info("وتم حذف كاش الزبائن.");
 
         });
 
         static::deleted(function ($installmentPayment) {
-            self::clearCache();
+            self::clearCustomerCache();
             Log::info("وتم حذف كاش الزبائن.");
 
         });

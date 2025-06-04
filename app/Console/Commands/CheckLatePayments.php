@@ -38,8 +38,8 @@ class CheckLatePayments extends Command
         ->whereHas('installment', function ($query) {
             $query->where('status', 1);
         })
-        ->latest('id')
-        ->first();
+        ->latest('payment_date')
+        ->value('payment_date');
 
         if ($latestInstallmentPayment && $latestInstallmentPayment->payment_date) {
             $paymentDate = Carbon::parse($latestInstallmentPayment->payment_date);

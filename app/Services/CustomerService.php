@@ -2,15 +2,19 @@
 
 namespace App\Services;
 
+use DateTime;
 use Exception;
 use App\Models\Debt;
 use App\Models\Receipt;
 use App\Models\Customer;
+use App\Models\DebtPayment;
 use App\Models\ActivitiesLog;
+use App\Models\InstallmentPayment;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\QueryException;
+use App\Http\Resources\CustomerResource;
 use App\Http\Resources\CustomerReceiptProduct;
 
 /**use Illuminate\Support\Facades\Auth;
@@ -30,7 +34,7 @@ class CustomerService extends Service
      * @return array Structured success or error response.
      */
 
-    public function getAllCustomers($filteringData): array
+    public function getAllCustomers($filteringData)
     {
         try {
             $page = request('page', 1);
@@ -50,10 +54,10 @@ class CustomerService extends Service
                         'debts'
                     ])
                     ->orderByDesc('created_at')
-                    ->paginate(10);
+                    ->paginate(10); // إرجاع `LengthAwarePaginator` مباشرةً
 
-                // حساب قيمة `total_remaining` لكل عميل
-                $transformedCustomers = $customers->getCollection()->map(function ($customer) {
+                // تعديل البيانات داخل `getCollection()`
+                $customers->getCollection()->transform(function ($customer) {
                     $firstPays = 0;
                     $installmentsTotal = 0;
                     $installmentsPaid = 0;
@@ -71,22 +75,44 @@ class CustomerService extends Service
                     $remainingDebt = $customer->debts->sum('remaining_debt');
                     $totalRemaining = ($firstPays + $installmentsTotal) - $installmentsPaid + $remainingDebt;
 
-                    return [
-                        'id' => $customer->id,
-                        'name' => $customer->name,
-                        'phone' => $customer->phone,
-                        'notes' => $customer->notes,
-                        'sponsor_name' => $customer->notes,
-                        'sponsor_phone' => $customer->sponsor_phone,
-                        'Record_id' => $customer->Record_id,
-                        'Page_id' => $customer->Page_id,
-                        'total_remaining' => $totalRemaining,
-                    ];
+                    // الحصول على أحدث تاريخ دفع للقسط
+                    $latestInstallmentPaymentDate = InstallmentPayment::whereHas('installment.receiptProduct.receipt', function ($query) use ($customer) {
+                        $query->where('customer_id', $customer->id);
+                    })
+                    ->whereHas('installment', function ($query) {
+                        $query->where('status', 1);
+                    })
+                    ->latest('payment_date')
+                    ->value('payment_date');
+
+                    // الحصول على أحدث تاريخ دفع للديون
+                    $latestDebtPaymentDate = DebtPayment::whereHas('debt', function ($query) use ($customer) {
+                        $query->where('customer_id', $customer->id);
+                    })
+                    ->latest('payment_date')
+                    ->value('payment_date');
+
+                    // مقارنة التواريخ لاختيار الأقدم
+                    $oldestPaymentDate = null;
+                    if ($latestDebtPaymentDate && $latestInstallmentPaymentDate) {
+                        $debtDate = new DateTime($latestDebtPaymentDate);
+                        $installmentDate = new DateTime($latestInstallmentPaymentDate);
+                        $oldestPaymentDate = ($debtDate < $installmentDate) ? $debtDate->format('Y-m-d') : $installmentDate->format('Y-m-d');
+                    } else {
+                        $oldestPaymentDate = $latestDebtPaymentDate ?? $latestInstallmentPaymentDate;
+                    }
+                    // ✅ إضافة البيانات الإضافية مباشرة للكائن
+                    $customer->total_remaining = $totalRemaining;
+                    $customer->oldest_payment_date = $oldestPaymentDate;
+
+                    return $customer;
+
                 });
 
+                return $this->successResponse('تم جلب بيانات العملاء بنجاح.', 200, $customers);
 
-                return $this->successResponse('تم جلب بيانات العملاء بنجاح.', 200, $transformedCustomers->toArray());
             });
+
         } catch (QueryException $e) {
             Log::error('Database query error while retrieving customers: ' . $e->getMessage());
             return $this->errorResponse('فشل في جلب بيانات العملاء.');
