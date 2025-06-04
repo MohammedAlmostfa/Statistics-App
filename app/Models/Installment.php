@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Installment extends Model
@@ -69,7 +70,10 @@ class Installment extends Model
     {
         return $this->hasMany(InstallmentPayment::class);
     }
-
+    public function lastInstallmentPayments(): HasOne
+    {
+        return $this->hasOne(InstallmentPayment::class)->latestOfMany('id');
+    }
     /**
      * Mapping of installment types to human-readable values.
      *

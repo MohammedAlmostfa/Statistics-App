@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use App\Models\Installment;
+
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Casts\Attribute;
+
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class InstallmentPayment extends Model
 {
@@ -52,6 +55,38 @@ class InstallmentPayment extends Model
     {
         return $this->belongsTo(Installment::class);
     }
+    protected static function boot()
+    {
+        parent::boot();
 
+        static::created(function ($installmentPayment) {
+            self::clearCache();
+            Log::info("وتم حذف كاش الزبائن.");
 
+        });
+
+        static::updated(function ($installmentPayment) {
+            self::clearCache();
+            Log::info("وتم حذف كاش الزبائن.");
+
+        });
+
+        static::deleted(function ($installmentPayment) {
+            self::clearCache();
+            Log::info("وتم حذف كاش الزبائن.");
+
+        });
+    }
+
+    /**
+     * Clears cache for installment payments.
+     */
+    protected static function clearCustomerCache()
+    {
+        $cacheKeys = Cache::get('all_customers_keys', []);
+        foreach ($cacheKeys as $key) {
+            Cache::forget($key);
+        }
+        Cache::forget('all_customers_keys');
+    }
 }

@@ -29,6 +29,7 @@ class CustomerService extends Service
      * @param array|null $filteringData Optional filters (e.g., name, phone).
      * @return array Structured success or error response.
      */
+
     public function getAllCustomers($filteringData): array
     {
         try {
@@ -41,27 +42,61 @@ class CustomerService extends Service
                 Cache::put('all_customers_keys', $cacheKeys, now()->addHours(2));
             }
 
-
-            // Retrieve customers from cache or fetch from the database
-            $customers = Cache::remember($cacheKey, now()->addMinutes(120), function () use ($filteringData) {
-                return Customer::query()
+            return Cache::remember($cacheKey, now()->addMinutes(120), function () use ($filteringData) {
+                $customers = Customer::query()
                     ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
+                    ->with([
+                        'receipts.receiptProducts.installment.installmentPayments',
+                        'debts'
+                    ])
                     ->orderByDesc('created_at')
                     ->paginate(10);
-            });
 
-            return $this->successResponse('تم جلب بيانات العملاء بنجاح.', 200, $customers);
+                // حساب قيمة `total_remaining` لكل عميل
+                $transformedCustomers = $customers->getCollection()->map(function ($customer) {
+                    $firstPays = 0;
+                    $installmentsTotal = 0;
+                    $installmentsPaid = 0;
+
+                    foreach ($customer->receipts as $receipt) {
+                        foreach ($receipt->receiptProducts as $receiptProduct) {
+                            if ($receiptProduct->installment) {
+                                $firstPays += $receiptProduct->installment->first_pay ?? 0;
+                                $installmentsTotal += $receiptProduct->installment->installment ?? 0;
+                                $installmentsPaid += $receiptProduct->installment->installmentPayments->sum('amount');
+                            }
+                        }
+                    }
+
+                    $remainingDebt = $customer->debts->sum('remaining_debt');
+                    $totalRemaining = ($firstPays + $installmentsTotal) - $installmentsPaid + $remainingDebt;
+
+                    return [
+                        'id' => $customer->id,
+                        'name' => $customer->name,
+                        'phone' => $customer->phone,
+                        'notes' => $customer->notes,
+                        'sponsor_name' => $customer->notes,
+                        'sponsor_phone' => $customer->sponsor_phone,
+                        'Record_id' => $customer->Record_id,
+                        'Page_id' => $customer->Page_id,
+                        'total_remaining' => $totalRemaining,
+                    ];
+                });
+
+
+                return $this->successResponse('تم جلب بيانات العملاء بنجاح.', 200, $transformedCustomers->toArray());
+            });
         } catch (QueryException $e) {
             Log::error('Database query error while retrieving customers: ' . $e->getMessage());
             return $this->errorResponse('فشل في جلب بيانات العملاء.');
         } catch (Exception $e) {
             Log::error('General error while retrieving customers: ' . $e->getMessage());
-
-            return $this->errorResponse('حدث خطا اثناءاسترحاع بيانات العملاء , يرجى المحاولة مرة اخرى ');
-            ;
-
+            return $this->errorResponse('حدث خطأ أثناء استرجاع بيانات العملاء، يرجى المحاولة مرة أخرى.');
         }
     }
+
+
 
     /**
      * Create a new customer record.
@@ -91,7 +126,6 @@ class CustomerService extends Service
 
             return $this->errorResponse('حدث خطا اثناء انشاء  العميل  , يرجى المحاولة مرة اخرى ');
             ;
-
         }
     }
 
@@ -122,7 +156,6 @@ class CustomerService extends Service
 
             return $this->errorResponse('حدث خطا اثناء تحديث  العميل  , يرجى المحاولة مرة اخرى ');
             ;
-
         }
     }
 
@@ -155,7 +188,6 @@ class CustomerService extends Service
             Log::error('Error while deleting customer: ' . $e->getMessage());
             return $this->errorResponse('حدث خطا اثناء حذف  العميل  , يرجى المحاولة مرة اخرى ');
             ;
-
         }
     }
 
@@ -172,14 +204,13 @@ class CustomerService extends Service
     {
         try {
             $debts = Debt::with('debtPayments')
-                         ->where('customer_id', $id)
-                         ->get();
+                ->where('customer_id', $id)
+                ->get();
 
             return $this->successResponse('تم استرجاع الديون بنجاح.', 200, $debts);
         } catch (Exception $e) {
             Log::error('Error retrieving debts: ' . $e->getMessage());
             return $this->errorResponse('حدث خطا اثناء استرجاع ديون العميل  , يرجى المحاولة مرة اخرى ');
-
         }
     }
     /**
@@ -246,7 +277,6 @@ class CustomerService extends Service
 
 
             return $this->successResponse('تم جلب جميع منتجات العميل بنجاح.', 200, $formattedProducts);
-
         } catch (\Exception $e) {
             // Log any errors and return a failure response
             Log::error('Error in getCustomerReceiptProducts: ' . $e->getMessage());
