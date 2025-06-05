@@ -13,12 +13,14 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\WhatsappController;
 use App\Http\Controllers\DebtPaymentController;
 use App\Http\Controllers\ActivitiesLogController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\ProductOriginController;
 use App\Http\Controllers\ReceiptProductController;
 use App\Http\Controllers\FinancialReportController;
 use App\Http\Controllers\FinancialTransactionController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\InstallmentPaymentController;
+use PHPUnit\Framework\Attributes\BackupStaticProperties;
 
 /**
  *  Authentication Routes
@@ -133,5 +135,5 @@ Route::middleware('jwt')->group(function () {
 
 
     Route::apiResource('/financialtransaction', FinancialTransactionController::class);  //  Manage financial transactions
-
+    Route::get("/backupDownload", [BackupController::class,'index']);
 });
