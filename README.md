@@ -81,7 +81,6 @@ The system supports **three primary roles**:
 
 -   **Automated WhatsApp Notifications** – Installment payment reminders.
 -   **Technology Used**: **UltraMessage**
--   **Push Notifications**: Firebase Cloud Messaging (FCM).
 
 ---
 
@@ -92,7 +91,7 @@ The system supports **three primary roles**:
 1️⃣ **Clone the Repository**
 
 ```sh
-git clone https://github.com/MohammedAlmostfa/-Statistics-App
+git clone https://github.com/MohammedAlmostfa/Statistics-App
 ```
 
 2️⃣ **Navigate to the Project Directory**
