@@ -34,6 +34,9 @@ class CustomerService extends Service
      * @return array Structured success or error response.
      */
 
+
+
+
     public function getAllCustomers($filteringData)
     {
         try {
@@ -54,28 +57,35 @@ class CustomerService extends Service
                         'debts'
                     ])
                     ->orderByDesc('created_at')
-                    ->paginate(10); // إرجاع `LengthAwarePaginator` مباشرةً
+                    ->paginate(10);
 
-                // تعديل البيانات داخل `getCollection()`
                 $customers->getCollection()->transform(function ($customer) {
                     $firstPays = 0;
-                    $installmentsTotal = 0;
+                    $receiptTotalPrice = 0;
                     $installmentsPaid = 0;
 
-                    foreach ($customer->receipts as $receipt) {
+                    $receipts = Receipt::where('customer_id', $customer->id)
+                        ->where('type', 0)
+                        ->with([
+                            'receiptProducts',
+                            'receiptProducts.installment',
+                            'receiptProducts.installment.installmentPayments'
+                        ])
+                        ->get();
+
+                    foreach ($receipts as $receipt) {
+                        $receiptTotalPrice += $receipt->total_price;
                         foreach ($receipt->receiptProducts as $receiptProduct) {
                             if ($receiptProduct->installment) {
                                 $firstPays += $receiptProduct->installment->first_pay ?? 0;
-                                $installmentsTotal += $receiptProduct->installment->installment ?? 0;
                                 $installmentsPaid += $receiptProduct->installment->installmentPayments->sum('amount');
                             }
                         }
                     }
 
                     $remainingDebt = $customer->debts->sum('remaining_debt');
-                    $totalRemaining = ($firstPays + $installmentsTotal) - $installmentsPaid + $remainingDebt;
+                    $totalRemaining = ($receiptTotalPrice - $firstPays - $installmentsPaid) + $remainingDebt;
 
-                    // الحصول على أحدث تاريخ دفع للقسط
                     $latestInstallmentPaymentDate = InstallmentPayment::whereHas('installment.receiptProduct.receipt', function ($query) use ($customer) {
                         $query->where('customer_id', $customer->id);
                     })
@@ -85,31 +95,29 @@ class CustomerService extends Service
                     ->latest('payment_date')
                     ->value('payment_date');
 
-                    // الحصول على أحدث تاريخ دفع للديون
+
                     $latestDebtPaymentDate = DebtPayment::whereHas('debt', function ($query) use ($customer) {
                         $query->where('customer_id', $customer->id);
                     })
                     ->latest('payment_date')
                     ->value('payment_date');
 
-                    $lastestPaymentDate = null;
+                    $latestPaymentDate = null;
                     if ($latestDebtPaymentDate && $latestInstallmentPaymentDate) {
                         $debtDate = new DateTime($latestDebtPaymentDate);
                         $installmentDate = new DateTime($latestInstallmentPaymentDate);
-                        $lastestPaymentDate = ($debtDate > $installmentDate) ? $debtDate->format('Y-m-d') : $installmentDate->format('Y-m-d');
+                        $latestPaymentDate = ($debtDate > $installmentDate) ? $debtDate->format('Y-m-d') : $installmentDate->format('Y-m-d');
                     } else {
-                        $lastestPaymentDate = $latestDebtPaymentDate ?? $latestInstallmentPaymentDate;
+                        $latestPaymentDate = $latestDebtPaymentDate ?? $latestInstallmentPaymentDate;
                     }
 
-
                     $customer->total_remaining = $totalRemaining;
-                    $customer->lastest_payment_date = $lastestPaymentDate;
+                    $customer->latest_payment_date = $latestPaymentDate;
 
                     return $customer;
                 });
 
                 return $this->successResponse('تم جلب بيانات العملاء بنجاح.', 200, $customers);
-
             });
 
         } catch (QueryException $e) {
@@ -120,8 +128,6 @@ class CustomerService extends Service
             return $this->errorResponse('حدث خطأ أثناء استرجاع بيانات العملاء، يرجى المحاولة مرة أخرى.');
         }
     }
-
-
 
     /**
      * Create a new customer record.
