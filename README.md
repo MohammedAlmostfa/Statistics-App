@@ -70,8 +70,7 @@ The Statistics App is built using **modern technologies** to ensure efficiency a
 The system supports **three primary roles**:
 
 1️⃣ **Admin** – Full control over users, finances, and system settings.  
-2️⃣ **Accountant** – Limited access to financial data and receipts.  
-3️⃣ **Inventory Manager** – Manages stock levels and supplier purchases.
+2️⃣ **Accountant** – Limited access to financial data and receipts.
 
 📌 **Each role has specific permissions to ensure security and proper access management.**
 
