@@ -84,7 +84,9 @@ class CustomerService extends Service
                     }
 
                     $remainingDebt = $customer->debts->sum('remaining_debt');
-                    $totalRemaining = ($receiptTotalPrice - $firstPays - $installmentsPaid) + $remainingDebt;
+                    $debtInstallmentsPaid = $customer->debts->sum(fn ($debt) => $debt->debtPayments->sum('amount'));
+
+                    $totalRemaining = ($receiptTotalPrice - $firstPays - $installmentsPaid) + ($remainingDebt- $debtInstallmentsPaid);
 
                     $latestInstallmentPaymentDate = InstallmentPayment::whereHas('installment.receiptProduct.receipt', function ($query) use ($customer) {
                         $query->where('customer_id', $customer->id);

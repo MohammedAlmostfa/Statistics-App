@@ -1,6 +1,6 @@
 # 📊 Statistics App
 
-The **Statistics App** is a powerful financial management system designed using **clean architecture** and **separation of concerns**. It provides efficient management of **products, customers, receipts, payments, and financial reporting**, making it ideal for **retail and distribution businesses** that support both **cash and installment payment options**.
+The **Statistics App** is a powerful financial management system designed using **clean architecture** and **separation of concerns**. It provides efficient management of **products, customers, receipts, payments,agents,FinancialTransactions and financial reporting**, making it ideal for **retail and distribution businesses** that support both **cash and installment payment options**.
 
 ### **Core Features**
 
@@ -11,6 +11,8 @@ The **Statistics App** is a powerful financial management system designed using 
 -   **Financial Reporting & Analytics** – Provides insights into business performance.
 -   **User Management** – Role-based access control for Admins and Accountants.
 -   **Activity Logging** – Tracks system events for auditing purposes.
+-   **Agent & FinancialTransactions Management** – Tracks purchases from suppliers and financial settlements.
+-   **Inventory Control** – Manages stock levels and warehouse transactions.
 
 ### **Detailed System Overviews**
 
@@ -42,16 +44,16 @@ The Statistics App is built using:
 
 -   **Project Architecture**: [📁 View Design](https://drive.google.com/file/d/1V8l6mdmPlQwRZu2TiZz44RYAEA7u0LO5/view?usp=sharing)
 -   **Database Schema**: [🗄️ View Database Structure](https://drive.google.com/file/d/1V8l6mdmPlQwRZu2TiZz44RYAEA7u0LO5/view?usp=sharing)
--   **Postman API Documentation**:[View Collection](https://egmohammed.postman.co/workspace/e.g.mohammed-Workspace~b4e2523d-6246-4fe1-a96f-67892282e04b/collection/37858198-1a8bb936-f78c-4341-a68a-adc3b6ba5a99?action=share&creator=37858198)
+-   **Postman API Documentation**: [View Collection](https://egmohammed.postman.co/workspace/e.g.mohammed-Workspace~b4e2523d-6246-4fe1-a96f-67892282e04b/collection/37858198-1a8bb936-f78c-4341-a68a-adc3b6ba5a99?action=share&creator=37858198)
 
 ---
 
 ## 🔐 User Roles & Permissions
 
-The system supports two primary roles:
-
+The system supports three primary roles:
 1️⃣ **Admin** – Full control over users, finances, and system settings.  
-2️⃣ **Accountant** – Limited access to financial data and receipts.
+2️⃣ **Accountant** – Limited access to financial data and receipts.  
+3️⃣ **Inventory Manager** – Manages stock levels and supplier purchases.
 
 📌 **Each role has specific permissions to ensure security and proper access management.**
 
@@ -173,3 +175,5 @@ For inquiries or support, reach out via:
 ### 🎯 **Thank you for using the Statistics App!**
 
 We welcome feedback and suggestions! 🚀
+
+---

@@ -39,7 +39,7 @@ class Debt extends Model
         'payment_amount'  => 'integer',
         'remaining_debt' => 'integer',
         'debt_date'      => 'date',
-        'description'=>'string',
+        'description' => 'string',
     ];
 
     /**
@@ -98,38 +98,44 @@ class Debt extends Model
         parent::boot();
 
         static::created(function ($debt) {
-            $cacheKeys = Cache::get('all_debts_keys', []);
-            foreach ($cacheKeys as $key) {
-                Cache::forget($key);
-            }
-            Cache::forget('all_debts_keys');
+            self::clearCache();
+            self::clearCustomerCache();
 
             Log::info("تم إنشاء سجل دين جديد ({$debt->id}) وتم حذف الكاش.");
         });
 
 
         static::updated(function ($debt) {
-            $cacheKeys = Cache::get('all_debts_keys', []);
-            foreach ($cacheKeys as $key) {
-                Cache::forget($key);
-            }
-            Cache::forget('all_debts_keys');
+            self::clearCache();
+            self::clearCustomerCache();
 
             Log::info("تم تحديث سجل الدين ({$debt->id}) وتم حذف الكاش.");
         });
 
 
         static::deleted(function ($debt) {
-            $cacheKeys = Cache::get('all_debts_keys', []);
-            foreach ($cacheKeys as $key) {
-                Cache::forget($key);
-            }
-            Cache::forget('all_debts_keys');
+            self::clearCache();
+            self::clearCustomerCache();
 
             Log::info("تم حذف سجل الدين ({$debt->id}) وتم حذف الكاش.");
         });
     }
-
+    protected static function clearCustomerCache()
+    {
+        $cacheKeys = Cache::get('all_customers_keys', []);
+        foreach ($cacheKeys as $key) {
+            Cache::forget($key);
+        }
+        Cache::forget('all_customers_keys');
+    }
+    protected static function clearCache()
+    {
+        $cacheKeys = Cache::get('all_agents_keys', []);
+        foreach ($cacheKeys as $key) {
+            Cache::forget($key);
+        }
+        Cache::forget('all_agents_keys');
+    }
 
     /**
      * Scope function to filter debts based on certain criteria.

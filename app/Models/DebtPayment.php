@@ -100,7 +100,7 @@ class DebtPayment extends Model
     }
 
     /**
-     * Clears cache for installment payments.
+     * Clears cache for customer .
      */
     protected static function clearCustomerCache()
     {
