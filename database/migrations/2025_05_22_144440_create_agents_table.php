@@ -16,8 +16,8 @@ return new class extends Migration {
             $table->string('phone')->nullable();
             $table->text('notes')->nullable();
             $table->tinyInteger('status')->default(0);
+            $table->tinyInteger('type')->default(0);
             $table->timestamps();
-
         });
     }
 

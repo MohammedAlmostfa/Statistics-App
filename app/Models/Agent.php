@@ -31,7 +31,8 @@ class Agent extends Model
         'name',
         'phone',
         'notes',
-        'status'
+        'status',
+        'type',
     ];
 
     /**
@@ -56,6 +57,10 @@ class Agent extends Model
         1 => 'محذوف',  // User is removed
     ];
 
+    const TYPE_MAP = [
+        0 => 'دولار',   // User exists
+        1 => 'دينار',  // User is removed
+    ];
     /**
      * Get and set the user status dynamically using attribute casting.
      *
@@ -64,10 +69,18 @@ class Agent extends Model
     public function status(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => self::STATUS_MAP[(int) $value] ?? 'Unknown',
-            set: fn ($value) => array_search($value, self::STATUS_MAP)
+            get: fn($value) => self::STATUS_MAP[(int) $value] ?? 'Unknown',
+            set: fn($value) => array_search($value, self::STATUS_MAP)
         );
     }
+    public function type(): Attribute
+    {
+        return Attribute::make(
+            get: fn($value) => self::TYPE_MAP[(int) $value] ?? 'Unknown',
+            set: fn($value) => array_search($value, self::TYPE_MAP)
+        );
+    }
+
     /**
      * **Defines the polymorphic relationship for activity logs**
      *

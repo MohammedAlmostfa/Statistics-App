@@ -32,14 +32,15 @@ class StoreAgentData extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('agents')->where(fn ($query) => $query->where('status', '!=', 1)),
+                Rule::unique('agents')->where(fn($query) => $query->where('status', '!=', 1)),
             ],
             'phone' => [
                 'nullable',
                 'max:20',
-                Rule::unique('agents')->where(fn ($query) => $query->where('status', '!=', 1)),
+                Rule::unique('agents')->where(fn($query) => $query->where('status', '!=', 1)),
             ],
             'notes' => 'nullable|string|max:1000',
+            'type' => 'nullable|in:دينار,دولار',
         ];
     }
 
