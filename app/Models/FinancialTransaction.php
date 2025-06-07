@@ -76,10 +76,11 @@ class FinancialTransaction extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function agent()
-    {
-        return $this->belongsTo(Agent::class);
-    }
+   public function agent()
+{
+    return $this->belongsTo(Agent::class, 'agent_id');
+}
+
 
     /**
      * Defines the relationship between financial transactions and transaction products.

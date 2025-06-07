@@ -34,59 +34,59 @@ class FinancialReportService extends Service
             $collectedInstallmentPayments = InstallmentPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
 
 
-            $collectedDebtPayments =DebtPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
+            $collectedDebtPayments = DebtPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
 
 
             $collecteFinancialTransactionPaymentsDinar  = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-    ->whereIn('type', ['تسديد فاتورة شراء', 'فاتورة شراء'])
-    ->whereHas('agent', function ($query) {
-        $query->where('type', 1);
-    })
-    ->sum('paid_amount');
-
+                ->whereIn('type', ['تسديد فاتورة شراء', 'فاتورة شراء'])
+                ->whereHas('agent', function ($query) {
+                    $query->where('type', "دينار");
+                })
+                ->sum('paid_amount');
 $collecteFinancialTransactionDebtsDinar = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
     ->where('type', 'فاتورة شراء')
     ->whereHas('agent', function ($query) {
-        $query->where('type', 1); 
+        $query->where('type', "دينار");
     })
-    ->sum(DB::raw('total_amount - discount_amount - paid_amount'));
+    ->sum(DB::raw('GREATEST(0, total_amount - discount_amount - paid_amount)'));
 
-$collecteFinancialTransactionDebtsDinar += FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-    ->where('type', 'دين فاتورة شراء')
-    ->whereHas('agent', function ($query) {
-        $query->where('type', 1);
-    })
-    ->sum('total_amount');
+            $collecteFinancialTransactionDebtsDinar += FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
+                ->where('type', 'دين فاتورة شراء')
+                ->whereHas('agent', function ($query) {
+                    $query->where('type', "دينار");
+                })
+                ->sum('total_amount');
 
 
 
-$collecteFinancialTransactionPaymentsDolar  = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-    ->whereIn('type', ['تسديد فاتورة شراء', 'فاتورة شراء'])
-    ->whereHas('agent', function ($query) {
-        $query->where('type', 0); 
-    })
-    ->sum('paid_amount');
+            $collecteFinancialTransactionPaymentsDolar  = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
+                ->whereIn('type', ['تسديد فاتورة شراء', 'فاتورة شراء'])
+                ->whereHas('agent', function ($query) {
+                    $query->where('type', "دولار");
+                })
+                ->sum('paid_amount');
 
-$collecteFinancialTransactionDebtsDolar  = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-    ->where('type', 'فاتورة شراء')
-    ->whereHas('agent', function ($query) {
-        $query->where('type', 0); 
-    })
-    ->sum(DB::raw('total_amount - discount_amount - paid_amount'));
+            $collecteFinancialTransactionDebtsDolar  = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
+                ->where('type', 'فاتورة شراء')
+                ->whereHas('agent', function ($query) {
+                    $query->where('type', "دولار");
+                })
+            ->sum(DB::raw('GREATEST(0, total_amount - discount_amount - paid_amount)'));
 
-$collecteFinancialTransactionDebtsDolar  += FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-    ->where('type', 'دين فاتورة شراء')
-    ->whereHas('agent', function ($query) {
-        $query->where('type', 0); 
-    })
-    ->sum('total_amount');
+
+            $collecteFinancialTransactionDebtsDolar  += FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
+                ->where('type', 'دين فاتورة شراء')
+                ->whereHas('agent', function ($query) {
+                    $query->where('type', "دولار");
+                })
+                ->sum('total_amount');
 
 
 
 
             // Total expenses recorded within the date range
             $totalExpenses = Payment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
-            $totaldebt=Debt::whereBetween('debt_date', [$startDate, $endDate])->sum('remaining_debt');
+            $totaldebt = Debt::whereBetween('debt_date', [$startDate, $endDate])->sum('remaining_debt');
 
             // Total value of installment-based sales (type 0) in the period
             $totalInstallmentSalesValueInPeriod = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
@@ -149,12 +149,10 @@ $collecteFinancialTransactionDebtsDolar  += FinancialTransaction::whereBetween('
                     ],
                 ]
             );
-
         } catch (Exception $e) {
             // Log the error for debugging
             Log::error("Unexpected error in GetFinancialReport: " . $e->getMessage());
             return $this->errorResponse('حدث خطأ أثناء استرجاع التقرير المالي، يرجى المحاولة مرة اخرى.');
         }
     }
-
 }

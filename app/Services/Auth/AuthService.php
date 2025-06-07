@@ -57,7 +57,7 @@ class AuthService
                 ],
             ];
         } catch (Exception $e) {
-            Log::error("Error during login for user: {$credentials['email']}. Exception: " . $e->getMessage());
+            Log::error("Error during login for user:. Exception: " . $e->getMessage());
 
             return [
                 'status' => 500,
