@@ -37,17 +37,51 @@ class FinancialReportService extends Service
             $collectedDebtPayments =DebtPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
 
 
-            $collecteFinancialTransactionPayments = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-            ->whereIn('type', ['تسديد فاتورة شراء', 'فاتورة شراء'])
-            ->sum('paid_amount');
+            $collecteFinancialTransactionPaymentsDinar  = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
+    ->whereIn('type', ['تسديد فاتورة شراء', 'فاتورة شراء'])
+    ->whereHas('agent', function ($query) {
+        $query->where('type', 1);
+    })
+    ->sum('paid_amount');
 
-            $collecteFinancialTransactionDebts = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-                ->where('type', 'فاتورة شراء')
-                ->sum(DB::raw('total_amount - discount_amount - paid_amount'));
+$collecteFinancialTransactionDebtsDinar = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
+    ->where('type', 'فاتورة شراء')
+    ->whereHas('agent', function ($query) {
+        $query->where('type', 1); 
+    })
+    ->sum(DB::raw('total_amount - discount_amount - paid_amount'));
 
-            $collecteFinancialTransactionDebts += FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-                ->where('type', 'دين فاتورة شراء')
-                ->sum('total_amount');
+$collecteFinancialTransactionDebtsDinar += FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
+    ->where('type', 'دين فاتورة شراء')
+    ->whereHas('agent', function ($query) {
+        $query->where('type', 1);
+    })
+    ->sum('total_amount');
+
+
+
+$collecteFinancialTransactionPaymentsDolar  = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
+    ->whereIn('type', ['تسديد فاتورة شراء', 'فاتورة شراء'])
+    ->whereHas('agent', function ($query) {
+        $query->where('type', 0); 
+    })
+    ->sum('paid_amount');
+
+$collecteFinancialTransactionDebtsDolar  = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
+    ->where('type', 'فاتورة شراء')
+    ->whereHas('agent', function ($query) {
+        $query->where('type', 0); 
+    })
+    ->sum(DB::raw('total_amount - discount_amount - paid_amount'));
+
+$collecteFinancialTransactionDebtsDolar  += FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
+    ->where('type', 'دين فاتورة شراء')
+    ->whereHas('agent', function ($query) {
+        $query->where('type', 0); 
+    })
+    ->sum('total_amount');
+
+
 
 
             // Total expenses recorded within the date range
@@ -105,8 +139,12 @@ class FinancialReportService extends Service
                         'adjustedCOGS' => (int) $adjustedCOGS,
                         'totaldebt' => (int) $totaldebt,
                         'collectedDebtPayments' => (int) $collectedDebtPayments,
-                        'collecteFinancialTransactionPayments' => (int) $collecteFinancialTransactionPayments,
-                        'collecteFinancialTransactionDebts' => (int) $collecteFinancialTransactionDebts,
+
+                        'collecteFinancialTransactionPaymentsDinar' => (int) $collecteFinancialTransactionPaymentsDinar,
+                        'collecteFinancialTransactionDebtsDinar' => (int) $collecteFinancialTransactionDebtsDinar,
+
+                        'collecteFinancialTransactionPaymentsDolar' => (int) $collecteFinancialTransactionPaymentsDolar,
+                        'collecteFinancialTransactionDebtsDolar' => (int) $collecteFinancialTransactionDebtsDolar,
                     ],
                     'cash_flow_summary' => [
                         'cash_inflow_from_collected_installments' => (int) $collectedInstallmentPayments,
