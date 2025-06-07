@@ -13,33 +13,34 @@ class BackupService
 {
     public function downloadBackup()
     {
+        Log::info("Backup execution started");
         set_time_limit(300);
 
         try {
             $fileName = 'backup_' . now()->format('Y_m_d_H_i_s') . '.sql';
-            $filePath = storage_path('app/' . $fileName);
+            $filePath = '/tmp/' . $fileName;
 
-            $mysqldump = env('MYSQLDUMP_PATH', '/bin/mysqldump');
-            $username = env('DB_USERNAME');
-            $password = env('DB_PASSWORD');
-            $database = env('DB_DATABASE');
+            $mysqldump = config('database.connections.mysql.mysqldump');
+            $username = config('database.connections.mysql.username');
+            $password = config('database.connections.mysql.password');
+            $database = config('database.connections.mysql.database');
 
+            $command = "{$mysqldump} --default-character-set=utf8mb4 -u{$username} -p{$password} {$database} > \"{$filePath}\"";
 
-            // تجهيز الأمر
-            $command = "{$mysqldump} --default-character-set=utf8mb4 -u{$username} " . (!empty($password) ? "-p{$password} " : "") . "{$database} > \"{$filePath}\"";
+            $output = shell_exec($command);
 
-            shell_exec($command);
+            Log::info("Backup command: $command");
+            Log::info("Execution output: $output");
 
             if (!file_exists($filePath)) {
-                Log::error("لم يتم العثور على ملف النسخة الاحتياطية: $filePath");
-                return response()->json(['message' => 'فشل إنشاء النسخة الاحتياطية.'], 500);
+                Log::error("Failed to find backup file: $filePath");
+                return response()->json(['message' => 'Failed to create the backup.'], 500);
             }
 
-            return response()->download($filePath)->deleteFileAfterSend(true);
-
+            return $filePath;
         } catch (Exception $e) {
-            Log::error("خطأ أثناء إنشاء النسخة الاحتياطية: " . $e->getMessage());
-            return response()->json(['message' => 'خطأ أثناء إنشاء النسخة الاحتياطية.'], 500);
+            Log::error("Error during backup: " . $e->getMessage());
+            return response()->json(['message' => 'Error during backup.'], 500);
         }
     }
 }
