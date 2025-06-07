@@ -139,10 +139,8 @@ $collecteFinancialTransactionDebtsDolar  += FinancialTransaction::whereBetween('
                         'adjustedCOGS' => (int) $adjustedCOGS,
                         'totaldebt' => (int) $totaldebt,
                         'collectedDebtPayments' => (int) $collectedDebtPayments,
-
                         'collecteFinancialTransactionPaymentsDinar' => (int) $collecteFinancialTransactionPaymentsDinar,
                         'collecteFinancialTransactionDebtsDinar' => (int) $collecteFinancialTransactionDebtsDinar,
-
                         'collecteFinancialTransactionPaymentsDolar' => (int) $collecteFinancialTransactionPaymentsDolar,
                         'collecteFinancialTransactionDebtsDolar' => (int) $collecteFinancialTransactionDebtsDolar,
                     ],
