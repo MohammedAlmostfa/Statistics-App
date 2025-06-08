@@ -36,51 +36,47 @@ class FinancialReportService extends Service
 
             $collectedDebtPayments = DebtPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
 
-
-            $collecteFinancialTransactionPaymentsDinar  = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-                ->whereIn('type', ['تسديد فاتورة شراء', 'فاتورة شراء'])
+            $collecteFinancialTransactionPaymentsDinar = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
+                ->whereIn('type', [0, 1])
                 ->whereHas('agent', function ($query) {
-                    $query->where('type', "دينار");
+                    $query->where('type', 1);
                 })
                 ->sum('paid_amount');
-$collecteFinancialTransactionDebtsDinar = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-    ->where('type', 'فاتورة شراء')
-    ->whereHas('agent', function ($query) {
-        $query->where('type', "دينار");
-    })
-    ->sum(DB::raw('GREATEST(0, total_amount - discount_amount - paid_amount)'));
+
+            $collecteFinancialTransactionDebtsDinar = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
+                ->where('type', 0)
+                ->whereHas('agent', function ($query) {
+                    $query->where('type', 1);
+                })
+                ->sum(DB::raw('GREATEST(0, total_amount - discount_amount - paid_amount)'));
 
             $collecteFinancialTransactionDebtsDinar += FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-                ->where('type', 'دين فاتورة شراء')
+                ->where('type', 3)
                 ->whereHas('agent', function ($query) {
-                    $query->where('type', "دينار");
+                    $query->where('type', 1);
                 })
                 ->sum('total_amount');
 
-
-
-            $collecteFinancialTransactionPaymentsDolar  = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-                ->whereIn('type', ['تسديد فاتورة شراء', 'فاتورة شراء'])
+            $collecteFinancialTransactionPaymentsDolar = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
+                ->whereIn('type', [0, 1])
                 ->whereHas('agent', function ($query) {
-                    $query->where('type', "دولار");
+                    $query->where('type', 0);
                 })
                 ->sum('paid_amount');
 
-            $collecteFinancialTransactionDebtsDolar  = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-                ->where('type', 'فاتورة شراء')
+            $collecteFinancialTransactionDebtsDolar = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
+                ->where('type', 0)
                 ->whereHas('agent', function ($query) {
-                    $query->where('type', "دولار");
+                    $query->where('type', 0);
                 })
-            ->sum(DB::raw('GREATEST(0, total_amount - discount_amount - paid_amount)'));
+                ->sum(DB::raw('GREATEST(0, total_amount - discount_amount - paid_amount)'));
 
-
-            $collecteFinancialTransactionDebtsDolar  += FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-                ->where('type', 'دين فاتورة شراء')
+            $collecteFinancialTransactionDebtsDolar += FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
+                ->where('type', 3)
                 ->whereHas('agent', function ($query) {
-                    $query->where('type', "دولار");
+                    $query->where('type', 0);
                 })
                 ->sum('total_amount');
-
 
 
 
