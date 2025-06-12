@@ -17,6 +17,8 @@ use Illuminate\Database\QueryException;
 use App\Http\Resources\CustomerResource;
 use App\Http\Resources\CustomerReceiptProduct;
 
+use function PHPUnit\Framework\isEmpty;
+
 /**use Illuminate\Support\Facades\Auth;
 
  * CustomerService
@@ -114,6 +116,11 @@ class CustomerService extends Service
                     }
 
                     $customer->total_remaining = $totalRemaining;
+
+if (empty($lastestPaymentDate)) {
+    $lastestPaymentDate = optional($customer->debts->last())->debt_date;
+}
+
                     $customer->lastest_payment_date = $lastestPaymentDate;
 
                     return $customer;
