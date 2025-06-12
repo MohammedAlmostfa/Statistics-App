@@ -53,7 +53,7 @@ class CustomerService extends Service
 
             return Cache::remember($cacheKey, now()->addMinutes(120), function () use ($filteringData) {
                 $customers = Customer::query()
-                    ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
+                    ->when(!empty($filteringData), fn($query) => $query->filterBy($filteringData))
                     ->with([
                         'receipts.receiptProducts.installment.installmentPayments',
                         'debts'
@@ -86,25 +86,25 @@ class CustomerService extends Service
                     }
 
                     $remainingDebt = $customer->debts->sum('remaining_debt');
-                    $debtInstallmentsPaid = $customer->debts->sum(fn ($debt) => $debt->debtPayments->sum('amount'));
+                    $debtInstallmentsPaid = $customer->debts->sum(fn($debt) => $debt->debtPayments->sum('amount'));
 
-                    $totalRemaining = ($receiptTotalPrice - $firstPays - $installmentsPaid) + ($remainingDebt- $debtInstallmentsPaid);
+                    $totalRemaining = ($receiptTotalPrice - $firstPays - $installmentsPaid) + ($remainingDebt - $debtInstallmentsPaid);
 
                     $latestInstallmentPaymentDate = InstallmentPayment::whereHas('installment.receiptProduct.receipt', function ($query) use ($customer) {
                         $query->where('customer_id', $customer->id);
                     })
-                    ->whereHas('installment', function ($query) {
-                        $query->where('status', 1);
-                    })
-                    ->latest('payment_date')
-                    ->value('payment_date');
+                        ->whereHas('installment', function ($query) {
+                            $query->where('status', 1);
+                        })
+                        ->latest('payment_date')
+                        ->value('payment_date');
 
 
                     $latestDebtPaymentDate = DebtPayment::whereHas('debt', function ($query) use ($customer) {
                         $query->where('customer_id', $customer->id);
                     })
-                    ->latest('payment_date')
-                    ->value('payment_date');
+                        ->latest('payment_date')
+                        ->value('payment_date');
 
                     $lastestPaymentDate = null;
                     if ($latestDebtPaymentDate && $latestInstallmentPaymentDate) {
@@ -117,9 +117,9 @@ class CustomerService extends Service
 
                     $customer->total_remaining = $totalRemaining;
 
-if (empty($lastestPaymentDate)) {
-    $lastestPaymentDate = optional($customer->debts->last())->debt_date;
-}
+                    if (empty($lastestPaymentDate)) {
+                        $lastestPaymentDate = optional($customer->debts->last())->debt_date;
+                    }
 
                     $customer->lastest_payment_date = $lastestPaymentDate;
 
@@ -128,7 +128,6 @@ if (empty($lastestPaymentDate)) {
 
                 return $this->successResponse('تم جلب بيانات العملاء بنجاح.', 200, $customers);
             });
-
         } catch (QueryException $e) {
             Log::error('Database query error while retrieving customers: ' . $e->getMessage());
             return $this->errorResponse('فشل في جلب بيانات العملاء.');
@@ -164,8 +163,7 @@ if (empty($lastestPaymentDate)) {
         } catch (Exception $e) {
             Log::error('Error while creating customer: ' . $e->getMessage());
 
-            return $this->errorResponse('حدث خطا اثناء انشاء  العميل  , يرجى المحاولة مرة اخرى ');
-            ;
+            return $this->errorResponse('حدث خطا اثناء انشاء  العميل  , يرجى المحاولة مرة اخرى ');;
         }
     }
 
@@ -194,8 +192,7 @@ if (empty($lastestPaymentDate)) {
         } catch (Exception $e) {
             Log::error('Error while updating customer: ' . $e->getMessage());
 
-            return $this->errorResponse('حدث خطا اثناء تحديث  العميل  , يرجى المحاولة مرة اخرى ');
-            ;
+            return $this->errorResponse('حدث خطا اثناء تحديث  العميل  , يرجى المحاولة مرة اخرى ');;
         }
     }
 
@@ -226,8 +223,7 @@ if (empty($lastestPaymentDate)) {
             return $this->successResponse('تم حذف العميل بنجاح.', 200);
         } catch (Exception $e) {
             Log::error('Error while deleting customer: ' . $e->getMessage());
-            return $this->errorResponse('حدث خطا اثناء حذف  العميل  , يرجى المحاولة مرة اخرى ');
-            ;
+            return $this->errorResponse('حدث خطا اثناء حذف  العميل  , يرجى المحاولة مرة اخرى ');;
         }
     }
 
@@ -320,8 +316,7 @@ if (empty($lastestPaymentDate)) {
         } catch (\Exception $e) {
             // Log any errors and return a failure response
             Log::error('Error in getCustomerReceiptProducts: ' . $e->getMessage());
-            return $this->errorResponse('حدث خطا اثناء استرجاع منتجات العميل  , يرجى المحاولة مرة اخرى ');
-            ;
+            return $this->errorResponse('حدث خطا اثناء استرجاع منتجات العميل  , يرجى المحاولة مرة اخرى ');;
         }
     }
 }
