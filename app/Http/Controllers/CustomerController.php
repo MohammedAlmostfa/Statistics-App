@@ -149,4 +149,21 @@ class CustomerController extends Controller
             ? $this->success($result['data'], $result['message'], $result['status'])
             : $this->error(null, $result['message'], $result['status']);
     }
+
+
+    /**
+ * **Retrieve a customer by their ID**
+ *
+ * @param int $id The ID of the customer.
+ * @return JsonResponse Customer details or error message.
+ */
+public function show($id): JsonResponse
+{
+    $result = $this->customerService->getCustomerById($id);
+
+    return $result['status'] === 200
+        ? $this->success(new CustomerResource($result['data']), $result['message'], $result['status'])
+        : $this->error(null, $result['message'], $result['status']);
+}
+
 }

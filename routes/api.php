@@ -135,5 +135,5 @@ Route::middleware('jwt')->group(function () {
 
 
     Route::apiResource('/financialtransaction', FinancialTransactionController::class);  //  Manage financial transactions
-    Route::get("/backupDownload", [BackupController::class,'index']);
+    Route::get("/backupDownload", [BackupController::class, 'index']);
 });
