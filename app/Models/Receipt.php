@@ -127,12 +127,21 @@ class Receipt extends Model
     {
         return Attribute::make(
             // Get the string representation of the type
-            get: fn ($value) => self::TYPE_MAP[$value] ?? 'Unknown',  // Convert numeric to string representation
+            get: fn($value) => self::TYPE_MAP[$value] ?? 'Unknown',  // Convert numeric to string representation
 
             // Set the integer value for type
-            set: fn ($value) => array_search($value, self::TYPE_MAP)  // Convert string back to its corresponding integer value
+            set: fn($value) => array_search($value, self::TYPE_MAP)  // Convert string back to its corresponding integer value
         );
     }
+
+    /**
+     * Boot method for the model.
+     *
+     * This method is automatically called when an instance of the model is booted.
+     * In this case, we are defining actions to take after a receipt is created, updated, or deleted.
+     * - Clear the cache of receipts each time a receipt is created, updated, or deleted.
+     * - Log an informational message each time a receipt is created, updated, or deleted.
+     */
 
     /**
      * Boot method for the model.
@@ -147,42 +156,39 @@ class Receipt extends Model
         parent::boot();
 
         static::created(function ($receipt) {
-            $cacheKeys = Cache::get('all_receipts_keys', []);
-            foreach ($cacheKeys as $key) {
-                Cache::forget($key);
-            }
-            Cache::forget('all_receipts_keys');
-
-
+            self::clearCache();
+            Log::info("وتم حذف كاش الزبائن.");
             Log::info("تم إنشاء فاتورة جديدة ({$receipt->id}) وتم حذف كاش الفواتير.");
         });
 
         static::updated(function ($receipt) {
-            $cacheKeys = Cache::get('all_receipts_keys', []);
-
-            foreach ($cacheKeys as $key) {
-                Cache::forget($key);
-            }
-
-
-            Cache::forget('all_receipts_keys');
-
+            self::clearCache();
+            Log::info("وتم حذف كاش الزبائن.");
             Log::info("تم تحديث الفاتورة ({$receipt->id}) وتم حذف كاش الفواتير.");
         });
 
         static::deleted(function ($receipt) {
-            $cacheKeys = Cache::get('all_receipts_keys', []);
-
-            foreach ($cacheKeys as $key) {
-                Cache::forget($key);
-            }
-
+            self::clearCache();
+            Log::info("وتم حذف كاش الزبائن.");
             Cache::forget('all_receipts_keys');
 
             Log::info("تم حذف الفاتورة ({$receipt->id}) وتم حذف كاش الفواتير.");
         });
     }
 
+    protected static function clearCache()
+    {
+        $cacheKeys = Cache::get('all_customers_keys', []);
+        foreach ($cacheKeys as $key) {
+            Cache::forget($key);
+        }
+        Cache::forget('all_customers_keys');
+        $cacheKeys = Cache::get('all_receipts_keys', []);
+        foreach ($cacheKeys as $key) {
+            Cache::forget($key);
+        }
+        Cache::forget('all_receipts_keys');
+    }
     /**
      * Scope to filter receipts by specific parameters.
      *
@@ -210,5 +216,4 @@ class Receipt extends Model
 
         return $query;
     }
-
 }

@@ -320,86 +320,51 @@ class CustomerService extends Service
         }
     }
 
-public function getCustomerById($id)
-{
-    try {
-        
-        $customer = Customer::with([
-            'receipts.receiptProducts.installment.installmentPayments',
-            'debts'
-        ])
-        ->findOrFail($id); 
+    public function getCustomerById($id)
+    {
+        try {
 
-        $firstPays = 0;
-        $receiptTotalPrice = 0;
-        $installmentsPaid = 0;
-
-        $receipts = Receipt::where('customer_id', $customer->id)
-            ->where('type', 0)
-            ->with([
-                'receiptProducts',
-                'receiptProducts.installment',
-                'receiptProducts.installment.installmentPayments'
+            $customer = Customer::with([
+                'receipts.receiptProducts.installment.installmentPayments',
+                'debts'
             ])
-            ->get();
+                ->findOrFail($id);
 
-        foreach ($receipts as $receipt) {
-            $receiptTotalPrice += $receipt->total_price;
-            foreach ($receipt->receiptProducts as $receiptProduct) {
-                if ($receiptProduct->installment) {
-                    $firstPays += $receiptProduct->installment->first_pay ?? 0;
-                    $installmentsPaid += $receiptProduct->installment->installmentPayments->sum('amount');
+            $firstPays = 0;
+            $receiptTotalPrice = 0;
+            $installmentsPaid = 0;
+
+            $receipts = Receipt::where('customer_id', $customer->id)
+                ->where('type', 0)
+                ->with([
+                    'receiptProducts',
+                    'receiptProducts.installment',
+                    'receiptProducts.installment.installmentPayments'
+                ])
+                ->get();
+
+            foreach ($receipts as $receipt) {
+                $receiptTotalPrice += $receipt->total_price;
+                foreach ($receipt->receiptProducts as $receiptProduct) {
+                    if ($receiptProduct->installment) {
+                        $firstPays += $receiptProduct->installment->first_pay ?? 0;
+                        $installmentsPaid += $receiptProduct->installment->installmentPayments->sum('amount');
+                    }
                 }
             }
+
+            $remainingDebt = $customer->debts->sum('remaining_debt');
+            $debtInstallmentsPaid = $customer->debts->sum(fn($debt) => $debt->debtPayments->sum('amount'));
+
+            $totalRemaining = ($receiptTotalPrice - $firstPays - $installmentsPaid) + ($remainingDebt - $debtInstallmentsPaid);
+
+            return $this->successResponse('تم جلب بيانات العميل بنجاح.', 200, $customer);
+        } catch (QueryException $e) {
+            Log::error('Database query error while retrieving customer: ' . $e->getMessage());
+            return $this->errorResponse('فشل في جلب بيانات العميل.');
+        } catch (Exception $e) {
+            Log::error('General error while retrieving customer: ' . $e->getMessage());
+            return $this->errorResponse('حدث خطأ أثناء استرجاع بيانات العميل، يرجى المحاولة مرة أخرى.');
         }
-
-        $remainingDebt = $customer->debts->sum('remaining_debt');
-        $debtInstallmentsPaid = $customer->debts->sum(fn($debt) => $debt->debtPayments->sum('amount'));
-
-        $totalRemaining = ($receiptTotalPrice - $firstPays - $installmentsPaid) + ($remainingDebt - $debtInstallmentsPaid);
-
-        $latestInstallmentPaymentDate = InstallmentPayment::whereHas('installment.receiptProduct.receipt', function ($query) use ($customer) {
-            $query->where('customer_id', $customer->id);
-        })
-            ->whereHas('installment', function ($query) {
-                $query->where('status', 1);
-            })
-            ->latest('payment_date')
-            ->value('payment_date');
-
-        $latestDebtPaymentDate = DebtPayment::whereHas('debt', function ($query) use ($customer) {
-            $query->where('customer_id', $customer->id);
-        })
-            ->latest('payment_date')
-            ->value('payment_date');
-
-        $lastestPaymentDate = null;
-        if ($latestDebtPaymentDate && $latestInstallmentPaymentDate) {
-            $debtDate = new DateTime($latestDebtPaymentDate);
-            $installmentDate = new DateTime($latestInstallmentPaymentDate);
-            $lastestPaymentDate = ($debtDate > $installmentDate) ? $debtDate->format('Y-m-d') : $installmentDate->format('Y-m-d');
-        } else {
-            $lastestPaymentDate = $latestDebtPaymentDate ?? $latestInstallmentPaymentDate;
-        }
-
-        $customer->total_remaining = $totalRemaining;
-
-        if (empty($lastestPaymentDate)) {
-            $lastestPaymentDate = optional($customer->debts->last())->debt_date;
-        }
-
-        $customer->lastest_payment_date = $lastestPaymentDate;
-
-        return $this->successResponse('تم جلب بيانات العميل بنجاح.', 200, $customer);
-
-    } catch (QueryException $e) {
-        Log::error('Database query error while retrieving customer: ' . $e->getMessage());
-        return $this->errorResponse('فشل في جلب بيانات العميل.');
-    } catch (Exception $e) {
-        Log::error('General error while retrieving customer: ' . $e->getMessage());
-        return $this->errorResponse('حدث خطأ أثناء استرجاع بيانات العميل، يرجى المحاولة مرة أخرى.');
     }
-}
-
-    
 }
