@@ -165,10 +165,10 @@ class Customer extends Model
      */
     public function scopeFilterBy($query, array $filteringData)
     {
-        if (isset($filteringData['name'])) {
-            $query->where('name', 'LIKE', "%{$filteringData['name']}%");
-        }
-
+       if (isset($filteringData['name'])) {
+    $searchTerm = strtolower($filteringData['name']); 
+    $query->whereRaw('LOWER(name) LIKE ?', ["%{$searchTerm}%"]); 
+}
         if (isset($filteringData['phone'])) {
             $query->where('phone', $filteringData['phone']);
         }
