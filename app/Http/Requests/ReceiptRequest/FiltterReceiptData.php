@@ -28,6 +28,7 @@ class FiltterReceiptData extends FormRequest
          'name' => 'nullable|string|max:255',
             'receipt_date' => 'nullable|date',
             'type'=>'nullable|string',
+            'receipt_number'=>'nullable|integer',   
         ];
     }
     /**
