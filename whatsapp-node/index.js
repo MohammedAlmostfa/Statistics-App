@@ -5,79 +5,82 @@ const cors = require('cors');
 
 const app = express();
 
-// Enable CORS to allow requests from other origins (e.g., your Laravel app)
 app.use(cors());
-
-// Middleware to parse JSON bodies in incoming requests
 app.use(express.json());
 
-// Initialize WhatsApp client with local authentication to persist sessions
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-        executablePath: '/snap/bin/chromium', // Path to Chromium browser
-        headless: true,                       // Run Chromium without GUI
-        args: ['--no-sandbox', '--disable-setuid-sandbox'] // Necessary flags for some environments
+        executablePath: '/snap/bin/chromium',
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
     }
 });
 
-// Listen for QR code event to authenticate WhatsApp Web session
 client.on('qr', (qr) => {
     console.log('📲 Scan this QR code with your WhatsApp mobile app:');
-    qrcode.generate(qr, { small: true }); // Generate QR code in terminal
+    qrcode.generate(qr, { small: true });
 });
 
-// Once the WhatsApp client is ready, log it
 client.on('ready', () => {
     console.log('✅ WhatsApp client is ready');
 });
 
-// Initialize the client (starts Puppeteer and WhatsApp connection)
 client.initialize();
 
-/**
- * POST /send
- * API endpoint to send WhatsApp messages
- * Expects JSON body with:
- *  - number: phone number (string, without country code suffix)
- *  - message: message text (string)
- */
+// إعداد الحد اليومي وعداد الإرسال
+const DAILY_LIMIT = 1;
+let sentCount = 0;
+let currentDate = new Date().toISOString().slice(0, 10); // yyyy-mm-dd
+
+// وظيفة لتحديث العداد إذا تغير اليوم
+function resetCounterIfNeeded() {
+    const today = new Date().toISOString().slice(0, 10);
+    if (today !== currentDate) {
+        currentDate = today;
+        sentCount = 0;
+        console.log('🔄 Reset daily message counter for new day:', currentDate);
+    }
+}
+
 app.post('/send', async (req, res) => {
+    resetCounterIfNeeded();
+
+    if (sentCount >= DAILY_LIMIT) {
+        return res.status(429).json({
+            success: false,
+            status: 'تم استهلاك رصيد الرسائل اليومي، يرجى المحاولة غدًا.'
+        });
+    }
+
     const { number, message } = req.body;
 
-    // Validate input
     if (!number || !message) {
-        return res.status(400).json({ success: false, status: 'Phone number and message are required' });
+        return res.status(400).json({ success: false, status: 'رقم الهاتف والرسالة مطلوبان' });
     }
 
     try {
-        // Format the number to WhatsApp ID format (number + '@c.us')
         const fullNumber = number + '@c.us';
 
-        // Check if the number is registered on WhatsApp
         const isRegistered = await client.isRegisteredUser(fullNumber);
 
         if (!isRegistered) {
-            // If number is not registered on WhatsApp, respond accordingly
-            return res.status(400).json({ success: false, status: 'The number does not have WhatsApp' });
+            return res.status(400).json({ success: false, status: 'الرقم غير مسجل في واتساب' });
         }
 
-        // Send the WhatsApp message
         await client.sendMessage(fullNumber, message);
 
-        // Respond with success
-        return res.json({ success: true, status: 'Message sent successfully' });
+        sentCount++; // زيادة العداد بعد الإرسال الناجح
+        console.log(`✅ Message sent. Total sent today: ${sentCount}/${DAILY_LIMIT}`);
+
+        return res.json({ success: true, status: 'تم إرسال الرسالة بنجاح' });
 
     } catch (err) {
-        // Log any error that happens during sending
         console.error('❌ Error while sending message:', err);
-
-        // Respond with failure message
-        return res.status(500).json({ success: false, status: 'Failed to send message' });
+        return res.status(500).json({ success: false, status: 'فشل في إرسال الرسالة' });
     }
 });
 
-// Start the Express server on port 3000
 app.listen(3000, () => {
     console.log('🚀 Server running on http://localhost:3000');
 });

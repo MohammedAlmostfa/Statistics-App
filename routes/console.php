@@ -10,4 +10,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 
-Schedule::job(new CheckLatePayments)->dailyAt('20:55');
+Schedule::job(new CheckLatePayments)->dailyAt('00:30');
