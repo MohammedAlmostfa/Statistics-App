@@ -31,7 +31,7 @@ class Customer extends Model
         'phone',        // Contact phone number
         'notes',        // Additional notes about the customer
         'sponsor_name', // Name of the sponsor (if any)
-        'sponsor_phone',// Sponsor's phone number
+        'sponsor_phone', // Sponsor's phone number
         'Record_id',    // Associated record identifier
         'Page_id',      // Associated page identifier
         'status',       // Customer's status (e.g., 'Old' or 'New')
@@ -151,8 +151,8 @@ class Customer extends Model
     public function status(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => self::TYPE_MAP[$value] ?? 'Unknown',
-            set: fn ($value) => array_search($value, self::TYPE_MAP) ?? $value
+            get: fn($value) => self::TYPE_MAP[$value] ?? 'Unknown',
+            set: fn($value) => array_search($value, self::TYPE_MAP) ?? $value
         );
     }
 
@@ -165,10 +165,10 @@ class Customer extends Model
      */
     public function scopeFilterBy($query, array $filteringData)
     {
-       if (isset($filteringData['name'])) {
-    $searchTerm = strtolower($filteringData['name']); 
-    $query->whereRaw('LOWER(name) LIKE ?', ["%{$searchTerm}%"]); 
-}
+        if (isset($filteringData['name'])) {
+            $searchTerm = strtolower($filteringData['name']);
+            $query->whereRaw('LOWER(name) LIKE ?', ["%{$searchTerm}%"]);
+        }
         if (isset($filteringData['phone'])) {
             $query->where('phone', $filteringData['phone']);
         }
@@ -181,5 +181,11 @@ class Customer extends Model
         }
 
         return $query;
+    }
+
+
+    public function notificationLog()
+    {
+        return $this->hasMany(NotificationLog::class);
     }
 }

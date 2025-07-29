@@ -1,0 +1,49 @@
+const express = require('express');
+const { Client, LocalAuth } = require('whatsapp-web.js');
+const qrcode = require('qrcode-terminal');
+const cors = require('cors');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const client = new Client({
+    authStrategy: new LocalAuth()
+});
+
+client.on('qr', (qr) => {
+    console.log('📲 Scan this QR code with WhatsApp:');
+    qrcode.generate(qr, { small: true });
+});
+
+client.on('ready', () => {
+    console.log('✅ WhatsApp is ready');
+});
+
+client.initialize();
+
+app.post('/send', async (req, res) => {
+    const { number, message } = req.body;
+
+    if (!number || !message) {
+        return res.status(400).json({ error: 'رقم الهاتف والرسالة مطلوبان' });
+    }
+
+    try {
+        const fullNumber = number + '@c.us';
+        await client.sendMessage(fullNumber, message);
+        return res.json({ status: 'تم الإرسال' });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'فشل الإرسال' });
+    }
+});
+
+app.listen(3000, () => {
+    console.log('🚀 Server running on http://localhost:3000');
+});
+
+
+
+
+

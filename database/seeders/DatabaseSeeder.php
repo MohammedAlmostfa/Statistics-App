@@ -20,10 +20,10 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
         //   CustomerSeeder::class,
             ProductOriginSeeder::class,
-           // ProductCategorySeeder::class,
-          //  ProductSeeder::class,
-          //  ReceiptSeeder::class,
-          //  PaymentSeeder::class,
+           ProductCategorySeeder::class,
+           ProductSeeder::class,
+        //    ReceiptSeeder::class,
+        //    PaymentSeeder::class,
         ]);
     }
 }

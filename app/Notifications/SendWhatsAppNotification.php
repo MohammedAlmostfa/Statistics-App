@@ -5,40 +5,31 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use App\Channels\WhatsAppChannel;
 
-class SendWhatsAppNotification extends Notification
+class SendWhatsAppNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     protected string $message;
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct(string $message)
     {
         $this->message = $message;
     }
 
-    public function via(object $notifiable): array
+    public function via($notifiable)
     {
         return [WhatsAppChannel::class];
     }
 
-    /**
-     * Get the WhatsApp representation of the notification.
-     */
-    public function toWhatsApp(object $notifiable): array
+    public function toWhatsApp($notifiable)
     {
         return [
-            'phone' => $notifiable->phone,
-            'body'  => $this->message,
+            'phone' => $notifiable->phone,  // رقم الهاتف بصيغة رقم فقط (مثلاً: 961XXXXXXXX)
+            'body' => $this->message,
         ];
     }
 
-    /**
-     * Get the array representation of the notification.
-     */
-    public function toArray(object $notifiable): array
+    public function toArray($notifiable)
     {
         return [
             'message' => $this->message,

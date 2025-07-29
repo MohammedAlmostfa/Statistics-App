@@ -136,4 +136,6 @@ Route::middleware('jwt')->group(function () {
 
     Route::apiResource('/financialtransaction', FinancialTransactionController::class);  //  Manage financial transactions
     Route::get("/backupDownload", [BackupController::class, 'index']);
+
 });
+    Route::post('/send-whatsapp', [WhatsappController::class, 'sendMessage']);

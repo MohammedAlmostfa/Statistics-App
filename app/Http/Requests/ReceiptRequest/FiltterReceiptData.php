@@ -25,10 +25,10 @@ class FiltterReceiptData extends FormRequest
     public function rules(): array
     {
         return [
-         'name' => 'nullable|string|max:255',
+            'name' => 'nullable|string|max:255',
             'receipt_date' => 'nullable|date',
-            'type'=>'nullable|string',
-            'receipt_number'=>'nullable|integer',   
+            'type' => 'nullable|string',
+            'receipt_number' => 'nullable|integer',
         ];
     }
     /**
