@@ -49,7 +49,7 @@ app.post('/send', async (req, res) => {
     if (sentCount >= DAILY_LIMIT) {
         return res.status(429).json({
             success: false,
-            status: 'تم استهلاك رصيد الرسائل اليومي، يرجى المحاولة غدًا.'
+            status: 'تم استهلاك رصيد الرسائل اليومي .'
         });
     }
 
