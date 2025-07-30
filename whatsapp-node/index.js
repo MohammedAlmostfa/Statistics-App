@@ -29,7 +29,7 @@ client.on('ready', () => {
 client.initialize();
 
 // إعداد الحد اليومي وعداد الإرسال
-const DAILY_LIMIT = 1;
+const DAILY_LIMIT = 100;
 let sentCount = 0;
 let currentDate = new Date().toISOString().slice(0, 10); // yyyy-mm-dd
 
