@@ -22,7 +22,7 @@ class ReceiptService extends Service
     {
         try {
             $page = request('page', 1);
-            $cacheKey = 'receipts_'.$page.'_'.md5(json_encode($filteringData));
+            $cacheKey = 'receipts_' . $page . '_' . md5(json_encode($filteringData));
             $cacheKeys = Cache::get('all_receipts_keys', []);
             if (!in_array($cacheKey, $cacheKeys)) {
                 $cacheKeys[] = $cacheKey;
@@ -30,7 +30,7 @@ class ReceiptService extends Service
             }
             $receipts = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($filteringData) {
                 return Receipt::with(['user:id,name', 'customer:id,name'])
-                    ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
+                    ->when(!empty($filteringData), fn($query) => $query->filterBy($filteringData))
                     ->orderByDesc('receipt_date')->paginate(10);
             });
 
@@ -89,23 +89,23 @@ class ReceiptService extends Service
     {
 
 
-        $receipt= Receipt::create([
-             'customer_id'    => $data['customer_id'],
-             'receipt_number' => $data['receipt_number'],
-             'type'           => $data['type'],
-             'total_price'    => $data['total_price'],
-             'notes'          => $data['notes'] ?? null,
-             'receipt_date'   => $data['receipt_date'] ?? now(),
-             'user_id'        => Auth::id(),
-         ]);
+        $receipt = Receipt::create([
+            'customer_id'    => $data['customer_id'],
+            'receipt_number' => $data['receipt_number'],
+            'type'           => $data['type'],
+            'total_price'    => $data['total_price'],
+            'notes'          => $data['notes'] ?? null,
+            'receipt_date'   => $data['receipt_date'] ?? now(),
+            'user_id'        => Auth::id(),
+        ]);
 
         ActivitiesLog::create([
-         'user_id'     => Auth::id(),
-         'description' => 'تم اضافة فاتورة ذات الرقم : ' . $receipt->receipt_number,
-         'type_id'     => $receipt->id,
-         'type_type'   => Receipt::class,
+            'user_id'     => Auth::id(),
+            'description' => 'تم اضافة فاتورة ذات الرقم : ' . $receipt->receipt_number,
+            'type_id'     => $receipt->id,
+            'type_type'   => Receipt::class,
         ]);
-        return   $receipt ;
+        return   $receipt;
     }
 
     /**
@@ -124,7 +124,7 @@ class ReceiptService extends Service
                 'description'    => $productData['description'] ?? null,
                 'quantity'       => $productData['quantity'],
                 'buying_price'   => $buyingPrice,
-                'selling_price'  => $productData['selling_price']?? $product->getSellingPriceForReceiptType($type),
+                'selling_price'  => $productData['selling_price'] ?? $product->getSellingPriceForReceiptType($type),
 
             ]);
 
@@ -214,17 +214,21 @@ class ReceiptService extends Service
                     $oldQuantity = (int)$receiptProduct->quantity;
                     $newQuantity = (int)$productData['quantity'];
                     $description = $productData['description'] ?? $receiptProduct->description;
+                    $sellingPrice = $productData['selling_price'] ?? $receiptProduct->selling_price;
+
 
                     $receiptProduct->update([
-                        'quantity'    => $newQuantity ?? $receiptProduct->quantity,
-                        'description' => $description ?? $receiptProduct->description,
+                        'quantity'      => $newQuantity ?? $receiptProduct->quantity,
+                        'description'   => $description,
+
+                        'selling_price' => $sellingPrice,
                     ]);
+
 
                     $quantityDifference = $newQuantity - $oldQuantity;
                     if ($quantityDifference !== 0) {
 
                         event(new ReceiptCreated($productId, $quantityDifference));
-
                     }
 
                     if ($receipt->type === 'اقساط') {
@@ -267,13 +271,11 @@ class ReceiptService extends Service
             'receipt_date' => $data['receipt_date'] ?? $receipt->receipt_date,
         ]);
         ActivitiesLog::create([
-           'user_id'     => Auth::id(),
-           'description' => 'تم تعديل فاتورة ذات الرقم : ' . $receipt->receipt_number,
-           'type_id'     => $receipt->id,
-           'type_type'   => Receipt::class,
-]);
-
-
+            'user_id'     => Auth::id(),
+            'description' => 'تم تعديل فاتورة ذات الرقم : ' . $receipt->receipt_number,
+            'type_id'     => $receipt->id,
+            'type_type'   => Receipt::class,
+        ]);
     }
 
     /**
@@ -319,7 +321,6 @@ class ReceiptService extends Service
                 foreach ($receipt->receiptProducts as $receiptProduct) {
 
                     event(new ReceiptCreated($receiptProduct->product_id, -$receiptProduct->quantity));
-
                 }
             }
             $receipt->delete();

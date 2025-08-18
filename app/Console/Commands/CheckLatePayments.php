@@ -126,3 +126,109 @@ class CheckLatePayments extends Command
         }
     }
 }
+
+
+
+// <?php
+
+// namespace App\Console\Commands;
+
+// use Carbon\Carbon;
+// use App\Models\Debt;
+// use App\Models\Customer;
+// use App\Models\DebtPayment;
+// use Illuminate\Console\Command;
+// use App\Models\InstallmentPayment;
+// use App\Models\Receipt;
+// use App\Notifications\SendWhatsAppNotification;
+
+// class CheckLatePayments extends Command
+// {
+//     protected $signature = 'check:late-payments';
+
+//     protected $description = 'Send WhatsApp reminders for overdue installment and debt payments.';
+
+//     public function handle(): int
+//     {
+//         $customers = Customer::all();
+
+//         foreach ($customers as $customer) {
+//             $this->checkInstallments($customer);
+//             $this->checkDebts($customer);
+//         }
+
+//         return Command::SUCCESS;
+//     }
+
+//     protected function checkInstallments($customer)
+//     {
+//         $latestInstallmentPaymentDate = InstallmentPayment::whereHas('installment.receiptProduct.receipt', function ($query) use ($customer) {
+//             $query->where('customer_id', $customer->id);
+//         })
+//         ->whereHas('installment', function ($query) {
+//             $query->where('status', 1);
+//         })
+//         ->latest('payment_date')
+//         ->value('payment_date');
+
+//         if ($latestInstallmentPaymentDate) {
+//             $paymentDate = Carbon::parse($latestInstallmentPaymentDate);
+//             $daysDiff = $paymentDate->diffInDays(Carbon::today());
+
+//             // ✅ تذكير كل 3 أيام بعد 30 يوم
+//             if ($daysDiff >= 30 && ($daysDiff - 30) % 3 == 0) {
+//                 $lastDate = $paymentDate->format('Y-m-d');
+//                 $msg = "السلام عليكم {$customer->name}، لم نقم بتسجيل أي دفعة أقساط منذ {$lastDate}. نذكرك بضرورة السداد لتفادي التأخير، وذلك لصالح محمد حمدان للإلكترونيات.";
+
+//                 $customer->notify(new SendWhatsAppNotification($msg));
+//             }
+//         } else {
+//             $receipts = Receipt::where('type', 0)
+//                 ->where('customer_id', $customer->id)
+//                 ->whereHas('receiptProducts.installment', function ($query) {
+//                     $query->where('status', 1)
+//                           ->whereDoesntHave('installmentPayments');
+//                 })
+//                 ->get();
+
+//             foreach ($receipts as $receipt) {
+//                 $paymentDate = Carbon::parse($receipt->receipt_date);
+//                 $daysDiff = $paymentDate->diffInDays(Carbon::today());
+
+//                 // ✅ تذكير كل 3 أيام بعد 30 يوم
+//                 if ($daysDiff >= 30 && ($daysDiff - 30) % 3 == 0) {
+//                     $lastDate = $paymentDate->format('Y-m-d');
+//                     $msg = "السلام عليكم {$customer->name}، لم تقم بأي دفعة أقساط منذ تاريخ الفاتورة {$lastDate}. نذكرك بضرورة السداد لتفادي التأخير، وذلك لصالح محمد حمدان للإلكترونيات.";
+
+//                     $customer->notify(new SendWhatsAppNotification($msg));
+//                     break;
+//                 }
+//             }
+//         }
+//     }
+
+//     protected function checkDebts($customer)
+//     {
+//         $debts = Debt::where('customer_id', $customer->id)
+//                     ->where('remaining_debt', '>', 0)
+//                     ->get();
+
+//         foreach ($debts as $debt) {
+//             $latestDebtPayment = $debt->debtPayments()->latest('id')->first();
+//             $lastPaymentDate = $latestDebtPayment?->payment_date ?? $debt->debt_date;
+
+//             if ($lastPaymentDate) {
+//                 $date = Carbon::parse($lastPaymentDate);
+//                 $daysDiff = $date->diffInDays(Carbon::today());
+
+//                 // ✅ تذكير كل 3 أيام بعد 30 يوم
+//                 if ($daysDiff >= 30 && ($daysDiff - 30) % 3 == 0) {
+//                     $formattedDate = $date->format('Y-m-d');
+//                     $msg ="السلام عليكم {$customer->name}، لديك دين لم يتم سداده منذ {$formattedDate}. نرجو السداد في أقرب وقت، وذلك لصالح محمد حمدان للإلكترونيات.";
+
+//                     $customer->notify(new SendWhatsAppNotification($msg));
+//                 }
+//             }
+//         }
+//     }
+// }
