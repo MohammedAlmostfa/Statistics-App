@@ -220,7 +220,6 @@ class ReceiptService extends Service
                     $receiptProduct->update([
                         'quantity'      => $newQuantity ?? $receiptProduct->quantity,
                         'description'   => $description,
-
                         'selling_price' => $sellingPrice,
                     ]);
 

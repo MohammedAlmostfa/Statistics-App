@@ -34,14 +34,16 @@ class PaymentController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function index(): JsonResponse
-    {
-        $result = $this->paymentService->getAllPayments();
+   public function index(): JsonResponse
+{
+    $result = $this->paymentService->getAllPayments();
 
-        return $result['status'] === 200
-            ? $this->paginated($result['data'], PaymantResource::class, $result['message'], $result['status'])
-            : $this->error(null, $result['message'], $result['status']);
-    }
+    return $result['status'] === 200
+        ? $this->paginated(
+            $result['data']['payments'],PaymantResource::class,$result['message'],$result['status'],['totalPaid' => $result['data']['totalPaid']])
+        : $this->error(null, $result['message'], $result['status']);
+}
+
 
     /**
      * Store a newly created payment in storage.

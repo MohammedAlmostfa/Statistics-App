@@ -23,7 +23,7 @@ class Controller extends BaseController
     {
         return response()->json([
             'status' => 'success',
-            'message' => $message ,
+            'message' => $message,
             'data' => $data,
         ], $status);
     }
@@ -31,7 +31,7 @@ class Controller extends BaseController
 
 
     /**
-  * Return an error JSON response.
+     * Return an error JSON response.
      *
      * @param mixed $data The data to be returned in the response.
      * @param string $message The error message.
@@ -42,7 +42,7 @@ class Controller extends BaseController
     {
         return response()->json([
             'status' => 'error',
-            'message' => $message  ,
+            'message' => $message,
             'data' => $data,
         ], $status);
     }
@@ -60,13 +60,18 @@ class Controller extends BaseController
      *
      * @return \Illuminate\Http\JsonResponse A JSON response containing the transformed items and pagination details.
      */
-    public static function paginated(LengthAwarePaginator $paginator, $resourceClass, $message = '', $status)
-    {
+    public static function paginated(
+        LengthAwarePaginator $paginator,
+        $resourceClass,
+        $message = '',
+        $status = 200,
+        array $extraData = []
+    ) {
         $transformedItems = $resourceClass::collection($paginator->items());
 
         return response()->json([
             'status' => 'success',
-            'message' =>  $message,
+            'message' => $message,
             'data' => $transformedItems,
             'pagination' => [
                 'total' => $paginator->total(),
@@ -75,7 +80,8 @@ class Controller extends BaseController
                 'current_page' => $paginator->currentPage(),
                 'total_pages' => $paginator->lastPage(),
             ],
+            // أضف أي بيانات إضافية هنا
+            'extra' => $extraData,
         ], $status);
     }
-
 }

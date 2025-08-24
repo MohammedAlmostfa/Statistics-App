@@ -21,21 +21,26 @@ class PaymentService extends Service
      * @return array Structured success or error response in Arabic.
      */
     public function getAllPayments()
-    {
-        try {
+{
+    try {
+        // Paginated payments
+        $payments = Payment::with('user:id,name')
+            ->orderByDesc('payment_date')
+            ->paginate(10);
 
+        // Total sum
+        $totalPaid = Payment::sum('amount');
 
-            // Attempt to retrieve payments from the cache, if not found, fetch from database
-            $payments = Payment::with('user:id,name') ->orderByDesc('payment_date') ->paginate(10);
-
-
-            return $this->successResponse('تم استرجاع الدفعات بنجاح.', 200, $payments);
-        } catch (Exception $e) {
-            // Log the error if the payment retrieval fails
-            Log::error('Error retrieving payments: ' . $e->getMessage());
-            return $this->errorResponse('حدث خطأ اثناء استرجاع الدفعات بنجاح ,  يرجى المحاولة مرة اخرى');
-        }
+        return $this->successResponse('تم استرجاع الدفعات بنجاح.', 200, [
+            'payments' => $payments,
+            'totalPaid' => $totalPaid
+        ]);
+    } catch (Exception $e) {
+        Log::error('Error retrieving payments: ' . $e->getMessage());
+        return $this->errorResponse('حدث خطأ اثناء استرجاع الدفعات , يرجى المحاولة مرة اخرى');
     }
+}
+
 
     /**
      * Create a new payment and log the activity.
@@ -118,7 +123,6 @@ class PaymentService extends Service
             DB::rollBack();
             Log::error('Error updating payment: ' . $e->getMessage());
             return $this->errorResponse('حدث خطا اثناء تحديث الدفعة , يرجى المحاولة مرة اخرى ');
-
         }
     }
 
@@ -156,9 +160,6 @@ class PaymentService extends Service
             DB::rollBack();
             Log::error('Error deleting payment: ' . $e->getMessage());
             return $this->errorResponse('حدث خطا اثناء حذف الدفعة , يرجى المحاولة مرة اخرى ');
-
         }
     }
-
-
 }
