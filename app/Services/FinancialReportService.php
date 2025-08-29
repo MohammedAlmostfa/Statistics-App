@@ -36,47 +36,50 @@ class FinancialReportService extends Service
 
             $collectedDebtPayments = DebtPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
 
-            $collecteFinancialTransactionPaymentsDinar = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-                ->whereIn('type', [0, 1])
-                ->whereHas('agent', function ($query) {
-                    $query->where('type', 1)->where('status',0);
-                })
-                ->sum('paid_amount');
+            $currencies = [
+                'dinar'  => [
+                    'agentType' => 1,
+                    'paymentField' => 'collecteFinancialTransactionPaymentsDinar',
+                    'debtField'    => 'collecteFinancialTransactionDebtsDinar',
+                ],
+                'dollar' => [
+                    'agentType' => 0,
+                    'paymentField' => 'collecteFinancialTransactionPaymentsDolar',
+                    'debtField'    => 'collecteFinancialTransactionDebtsDolar',
+                ],
+            ];
 
-            $collecteFinancialTransactionDebtsDinar = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-                ->where('type', 0)
-                ->whereHas('agent', function ($query) {
-                    $query->where('type', 1)->where('status',0);
-                })
-                ->sum(DB::raw('GREATEST(0, total_amount - discount_amount - paid_amount)'));
+            $financialTransactions = [];
 
-            $collecteFinancialTransactionDebtsDinar += FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-                ->where('type', 3)
-                ->whereHas('agent', function ($query) {
-                    $query->where('type', 1)->where('status',0);
-                })
-                ->sum('total_amount');
+            foreach ($currencies as $currency) {
+                // المدفوعات (type = 0 أو 1)
+                $payments = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
+                    ->whereIn('type', [0, 1])
+                    ->whereHas('agent', function ($query) use ($currency) {
+                        $query->where('type', $currency['agentType'])->where('status', 0);
+                    })
+                    ->sum('paid_amount');
 
-            $collecteFinancialTransactionPaymentsDolar = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-                ->whereIn('type', [0, 1])
-                ->whereHas('agent', function ($query) {
-                    $query->where('type', 0)->where('status',0);
-                })
-                ->sum('paid_amount');
+                // الديون (type = 0)
+                $debts = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
+                    ->where('type', 0)
+                    ->whereHas('agent', function ($query) use ($currency) {
+                        $query->where('type', $currency['agentType'])->where('status', 0);
+                    })
+                    ->sum(DB::raw('GREATEST(0, total_amount - discount_amount - paid_amount)'));
 
-            $collecteFinancialTransactionDebtsDolar = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-                ->where('type', 0)
-                ->whereHas('agent', function ($query) {
-                    $query->where('type', 0)->where('status',0);
-                })
-                ->sum(DB::raw('GREATEST(0, total_amount - discount_amount - paid_amount)'));
+                // الديون (type = 3)
+                $debts += FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
+                    ->where('type', 3)
+                    ->whereHas('agent', function ($query) use ($currency) {
+                        $query->where('type', $currency['agentType'])->where('status', 0);
+                    })
+                    ->sum('total_amount');
 
-            $collecteFinancialTransactionDebtsDolar += FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-                ->where('type', 3)
-                ->whereHas('agent', function ($query) {
-                    $query->where('type', 0)->where('status',0);
-                })
-                ->sum('total_amount');
+                // نخزن القيم في Array بنفس أسماء الحقول المطلوبة
+                $financialTransactions[$currency['paymentField']] = (int) $payments;
+                $financialTransactions[$currency['debtField']]    = (int) $debts;
+            }
 
 
 
@@ -135,11 +138,8 @@ class FinancialReportService extends Service
                         'adjustedCOGS' => (int) $adjustedCOGS,
                         'totaldebt' => (int) $totaldebt,
                         'collectedDebtPayments' => (int) $collectedDebtPayments,
-                        'collecteFinancialTransactionPaymentsDinar' => (int) $collecteFinancialTransactionPaymentsDinar,
-                        'collecteFinancialTransactionDebtsDinar' => (int) $collecteFinancialTransactionDebtsDinar,
-                        'collecteFinancialTransactionPaymentsDolar' => (int) $collecteFinancialTransactionPaymentsDolar,
-                        'collecteFinancialTransactionDebtsDolar' => (int) $collecteFinancialTransactionDebtsDolar,
-                    ],
+                    ] + $financialTransactions,
+
                     'cash_flow_summary' => [
                         'cash_inflow_from_collected_installments' => (int) $collectedInstallmentPayments,
                     ],
