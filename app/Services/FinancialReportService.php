@@ -28,116 +28,122 @@ class FinancialReportService extends Service
         try {
             // Parse and format the start and end dates (defaults to earliest receipt or today)
             $startDate = Carbon::parse($data['start_date'] ?? Receipt::first()?->receipt_date ?? now())->toDateString();
-            $endDate = Carbon::parse($data['end_date'] ?? now())->toDateString();
+            $endDate   = Carbon::parse($data['end_date'] ?? now())->toDateString();
 
             // Sum of all installment payments collected within the date range
             $collectedInstallmentPayments = InstallmentPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
 
-
+            // Sum of all debt payments collected within the date range
             $collectedDebtPayments = DebtPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
 
-            $currencies = [
-                'dinar'  => [
-                    'agentType' => 1,
-                    'paymentField' => 'collecteFinancialTransactionPaymentsDinar',
-                    'debtField'    => 'collecteFinancialTransactionDebtsDinar',
-                ],
-                'dollar' => [
-                    'agentType' => 0,
-                    'paymentField' => 'collecteFinancialTransactionPaymentsDolar',
-                    'debtField'    => 'collecteFinancialTransactionDebtsDolar',
-                ],
+            /**
+             * ------------------------------
+             * 📌 Query financial transactions (single grouped query)
+             * ------------------------------
+             */
+            $transactions = FinancialTransaction::select(
+                    'agents.type as agentType',
+                    'financial_transactions.type as transactionType',
+                    DB::raw('SUM(paid_amount) as totalPaid'),
+                    DB::raw('SUM(GREATEST(0, total_amount - discount_amount - paid_amount)) as remainingDebt'),
+                    DB::raw('SUM(total_amount) as totalAmount')
+                )
+                ->join('agents', 'agents.id', '=', 'financial_transactions.agent_id')
+                ->whereBetween('transaction_date', [$startDate, $endDate])
+                ->where('agents.status', 0)
+                ->groupBy('agents.type', 'financial_transactions.type')
+                ->get();
+
+            /**
+             * ------------------------------
+             * 📌 Map results into final structure
+             * ------------------------------
+             */
+            $map = [
+                1 => ['paymentField' => 'collecteFinancialTransactionPaymentsDinar', 'debtField' => 'collecteFinancialTransactionDebtsDinar'],
+                0 => ['paymentField' => 'collecteFinancialTransactionPaymentsDolar', 'debtField' => 'collecteFinancialTransactionDebtsDolar'],
             ];
 
-            $financialTransactions = [];
+            $financialTransactions = [
+                'collecteFinancialTransactionPaymentsDinar' => 0,
+                'collecteFinancialTransactionDebtsDinar'    => 0,
+                'collecteFinancialTransactionPaymentsDolar' => 0,
+                'collecteFinancialTransactionDebtsDolar'    => 0,
+            ];
 
-            foreach ($currencies as $currency) {
-                // المدفوعات (type = 0 أو 1)
-                $payments = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-                    ->whereIn('type', [0, 1])
-                    ->whereHas('agent', function ($query) use ($currency) {
-                        $query->where('type', $currency['agentType'])->where('status', 0);
-                    })
-                    ->sum('paid_amount');
+            foreach ($transactions as $row) {
+                $fields = $map[$row->agentType] ?? null;
+                if (!$fields) continue;
 
-                // الديون (type = 0)
-                $debts = FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-                    ->where('type', 0)
-                    ->whereHas('agent', function ($query) use ($currency) {
-                        $query->where('type', $currency['agentType'])->where('status', 0);
-                    })
-                    ->sum(DB::raw('GREATEST(0, total_amount - discount_amount - paid_amount)'));
+                // Payments (type = 0 or 1)
+                if (in_array($row->transactionType, [0, 1])) {
+                    $financialTransactions[$fields['paymentField']] += (int) $row->totalPaid;
+                }
 
-                // الديون (type = 3)
-                $debts += FinancialTransaction::whereBetween('transaction_date', [$startDate, $endDate])
-                    ->where('type', 3)
-                    ->whereHas('agent', function ($query) use ($currency) {
-                        $query->where('type', $currency['agentType'])->where('status', 0);
-                    })
-                    ->sum('total_amount');
+                // Debts (type = 0)
+                if ($row->transactionType == 0) {
+                    $financialTransactions[$fields['debtField']] += (int) $row->remainingDebt;
+                }
 
-                // نخزن القيم في Array بنفس أسماء الحقول المطلوبة
-                $financialTransactions[$currency['paymentField']] = (int) $payments;
-                $financialTransactions[$currency['debtField']]    = (int) $debts;
+                // Debts (type = 3)
+                if ($row->transactionType == 3) {
+                    $financialTransactions[$fields['debtField']] += (int) $row->totalAmount;
+                }
             }
 
-
-
-            // Total expenses recorded within the date range
+            /**
+             * ------------------------------
+             * 📌 Other calculations
+             * ------------------------------
+             */
             $totalExpenses = Payment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
-            $totaldebt = Debt::whereBetween('debt_date', [$startDate, $endDate])->sum('remaining_debt');
+            $totaldebt     = Debt::whereBetween('debt_date', [$startDate, $endDate])->sum('remaining_debt');
 
-            // Total value of installment-based sales (type 0) in the period
             $totalInstallmentSalesValueInPeriod = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
                 ->where('type', 0)
                 ->sum('total_price');
 
-            // Total cash-based sales (type 1) in the period
             $totalCashSalesRevenue = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
                 ->where('type', 1)
                 ->sum('total_price');
 
-            // Total revenue from both cash and installment sales
             $totalRevenueFromSalesInPeriod = $totalCashSalesRevenue + $totalInstallmentSalesValueInPeriod;
 
-            // Cost of goods sold (COGS) based on the purchase price of sold products
             $cogsForPeriodSales = ReceiptProduct::whereHas('receipt', function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('receipt_date', [$startDate, $endDate]);
             })->sum(DB::raw('buying_price * quantity'));
 
-            // Total of first payments received on installment purchases
             $firstpay = Installment::whereHas('receiptProduct.receipt', function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('receipt_date', [$startDate, $endDate]);
             })->sum('first_pay');
 
-            // Gross profit = Revenue - COGS
             $grossProfitFromSalesInPeriod = $totalRevenueFromSalesInPeriod - $cogsForPeriodSales;
 
-            // Adjusted cost of goods sold for installment-specific analysis
             $adjustedCOGS = $totalInstallmentSalesValueInPeriod - $firstpay - $collectedInstallmentPayments;
 
-            // Operating net profit = Gross profit - Expenses
             $operatingNetProfit = $grossProfitFromSalesInPeriod - $totalExpenses;
 
-
-
-            // Return a successful structured financial report
+            /**
+             * ------------------------------
+             * 📌 Return response
+             * ------------------------------
+             */
             return $this->successResponse(
                 'Financial report retrieved successfully',
                 200,
                 [
                     'period' => [
                         'startDate' => $startDate,
-                        'endDate' => $endDate,
+                        'endDate'   => $endDate,
                     ],
                     'income_statement_summary' => [
                         'total_installment_sales_value_in_period' => (int) $totalInstallmentSalesValueInPeriod,
-                        'total_revenue_from_sales_in_period' => (int) $totalRevenueFromSalesInPeriod,
-                        'total_expenses_in_period' => (int) $totalExpenses,
-                        'operating_net_profit_in_period' => (int) $operatingNetProfit,
-                        'adjustedCOGS' => (int) $adjustedCOGS,
-                        'totaldebt' => (int) $totaldebt,
-                        'collectedDebtPayments' => (int) $collectedDebtPayments,
+                        'total_revenue_from_sales_in_period'      => (int) $totalRevenueFromSalesInPeriod,
+                        'total_expenses_in_period'                => (int) $totalExpenses,
+                        'operating_net_profit_in_period'          => (int) $operatingNetProfit,
+                        'adjustedCOGS'                            => (int) $adjustedCOGS,
+                        'totaldebt'                               => (int) $totaldebt,
+                        'collectedDebtPayments'                   => (int) $collectedDebtPayments,
                     ] + $financialTransactions,
 
                     'cash_flow_summary' => [
@@ -145,8 +151,8 @@ class FinancialReportService extends Service
                     ],
                 ]
             );
+
         } catch (Exception $e) {
-            // Log the error for debugging
             Log::error("Unexpected error in GetFinancialReport: " . $e->getMessage());
             return $this->errorResponse('حدث خطأ أثناء استرجاع التقرير المالي، يرجى المحاولة مرة اخرى.');
         }
