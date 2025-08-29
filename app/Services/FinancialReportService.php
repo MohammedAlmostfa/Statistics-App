@@ -17,30 +17,24 @@ use App\Models\FinancialTransaction;
 
 class FinancialReportService extends Service
 {
-    /**
-     * Generate a financial report for the given date range.
-     *
-     * @param array $data Associative array containing 'start_date' and 'end_date' keys (optional).
-     * @return array Structured response containing the report data or an error message.
-     */
     public function GetFinancialReport($data): array
     {
         try {
-            // Parse and format the start and end dates (defaults to earliest receipt or today)
-            $startDate = Carbon::parse($data['start_date'] ?? Receipt::first()?->receipt_date ?? now())->toDateString();
-            $endDate   = Carbon::parse($data['end_date'] ?? now())->toDateString();
+            // Parse dates only if موجودة، وإلا نرجع كل البيانات
+            $startDate = $data['start_date'] ?? null;
+            $endDate   = $data['end_date'] ?? null;
 
-            // Sum of all installment payments collected within the date range
-            $collectedInstallmentPayments = InstallmentPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
+            // Collected installment payments
+            $collectedInstallmentPayments = InstallmentPayment::when($startDate && $endDate, function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('payment_date', [$startDate, $endDate]);
+            })->sum('amount');
 
-            // Sum of all debt payments collected within the date range
-            $collectedDebtPayments = DebtPayment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
+            // Collected debt payments
+            $collectedDebtPayments = DebtPayment::when($startDate && $endDate, function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('payment_date', [$startDate, $endDate]);
+            })->sum('amount');
 
-            /**
-             * ------------------------------
-             * 📌 Query financial transactions (single grouped query)
-             * ------------------------------
-             */
+            // Financial transactions grouped by agent type & transaction type
             $transactions = FinancialTransaction::select(
                     'agents.type as agentType',
                     'financial_transactions.type as transactionType',
@@ -49,16 +43,11 @@ class FinancialReportService extends Service
                     DB::raw('SUM(total_amount) as totalAmount')
                 )
                 ->join('agents', 'agents.id', '=', 'financial_transactions.agent_id')
-                ->whereBetween('transaction_date', [$startDate, $endDate])
+                ->when($startDate && $endDate, fn($q) => $q->whereBetween('transaction_date', [$startDate, $endDate]))
                 ->where('agents.status', 0)
                 ->groupBy('agents.type', 'financial_transactions.type')
                 ->get();
 
-            /**
-             * ------------------------------
-             * 📌 Map results into final structure
-             * ------------------------------
-             */
             $map = [
                 1 => ['paymentField' => 'collecteFinancialTransactionPaymentsDinar', 'debtField' => 'collecteFinancialTransactionDebtsDinar'],
                 0 => ['paymentField' => 'collecteFinancialTransactionPaymentsDolar', 'debtField' => 'collecteFinancialTransactionDebtsDolar'],
@@ -75,79 +64,62 @@ class FinancialReportService extends Service
                 $fields = $map[$row->agentType] ?? null;
                 if (!$fields) continue;
 
-                // Payments (type = 0 or 1)
                 if (in_array($row->transactionType, [0, 1])) {
-                    $financialTransactions[$fields['paymentField']] += (int) $row->totalPaid;
+                    $financialTransactions[$fields['paymentField']] += (float) $row->totalPaid;
                 }
-
-                // Debts (type = 0)
                 if ($row->transactionType == 0) {
-                    $financialTransactions[$fields['debtField']] += (int) $row->remainingDebt;
+                    $financialTransactions[$fields['debtField']] += (float) $row->remainingDebt;
                 }
-
-                // Debts (type = 3)
                 if ($row->transactionType == 3) {
-                    $financialTransactions[$fields['debtField']] += (int) $row->totalAmount;
+                    $financialTransactions[$fields['debtField']] += (float) $row->totalAmount;
                 }
             }
 
-            /**
-             * ------------------------------
-             * 📌 Other calculations
-             * ------------------------------
-             */
-            $totalExpenses = Payment::whereBetween('payment_date', [$startDate, $endDate])->sum('amount');
-            $totaldebt     = Debt::whereBetween('debt_date', [$startDate, $endDate])->sum('remaining_debt');
+            // Other calculations
+            $totalExpenses = Payment::when($startDate && $endDate, fn($q) => $q->whereBetween('payment_date', [$startDate, $endDate]))->sum('amount');
+            $totaldebt     = Debt::when($startDate && $endDate, fn($q) => $q->whereBetween('debt_date', [$startDate, $endDate]))->sum('remaining_debt');
 
-            $totalInstallmentSalesValueInPeriod = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
+            $totalInstallmentSalesValueInPeriod = Receipt::when($startDate && $endDate, fn($q) => $q->whereBetween('receipt_date', [$startDate, $endDate]))
                 ->where('type', 0)
                 ->sum('total_price');
 
-            $totalCashSalesRevenue = Receipt::whereBetween('receipt_date', [$startDate, $endDate])
+            $totalCashSalesRevenue = Receipt::when($startDate && $endDate, fn($q) => $q->whereBetween('receipt_date', [$startDate, $endDate]))
                 ->where('type', 1)
                 ->sum('total_price');
 
             $totalRevenueFromSalesInPeriod = $totalCashSalesRevenue + $totalInstallmentSalesValueInPeriod;
 
-            $cogsForPeriodSales = ReceiptProduct::whereHas('receipt', function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('receipt_date', [$startDate, $endDate]);
-            })->sum(DB::raw('buying_price * quantity'));
+            $cogsForPeriodSales = ReceiptProduct::when($startDate && $endDate, fn($q) =>
+                    $q->whereHas('receipt', fn($r) => $r->whereBetween('receipt_date', [$startDate, $endDate])))
+                ->sum(DB::raw('buying_price * quantity'));
 
-            $firstpay = Installment::whereHas('receiptProduct.receipt', function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('receipt_date', [$startDate, $endDate]);
-            })->sum('first_pay');
+            $firstpay = Installment::when($startDate && $endDate, fn($q) =>
+                    $q->whereHas('receiptProduct.receipt', fn($r) => $r->whereBetween('receipt_date', [$startDate, $endDate])))
+                ->sum('first_pay');
 
             $grossProfitFromSalesInPeriod = $totalRevenueFromSalesInPeriod - $cogsForPeriodSales;
-
             $adjustedCOGS = $totalInstallmentSalesValueInPeriod - $firstpay - $collectedInstallmentPayments;
-
             $operatingNetProfit = $grossProfitFromSalesInPeriod - $totalExpenses;
 
-            /**
-             * ------------------------------
-             * 📌 Return response
-             * ------------------------------
-             */
             return $this->successResponse(
                 'Financial report retrieved successfully',
                 200,
                 [
                     'period' => [
-                        'startDate' => $startDate,
-                        'endDate'   => $endDate,
+                        'startDate' => $startDate ?? null,
+                        'endDate'   => $endDate ?? null,
                     ],
                     'income_statement_summary' => [
-                        'total_installment_sales_value_in_period' => (int) $totalInstallmentSalesValueInPeriod,
-                        'total_revenue_from_sales_in_period'      => (int) $totalRevenueFromSalesInPeriod,
-                        'total_expenses_in_period'                => (int) $totalExpenses,
-                        'operating_net_profit_in_period'          => (int) $operatingNetProfit,
-                        'adjustedCOGS'                            => (int) $adjustedCOGS,
-                        'totaldebt'                               => (int) $totaldebt,
-                        'collectedDebtPayments'                   => (int) $collectedDebtPayments,
+                        'total_installment_sales_value_in_period' => (float) $totalInstallmentSalesValueInPeriod,
+                        'total_revenue_from_sales_in_period'      => (float) $totalRevenueFromSalesInPeriod,
+                        'total_expenses_in_period'                => (float) $totalExpenses,
+                        'operating_net_profit_in_period'          => (float) $operatingNetProfit,
+                        'adjustedCOGS'                            => (float) $adjustedCOGS,
+                        'totaldebt'                               => (float) $totaldebt,
+                        'collectedDebtPayments'                   => (float) $collectedDebtPayments,
                     ] + $financialTransactions,
-
                     'cash_flow_summary' => [
-                        'cash_inflow_from_collected_installments' => (int) $collectedInstallmentPayments,
+                        'cash_inflow_from_collected_installments' => (float) $collectedInstallmentPayments,
                     ],
                 ]
             );
