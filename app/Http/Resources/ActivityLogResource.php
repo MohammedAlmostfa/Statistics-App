@@ -21,7 +21,10 @@ class ActivityLogResource extends JsonResource
             'description' => $this->description,
             'type_type'   =>$this->type_type,
             'type_id'     => $this->type_id,
-            'created_at'  => $this->created_at?->format('Y-m-d h:i'),
+          'created_at' => $this->created_at
+    ? $this->created_at->timezone('Asia/Baghdad')->format('Y-m-d H:i')
+    : null,
+
         ];
     }
 }
