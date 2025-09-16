@@ -322,12 +322,12 @@ class CustomerService extends Service
 public function getCustomerById($id)
 {
     try {
-        
+
         $customer = Customer::with([
             'receipts.receiptProducts.installment.installmentPayments',
             'debts'
         ])
-        ->findOrFail($id); 
+        ->findOrFail($id);
 
         $firstPays = 0;
         $receiptTotalPrice = 0;
@@ -357,7 +357,7 @@ public function getCustomerById($id)
 
         $totalRemaining = ($receiptTotalPrice - $firstPays - $installmentsPaid) + ($remainingDebt - $debtInstallmentsPaid);
 
-     
+
 
         $customer->total_remaining = $totalRemaining;
 

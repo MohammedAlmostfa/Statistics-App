@@ -163,32 +163,40 @@ class ReceiptService extends Service
         DB::beginTransaction();
 
         try {
-
             $receipt->load('receiptProducts');
 
             $existingReceiptProducts = $receipt->receiptProducts->keyBy('product_id');
 
+            // التحقق من وجود المنتجات
+            if (!isset($data['products']) || !is_array($data['products']) || empty($data['products'])) {
+                DB::rollBack();
+                return [
+                    'status' => 422,
+                    'message' => 'لا يمكن حذف جميع المنتجات، إذا أردت حذف المنتجات بالكامل استخدم عملية الحذف.',
+                ];
+            }
+
+            $products = $data['products'];
+
+            // تحديث بيانات الفاتورة الأساسية
             $this->updateReceipt($receipt, $data);
 
-            $currentProductIds = array_column($data['products'], 'product_id');
+            // المعالجة الطبيعية: حذف، تحديث، إضافة
+            $currentProductIds = array_column($products, 'product_id');
             $deletedProductIds = $existingReceiptProducts->keys()->diff($currentProductIds);
             $addedProductIds = collect($currentProductIds)->diff($existingReceiptProducts->keys());
             $updatedProductIds = $existingReceiptProducts->keys()->intersect($currentProductIds);
 
-
             foreach ($deletedProductIds as $productIdToRemove) {
                 $productToRemove = $existingReceiptProducts->get($productIdToRemove);
-
                 event(new ReceiptCreated($productToRemove->product_id, -$productToRemove->quantity));
-
                 $productToRemove->delete();
             }
 
-            foreach ($data['products'] as $productData) {
+            foreach ($products as $productData) {
                 $productId = $productData['product_id'];
 
                 if ($addedProductIds->contains($productId)) {
-
                     $product = Product::findOrFail($productId);
                     $receiptType = $receipt->type;
                     $buyingPrice = $product->getCalculatedBuyingPrice();
@@ -203,30 +211,26 @@ class ReceiptService extends Service
                         'selling_price' => $sellingPrice,
                     ]);
 
-
                     event(new ReceiptCreated($productId, (int)$productData['quantity']));
+
                     if ($receiptType === 'اقساط') {
                         $this->createInstallment($receiptProduct, $productData);
                     }
                 } elseif ($updatedProductIds->contains($productId)) {
-
                     $receiptProduct = $existingReceiptProducts->get($productId);
                     $oldQuantity = (int)$receiptProduct->quantity;
                     $newQuantity = (int)$productData['quantity'];
                     $description = $productData['description'] ?? $receiptProduct->description;
                     $sellingPrice = $productData['selling_price'] ?? $receiptProduct->selling_price;
 
-
                     $receiptProduct->update([
-                        'quantity'      => $newQuantity ?? $receiptProduct->quantity,
+                        'quantity'      => $newQuantity,
                         'description'   => $description,
                         'selling_price' => $sellingPrice,
                     ]);
 
-
                     $quantityDifference = $newQuantity - $oldQuantity;
                     if ($quantityDifference !== 0) {
-
                         event(new ReceiptCreated($productId, $quantityDifference));
                     }
 
@@ -237,7 +241,6 @@ class ReceiptService extends Service
             }
 
             $this->updateTotalPrice($receipt);
-
             DB::commit();
 
             return [
@@ -258,6 +261,7 @@ class ReceiptService extends Service
             ];
         }
     }
+
 
     /**
      * Update receipt base info (not products).

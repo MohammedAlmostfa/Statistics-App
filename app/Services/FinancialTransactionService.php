@@ -64,7 +64,7 @@ class FinancialTransactionService extends Service
                 'total_amount' => $data["total_amount"],
                 'discount_amount' => $data["discount_amount"],
                 'paid_amount' => $data["paid_amount"],
-                'financial_transactions_number' => $data["financial_transactions_number"]??null,
+                'financial_transactions_number' => $data["financial_transactions_number"] ?? null,
                 'description' => $data["description"] ?? null,
                 'sum_amount' => $sumamount,
                 'user_id' => $userId,
@@ -80,7 +80,6 @@ class FinancialTransactionService extends Service
                     'quantity' => $product['quantity'],
                 ]);
                 event(new ProductEvent($product, 'store'));
-
             }
 
             ActivitiesLog::create([
@@ -132,7 +131,7 @@ class FinancialTransactionService extends Service
                     'discount_amount' => $data["discount_amount"] ?? $financialTransaction->discount_amount,
                     'paid_amount' => $data["paid_amount"] ?? $financialTransaction->paid_amount,
                     'description' => $data["description"] ?? $financialTransaction->description,
-                    'financial_transactions_number' => $data["financial_transactions_number"]?? $financialTransaction->financial_transactions_number,
+                    'financial_transactions_number' => $data["financial_transactions_number"] ?? $financialTransaction->financial_transactions_number,
                     'sum_amount' => $sumAmount,
                 ]);
 
@@ -168,14 +167,12 @@ class FinancialTransactionService extends Service
                     $updated['quantityDifference'] = $quantityDifference;
 
                     event(new ProductEvent($updated, 'update'));
-
                 }
                 // store
                 $toStore = $new->diffKeys($existing);
                 foreach ($toStore as $product) {
                     $financialTransaction->financialTransactionsProducts()->create($product);
                     event(new ProductEvent($product, 'store'));
-
                 }
                 event(new FinancialTransactionEdit($financialTransaction));
 

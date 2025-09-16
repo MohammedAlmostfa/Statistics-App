@@ -32,10 +32,9 @@ class ActivitiesLogService extends Service
 
             // Retrieve logs with filtering, caching, and pagination
             $activitiesLog = ActivitiesLog::with('user')
-                    ->when(!empty($filteringData), fn ($query) => $query->filterBy($filteringData))
-                    ->orderByDesc('created_at')
-                    ->paginate(10);
-
+                ->when(!empty($filteringData), fn($query) => $query->filterBy($filteringData))
+                ->orderByDesc('created_at')
+                ->paginate(10);
 
             return $this->successResponse('تم استرجاع سجلات الأنشطة بنجاح.', 200, $activitiesLog);
         } catch (QueryException $e) {
@@ -44,9 +43,7 @@ class ActivitiesLogService extends Service
         } catch (Exception $e) {
             Log::error('حدث خطأ عام أثناء استرجاع سجلات الأنشطة: ' . $e->getMessage());
 
-            return $this->errorResponse('حدث خطا اثناء استرجاع سجلات الانشطة , يرجى المحاولة مرة اخر ');
-            ;
-
+            return $this->errorResponse('حدث خطا اثناء استرجاع سجلات الانشطة , يرجى المحاولة مرة اخر ');;
         }
     }
 }
