@@ -39,103 +39,214 @@ class CustomerService extends Service
 
 
 
-    public function getAllCustomers($filteringData)
-    {
-        try {
-            $page = request('page', 1);
-            $cacheKey = 'customers_' . $page . (empty($filteringData) ? '' : md5(json_encode($filteringData)));
-            $cacheKeys = Cache::get('all_customers_keys', []);
+   public function getAllCustomers($filteringData)
+{
+    try {
+        $page = request('page', 1);
+        $cacheKey = 'customers_' . $page . (empty($filteringData) ? '' : md5(json_encode($filteringData)));
+        $cacheKeys = Cache::get('all_customers_keys', []);
 
-            if (!in_array($cacheKey, $cacheKeys)) {
-                $cacheKeys[] = $cacheKey;
-                Cache::put('all_customers_keys', $cacheKeys, now()->addHours(2));
-            }
+        if (!in_array($cacheKey, $cacheKeys)) {
+            $cacheKeys[] = $cacheKey;
+            Cache::put('all_customers_keys', $cacheKeys, now()->addHours(2));
+        }
 
-            return Cache::remember($cacheKey, now()->addMinutes(120), function () use ($filteringData) {
-                $customers = Customer::query()
-                    ->when(!empty($filteringData), fn($query) => $query->filterBy($filteringData))
-                    ->with([
-                        'receipts.receiptProducts.installment.installmentPayments',
-                        'debts'
-                    ])
-                    ->orderByDesc('created_at')
-                    ->paginate(10);
+        return Cache::remember($cacheKey, now()->addMinutes(120), function () use ($filteringData) {
+            $customers = Customer::query()
+                ->when(!empty($filteringData), fn($query) => $query->filterBy($filteringData))
+                ->with([
+                    'receipts.receiptProducts.installment.installmentPayments',
+                    'debts.debtPayments'
+                ])
+                ->orderByDesc('created_at')
+                ->paginate(10);
 
-                $customers->getCollection()->transform(function ($customer) {
-                    $firstPays = 0;
-                    $receiptTotalPrice = 0;
-                    $installmentsPaid = 0;
+            $customers->getCollection()->transform(function ($customer) {
+                $firstPays = 0;
+                $receiptTotalPrice = 0;
+                $installmentsPaid = 0;
 
-                    $receipts = Receipt::where('customer_id', $customer->id)
-                        ->where('type', 0)
-                        ->with([
-                            'receiptProducts',
-                            'receiptProducts.installment',
-                            'receiptProducts.installment.installmentPayments'
-                        ])
-                        ->get();
-
-                    foreach ($receipts as $receipt) {
-                        $receiptTotalPrice += $receipt->total_price;
-                        foreach ($receipt->receiptProducts as $receiptProduct) {
-                            if ($receiptProduct->installment) {
-                                $firstPays += $receiptProduct->installment->first_pay ?? 0;
-                                $installmentsPaid += $receiptProduct->installment->installmentPayments->sum('amount');
-                            }
+                // حساب الفواتير + الأقساط
+                foreach ($customer->receipts->where('type', 0) as $receipt) {
+                    $receiptTotalPrice += $receipt->total_price;
+                    foreach ($receipt->receiptProducts as $receiptProduct) {
+                        if ($receiptProduct->installment) {
+                            $firstPays += $receiptProduct->installment->first_pay ?? 0;
+                            $installmentsPaid += $receiptProduct->installment->installmentPayments->sum('amount');
                         }
                     }
+                }
 
-                    $remainingDebt = $customer->debts->sum('remaining_debt');
-                    $debtInstallmentsPaid = $customer->debts->sum(fn($debt) => $debt->debtPayments->sum('amount'));
+                // حساب الديون + مدفوعاتها
+                $remainingDebt = $customer->debts->sum('remaining_debt');
+                $debtInstallmentsPaid = $customer->debts->sum(fn($debt) => $debt->debtPayments->sum('amount'));
 
-                    $totalRemaining = ($receiptTotalPrice - $firstPays - $installmentsPaid) + ($remainingDebt - $debtInstallmentsPaid);
+                $totalRemaining = ($receiptTotalPrice - $firstPays - $installmentsPaid)
+                                + ($remainingDebt - $debtInstallmentsPaid);
 
-                    $latestInstallmentPaymentDate = InstallmentPayment::whereHas('installment.receiptProduct.receipt', function ($query) use ($customer) {
-                        $query->where('customer_id', $customer->id);
-                    })
-                        ->whereHas('installment', function ($query) {
-                            $query->where('status', 1);
-                        })
-                        ->latest('payment_date')
-                        ->value('payment_date');
+                $customer->total_remaining = $totalRemaining;
 
+                // إيجاد آخر دفعة (من الأقساط أو الديون)
+                $latestInstallmentPaymentDate = $customer->receipts
+                    ->flatMap(fn($r) => $r->receiptProducts)
+                    ->flatMap(fn($rp) => $rp->installment ? $rp->installment->installmentPayments : collect())
+                    ->sortByDesc('payment_date')
+                    ->pluck('payment_date')
+                    ->first();
 
-                    $latestDebtPaymentDate = DebtPayment::whereHas('debt', function ($query) use ($customer) {
-                        $query->where('customer_id', $customer->id);
-                    })
-                        ->latest('payment_date')
-                        ->value('payment_date');
+                $latestDebtPaymentDate = $customer->debts
+                    ->flatMap(fn($d) => $d->debtPayments)
+                    ->sortByDesc('payment_date')
+                    ->pluck('payment_date')
+                    ->first();
 
-                    $lastestPaymentDate = null;
-                    if ($latestDebtPaymentDate && $latestInstallmentPaymentDate) {
-                        $debtDate = new DateTime($latestDebtPaymentDate);
-                        $installmentDate = new DateTime($latestInstallmentPaymentDate);
-                        $lastestPaymentDate = ($debtDate > $installmentDate) ? $debtDate->format('Y-m-d') : $installmentDate->format('Y-m-d');
-                    } else {
-                        $lastestPaymentDate = $latestDebtPaymentDate ?? $latestInstallmentPaymentDate;
-                    }
+                $lastestPaymentDate = null;
+                if ($latestDebtPaymentDate && $latestInstallmentPaymentDate) {
+                    $debtDate = new \DateTime($latestDebtPaymentDate);
+                    $installmentDate = new \DateTime($latestInstallmentPaymentDate);
+                    $lastestPaymentDate = ($debtDate > $installmentDate)
+                        ? $debtDate
+                        : $installmentDate;
+                } else {
+                    $lastestPaymentDate = $latestDebtPaymentDate
+                        ? new \DateTime($latestDebtPaymentDate)
+                        : ($latestInstallmentPaymentDate ? new \DateTime($latestInstallmentPaymentDate) : null);
+                }
 
-                    $customer->total_remaining = $totalRemaining;
+                // حساب الأيام منذ آخر دفعة أو فاتورة
+                if ($lastestPaymentDate) {
+                    $customer->days_since_last_payment = \Carbon\Carbon::parse($lastestPaymentDate)->diffInDays(now());
+                } else {
+                    // إذا ما في دفعات، احسب من تاريخ آخر فاتورة
+                    $receiptDate = optional($customer->receipts->last())->receipt_date;
+                    $customer->days_since_last_payment = $receiptDate
+                        ? \Carbon\Carbon::parse($receiptDate)->diffInDays(now())
+                        : null;
+                }
 
-                    if (empty($lastestPaymentDate)) {
-                        $lastestPaymentDate = optional($customer->debts->last())->debt_date;
-                    }
+                // لا نعرض آخر دفعة إذا ما في دفعات
+                $customer->lastest_payment_date = null;
 
-                    $customer->lastest_payment_date = $lastestPaymentDate;
-
-                    return $customer;
-                });
-
-                return $this->successResponse('تم جلب بيانات العملاء بنجاح.', 200, $customers);
+                return $customer;
             });
-        } catch (QueryException $e) {
-            Log::error('Database query error while retrieving customers: ' . $e->getMessage());
-            return $this->errorResponse('فشل في جلب بيانات العملاء.');
-        } catch (Exception $e) {
-            Log::error('General error while retrieving customers: ' . $e->getMessage());
-            return $this->errorResponse('حدث خطأ أثناء استرجاع بيانات العملاء، يرجى المحاولة مرة أخرى.');
-        }
+
+            return $this->successResponse('تم جلب بيانات العملاء بنجاح.', 200, $customers);
+        });
+    } catch (\Illuminate\Database\QueryException $e) {
+        Log::error('Database query error while retrieving customers: ' . $e->getMessage());
+        return $this->errorResponse('فشل في جلب بيانات العملاء.');
+    } catch (\Exception $e) {
+        Log::error('General error while retrieving customers: ' . $e->getMessage());
+        return $this->errorResponse('حدث خطأ أثناء استرجاع بيانات العملاء، يرجى المحاولة مرة أخرى.');
     }
+}
+// public function getAllCustomers($filteringData)
+// {
+//     try {
+//         $page = request('page', 1);
+//         $cacheKey = 'customers_' . $page . (empty($filteringData) ? '' : md5(json_encode($filteringData)));
+//         $cacheKeys = Cache::get('all_customers_keys', []);
+
+//         if (!in_array($cacheKey, $cacheKeys)) {
+//             $cacheKeys[] = $cacheKey;
+//             Cache::put('all_customers_keys', $cacheKeys, now()->addHours(2));
+//         }
+
+//         return Cache::remember($cacheKey, now()->addMinutes(120), function () use ($filteringData) {
+//             $customers = Customer::query()
+//                 ->when(!empty($filteringData), fn($query) => $query->filterBy($filteringData))
+//                 ->with([
+//                     'receipts.receiptProducts.installment.installmentPayments',
+//                     'debts.debtPayments'
+//                 ])
+//                 ->orderByDesc('created_at')
+//                 ->paginate(10);
+
+//             $customers->getCollection()->transform(function ($customer) {
+//                 $firstPays = 0;
+//                 $receiptTotalPrice = 0;
+//                 $installmentsPaid = 0;
+
+//                 $receipts = Receipt::where('customer_id', $customer->id)
+//                     ->where('type', 0)
+//                     ->with([
+//                         'receiptProducts',
+//                         'receiptProducts.installment',
+//                         'receiptProducts.installment.installmentPayments'
+//                     ])
+//                     ->get();
+
+//                 foreach ($receipts as $receipt) {
+//                     $receiptTotalPrice += $receipt->total_price;
+//                     foreach ($receipt->receiptProducts as $receiptProduct) {
+//                         if ($receiptProduct->installment) {
+//                             $firstPays += $receiptProduct->installment->first_pay ?? 0;
+//                             $installmentsPaid += $receiptProduct->installment->installmentPayments->sum('amount');
+//                         }
+//                     }
+//                 }
+
+//                 $remainingDebt = $customer->debts->sum('remaining_debt');
+//                 $debtInstallmentsPaid = $customer->debts->sum(fn($debt) => $debt->debtPayments->sum('amount'));
+
+//                 $totalRemaining = ($receiptTotalPrice - $firstPays - $installmentsPaid) + ($remainingDebt - $debtInstallmentsPaid);
+
+//                 // آخر دفعة من الأقساط
+//                 $latestInstallmentPaymentDate = InstallmentPayment::whereHas('installment.receiptProduct.receipt', function ($query) use ($customer) {
+//                         $query->where('customer_id', $customer->id);
+//                     })
+//                     ->whereHas('installment', function ($query) {
+//                         $query->where('status', 1);
+//                     })
+//                     ->latest('payment_date')
+//                     ->value('payment_date');
+
+//                 // آخر دفعة من الديون
+//                 $latestDebtPaymentDate = DebtPayment::whereHas('debt', function ($query) use ($customer) {
+//                         $query->where('customer_id', $customer->id);
+//                     })
+//                     ->latest('payment_date')
+//                     ->value('payment_date');
+
+//                 $lastestPaymentDate = null;
+//                 if ($latestDebtPaymentDate && $latestInstallmentPaymentDate) {
+//                     $debtDate = new DateTime($latestDebtPaymentDate);
+//                     $installmentDate = new DateTime($latestInstallmentPaymentDate);
+//                     $lastestPaymentDate = ($debtDate > $installmentDate) ? $debtDate->format('Y-m-d') : $installmentDate->format('Y-m-d');
+//                 } else {
+//                     $lastestPaymentDate = $latestDebtPaymentDate ?? $latestInstallmentPaymentDate;
+//                 }
+
+//                 $customer->total_remaining = $totalRemaining;
+
+//                 // إذا ما في دفعات → خذ تاريخ آخر فاتورة
+//                 if (empty($lastestPaymentDate)) {
+//                     $lastestPaymentDate = optional($customer->receipts->last())->receipt_date;
+//                 }
+
+//                 $customer->lastest_payment_date = $lastestPaymentDate;
+
+//                 // 🟢 الحقل الجديد: الأيام منذ آخر دفعة أو فاتورة
+//                 if ($lastestPaymentDate) {
+//                     $customer->days_since_last_payment = now()->diffInDays(\Carbon\Carbon::parse($lastestPaymentDate));
+//                 } else {
+//                     $customer->days_since_last_payment = null;
+//                 }
+
+//                 return $customer;
+//             });
+
+//             return $this->successResponse('تم جلب بيانات العملاء بنجاح.', 200, $customers);
+//         });
+//     } catch (QueryException $e) {
+//         Log::error('Database query error while retrieving customers: ' . $e->getMessage());
+//         return $this->errorResponse('فشل في جلب بيانات العملاء.');
+//     } catch (Exception $e) {
+//         Log::error('General error while retrieving customers: ' . $e->getMessage());
+//         return $this->errorResponse('حدث خطأ أثناء استرجاع بيانات العملاء، يرجى المحاولة مرة أخرى.');
+//     }
+// }
+
 
     /**
      * Create a new customer record.
