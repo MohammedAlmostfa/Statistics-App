@@ -42,16 +42,16 @@ class CustomerService extends Service
    public function getAllCustomers($filteringData)
 {
     try {
-        $page = request('page', 1);
-        $cacheKey = 'customers_' . $page . (empty($filteringData) ? '' : md5(json_encode($filteringData)));
-        $cacheKeys = Cache::get('all_customers_keys', []);
+        // $page = request('page', 1);
+        // $cacheKey = 'customers_' . $page . (empty($filteringData) ? '' : md5(json_encode($filteringData)));
+        // $cacheKeys = Cache::get('all_customers_keys', []);
 
-        if (!in_array($cacheKey, $cacheKeys)) {
-            $cacheKeys[] = $cacheKey;
-            Cache::put('all_customers_keys', $cacheKeys, now()->addHours(2));
-        }
+        // if (!in_array($cacheKey, $cacheKeys)) {
+        //     $cacheKeys[] = $cacheKey;
+        //     Cache::put('all_customers_keys', $cacheKeys, now()->addHours(2));
+        // }
 
-        return Cache::remember($cacheKey, now()->addMinutes(120), function () use ($filteringData) {
+        // return Cache::remember($cacheKey, now()->addMinutes(120), function () use ($filteringData) {
             $customers = Customer::query()
                 ->when(!empty($filteringData), fn($query) => $query->filterBy($filteringData))
                 ->with([
@@ -67,7 +67,8 @@ class CustomerService extends Service
                 $installmentsPaid = 0;
 
                 // حساب الفواتير + الأقساط
-                foreach ($customer->receipts->where('type', 0) as $receipt) {
+                foreach ($customer->receipts->where('type', "اقساط") as $receipt) {
+
                     $receiptTotalPrice += $receipt->total_price;
                     foreach ($receipt->receiptProducts as $receiptProduct) {
                         if ($receiptProduct->installment) {
@@ -131,7 +132,7 @@ class CustomerService extends Service
             });
 
             return $this->successResponse('تم جلب بيانات العملاء بنجاح.', 200, $customers);
-        });
+        // });
     } catch (\Illuminate\Database\QueryException $e) {
         Log::error('Database query error while retrieving customers: ' . $e->getMessage());
         return $this->errorResponse('فشل في جلب بيانات العملاء.');

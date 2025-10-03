@@ -4,7 +4,9 @@ namespace App\Services;
 
 use Exception;
 use App\Models\User;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class UserService extends Service
 {
@@ -79,12 +81,13 @@ class UserService extends Service
     public function updateUser($data, User $user)
     {
         try {
-            // Update the user details with the provided data
+
+
             $user->update([
                 'name' => $data['name'],
                 'password' => bcrypt($data['password']),
             ]);
-
+    Auth::logout();
             return [
                 'status' => 200,
                 'message' => 'تم تحديث بيانات المستخدم بنجاح',

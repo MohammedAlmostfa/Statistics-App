@@ -32,7 +32,7 @@ class UpdateUserData extends FormRequest
                 'nullable',
                 Rule::unique('users')->where(fn ($query) => $query->where('status', '!=', 1)),
             ],
-            'nullable' => 'required|min:4',
+            'password' => 'required|min:4',
         ];
     }
     /**
