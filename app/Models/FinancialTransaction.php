@@ -48,13 +48,13 @@ class FinancialTransaction extends Model
     protected $casts = [
         'agent_id'        => 'integer',
         'sum_amount'      => 'float',
-        'transaction_date'=> 'date',
+        'transaction_date' => 'date',
         'total_amount'    => 'float',
         'discount_amount' => 'float',
         'paid_amount'     => 'float',
         'description'     => 'string',
         'user_id'         => 'integer',
-        'financial_transactions_number'=>'integer',
+        'financial_transactions_number' => 'integer',
     ];
 
     /**
@@ -76,12 +76,10 @@ class FinancialTransaction extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-   public function agent()
-{
-    return $this->belongsTo(Agent::class, 'agent_id');
-}
-
-
+    public function agent()
+    {
+        return $this->belongsTo(Agent::class, 'agent_id');
+    }
     /**
      * Defines the relationship between financial transactions and transaction products.
      *
@@ -115,7 +113,7 @@ class FinancialTransaction extends Model
     const TYPE_MAP = [
         0 => 'فاتورة شراء',
         1 => 'تسديد فاتورة شراء',
-        3 =>'دين فاتورة شراء',
+        3 => 'دين فاتورة شراء',
     ];
 
     /**
@@ -129,20 +127,20 @@ class FinancialTransaction extends Model
     {
         return Attribute::make(
             // Get the string representation of the type
-            get: fn ($value) => self::TYPE_MAP[$value] ?? 'Unknown',  // Convert numeric to string representation
+            get: fn($value) => self::TYPE_MAP[$value] ?? 'Unknown',  // Convert numeric to string representation
 
             // Set the integer value for type
-            set: fn ($value) => array_search($value, self::TYPE_MAP)  // Convert string back to its corresponding integer value
+            set: fn($value) => array_search($value, self::TYPE_MAP)  // Convert string back to its corresponding integer value
         );
     }
 
 
     /**
- * **Boot method for model event handling**
- *
- * This method listens to `created`, `updated`, and `deleted` events
- * and clears relevant caches while logging changes.
- */
+     * **Boot method for model event handling**
+     *
+     * This method listens to `created`, `updated`, and `deleted` events
+     * and clears relevant caches while logging changes.
+     */
 
     protected static function boot()
     {
@@ -179,7 +177,4 @@ class FinancialTransaction extends Model
         }
         Cache::forget('all_agents_keys');
     }
-
-
-
 }

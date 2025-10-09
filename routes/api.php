@@ -14,10 +14,12 @@ use App\Http\Controllers\WhatsappController;
 use App\Http\Controllers\DebtPaymentController;
 use App\Http\Controllers\ActivitiesLogController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ProductOriginController;
 use App\Http\Controllers\ReceiptProductController;
 use App\Http\Controllers\FinancialReportController;
 use App\Http\Controllers\FinancialTransactionController;
+use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\InstallmentPaymentController;
 use PHPUnit\Framework\Attributes\BackupStaticProperties;
@@ -47,7 +49,7 @@ Route::get('/user', function (Request $request) {
  */
 Route::get('productOrigin', [ProductOriginController::class, 'index']);          //  Get product origins
 Route::get('productCategory', [ProductCategoryController::class, 'index']);      //  Get product categories
-
+Route::post('/send-whatsapp', [WhatsappController::class, 'sendMessage']);
 /**
  *  Protected Routes (Requires JWT Authentication)
  * -------------------------------------------------
@@ -132,10 +134,9 @@ Route::middleware('jwt')->group(function () {
     Route::put('financialtransaction/payment/{id}', [FinancialTransactionController::class, 'UpdatePaymentFinancialTransaction']);  //  Update agent payment
     Route::post('financialtransaction/debt/agent/{id}', [FinancialTransactionController::class, 'StoreDebtFinancialTransaction']);
     Route::put('financialtransaction/debt/{id}', [FinancialTransactionController::class, 'UpdateDebtFinancialTransaction']);
-
-
     Route::apiResource('/financialtransaction', FinancialTransactionController::class);  //  Manage financial transactions
     Route::get("/backupDownload", [BackupController::class, 'index']);
+    Route::get("/imports",[ImportController::class,'index']);
+ Route::get("/exports",[ExportController::class,'index']);
 
 });
-    Route::post('/send-whatsapp', [WhatsappController::class, 'sendMessage']);

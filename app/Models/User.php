@@ -7,8 +7,6 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
@@ -16,44 +14,69 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
  *
  * Represents an authenticated user in the system.
  * Implements JWT authentication using JWTSubject for API authentication.
+ *
+ * @property int $id
+ * @property string $name
+ * @property string $password
+ * @property string $status
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ *
+ * Relationships:
+ * @property \Illuminate\Database\Eloquent\Collection $products
+ * @property \Illuminate\Database\Eloquent\Collection $financialTransactions
+ * @property \Illuminate\Database\Eloquent\Collection $payments
+ * @property \Illuminate\Database\Eloquent\Collection $debts
+ * @property \Illuminate\Database\Eloquent\Collection $installmentPayments
  */
 class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable, HasRoles;
 
     /**
-     * The attributes that are mass assignable.
+     * Attributes that are mass assignable.
      *
      * @var array<string>
      */
     protected $fillable = [
-        'name',         // Name of the user
-        'password',     // Hashed password
-        'status',       // Status of the user (active/deleted)
+        'name',
+        'password',
+        'status',
     ];
 
     /**
-     * The attributes that should be hidden when serialized to JSON.
+     * Attributes hidden for JSON serialization.
      *
      * @var array<string>
      */
     protected $hidden = [
-        'password',         // Hide password for security reasons
-        'remember_token',   // Hide the remember token
+        'password',
+        'remember_token',
     ];
 
     /**
-     * Status constants to enhance readability.
+     * Status mapping constants.
      *
      * @var array<int, string>
      */
     const STATUS_MAP = [
-        0 => 'موجود',   // User exists
-        1 => 'محذوف',  // User is removed
+        0 => 'موجود',
+        1 => 'محذوف',
     ];
 
     /**
-     * Get and set the user status dynamically using attribute casting.
+     * Casts for attributes.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'password' => 'hashed', // Securely hash passwords
+    ];
+
+    /**
+     * Attribute accessor & mutator for status.
+     * Returns the human-readable status when getting.
+     * Stores the numeric value when setting.
      *
      * @return \Illuminate\Database\Eloquent\Casts\Attribute
      */
@@ -66,16 +89,7 @@ class User extends Authenticatable implements JWTSubject
     }
 
     /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'password' => 'hashed', // Secure hashing of password
-    ];
-
-    /**
-     * Get the identifier for JWT.
+     * Get the identifier that will be stored in JWT.
      *
      * @return mixed
      */
@@ -87,15 +101,15 @@ class User extends Authenticatable implements JWTSubject
     /**
      * Return custom claims for JWT authentication.
      *
-     * @return array
+     * @return array<string, mixed>
      */
-    public function getJWTCustomClaims()
+    public function getJWTCustomClaims(): array
     {
         return [];
     }
 
     /**
-     * Define a one-to-many relationship where a user can have multiple products.
+     * One-to-many relationship: user has many products.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
@@ -104,13 +118,18 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Product::class);
     }
 
+    /**
+     * One-to-many relationship: user has many financial transactions.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function financialTransactions()
     {
         return $this->hasMany(FinancialTransaction::class);
     }
 
     /**
-     * Define a one-to-many relationship where a user can have multiple payments.
+     * One-to-many relationship: user has many payments.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
@@ -120,12 +139,22 @@ class User extends Authenticatable implements JWTSubject
     }
 
     /**
-     * Define a one-to-many relationship where a user can have multiple debts.
+     * One-to-many relationship: user has many debts.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function debts()
     {
         return $this->hasMany(Debt::class);
+    }
+
+    /**
+     * One-to-many relationship: user has many installment payments.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function installmentPayments()
+    {
+        return $this->hasMany(InstallmentPayment::class);
     }
 }
