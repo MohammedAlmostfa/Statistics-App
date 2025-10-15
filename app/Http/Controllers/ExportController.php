@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\ExportService;
 use Illuminate\Http\Request;
+use App\Services\ExportService;
+use Illuminate\Http\JsonResponse;
 
 class ExportController extends Controller
 {
@@ -22,9 +23,11 @@ class ExportController extends Controller
     }
 
 
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        $result = $this->exportService->getAllExports();
+        $date = $request->input('date'); // يمكن أن يكون null
+
+        $result = $this->exportService->getAllExports($date);
 
         return $result['status'] === 200
             ? $this->success($result['data'], $result['message'], $result['status'])
