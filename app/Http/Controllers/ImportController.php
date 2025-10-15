@@ -42,7 +42,7 @@ class ImportController extends Controller
 {
 
     $data = [
-        'date' => $request->input('date') // يمكن أن يكون null
+        'date' => $request->input('date')
     ];
 
     $result = $this->importService->getAllImports($data);
